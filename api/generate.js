@@ -71,10 +71,10 @@ async function generatePptx(DATA) {
   s2.addText("Inversión total · Meta Ads + Google Ads", { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
   const kpis = [
-    { label: "Inversión total", val: DATA.TOTAL_COSTO_ACT || "", delta: DATA.TOTAL_COSTO_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.TOTAL_COSTO_ANT || ""}`, up: DATA.TOTAL_COSTO_UP !== false },
-    { label: "Clicks totales",  val: DATA.TOTAL_CLICKS_ACT || "", delta: DATA.TOTAL_CLICKS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.TOTAL_CLICKS_ANT || ""}`, up: DATA.TOTAL_CLICKS_UP === true },
-    { label: "Impresiones",     val: DATA.TOTAL_IMP_ACT || "", delta: DATA.TOTAL_IMP_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.TOTAL_IMP_ANT || ""}`, up: DATA.TOTAL_IMP_UP === true },
-    { label: "CPC promedio",    val: DATA.TOTAL_CPC_ACT || "", delta: DATA.TOTAL_CPC_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.TOTAL_CPC_ANT || ""}`, up: DATA.TOTAL_CPC_UP === true },
+    { label: "Inversión total", val: DATA.INVERSION_TOTAL || "", delta: DATA.INVERSION_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.INVERSION_PREV || ""}`, up: DATA.INVERSION_DELTA_UP === true },
+    { label: "Clicks totales",  val: DATA.CLICKS_TOTAL || "", delta: DATA.CLICKS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CLICKS_PREV || ""}`, up: DATA.CLICKS_DELTA_UP === true },
+    { label: "Impresiones",     val: DATA.IMPRESIONES_TOTAL || "", delta: DATA.IMPRESIONES_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.IMPRESIONES_PREV || ""}`, up: DATA.IMPRESIONES_DELTA_UP === true },
+    { label: "CPC promedio",    val: DATA.CPC_TOTAL || "", delta: DATA.CPC_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CPC_PREV || ""}`, up: DATA.CPC_DELTA_UP === true },
   ];
   kpis.forEach((k, i) => {
     const x = 0.4 + i * 2.32;
@@ -94,10 +94,10 @@ async function generatePptx(DATA) {
   s2.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 3.35, w: 4.4, h: 0.38, fill: { color: ORANGE }, line: { color: ORANGE } });
   s2.addText("Meta Ads", { x: 0.55, y: 3.38, w: 3, h: 0.32, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
   const metaStats = [
-    ["Costo",  DATA.META_COSTO_ACT  || "", DATA.META_COSTO_DELTA  || "", DATA.META_COSTO_DOWN  !== false],
-    ["Clicks", DATA.META_CLICKS_ACT || "", DATA.META_CLICKS_DELTA || "", DATA.META_CLICKS_DOWN !== false],
-    ["ROAS",   DATA.META_ROAS_ACT   || "", DATA.META_ROAS_DELTA   || "", DATA.META_ROAS_DOWN   !== false],
-    ["CPC",    DATA.META_CPC_ACT    || "", DATA.META_CPC_DELTA    || "", DATA.META_CPC_DOWN    !== false],
+    ["Costo",  DATA.META_COSTO  || "", DATA.META_COSTO_DELTA  || "", DATA.META_COSTO_DELTA_UP  === true],
+    ["Clicks", DATA.META_CLICKS || "", DATA.META_CLICKS_DELTA || "", DATA.META_CLICKS_DELTA_UP !== true],
+    ["ROAS",   DATA.META_ROAS   || "", DATA.META_ROAS_DELTA   || "", DATA.META_ROAS_DELTA_UP   !== true],
+    ["CPC",    DATA.META_CPC    || "", DATA.META_CPC_DELTA    || "", DATA.META_CPC_DELTA_UP    !== true],
   ];
   metaStats.forEach(([lbl, val, delta, isDown], i) => {
     const col = i % 2, row = Math.floor(i / 2);
@@ -114,10 +114,10 @@ async function generatePptx(DATA) {
   s2.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: 3.35, w: 4.4, h: 0.38, fill: { color: BLUE }, line: { color: BLUE } });
   s2.addText("Google Ads", { x: 5.35, y: 3.38, w: 3, h: 0.32, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
   const googleStats = [
-    ["Costo",  DATA.GOOGLE_COSTO_ACT  || "", DATA.GOOGLE_COSTO_DELTA  || "", DATA.GOOGLE_COSTO_DOWN  === true],
-    ["Clicks", DATA.GOOGLE_CLICKS_ACT || "", DATA.GOOGLE_CLICKS_DELTA || "", DATA.GOOGLE_CLICKS_DOWN === true],
-    ["ROAS",   DATA.GOOGLE_ROAS_ACT   || "", DATA.GOOGLE_ROAS_DELTA   || "", DATA.GOOGLE_ROAS_DOWN   === true],
-    ["CPC",    DATA.GOOGLE_CPC_ACT    || "", DATA.GOOGLE_CPC_DELTA    || "", DATA.GOOGLE_CPC_DOWN    === true],
+    ["Costo",  DATA.GOOGLE_COSTO  || "", DATA.GOOGLE_COSTO_DELTA  || "", DATA.GOOGLE_COSTO_DELTA_UP  === true],
+    ["Clicks", DATA.GOOGLE_CLICKS || "", DATA.GOOGLE_CLICKS_DELTA || "", DATA.GOOGLE_CLICKS_DELTA_UP !== true],
+    ["ROAS",   DATA.GOOGLE_ROAS   || "", DATA.GOOGLE_ROAS_DELTA   || "", DATA.GOOGLE_ROAS_DELTA_UP   !== true],
+    ["CPC",    DATA.GOOGLE_CPC    || "", DATA.GOOGLE_CPC_DELTA    || "", DATA.GOOGLE_CPC_DELTA_UP    !== true],
   ];
   googleStats.forEach(([lbl, val, delta, isDown], i) => {
     const col = i % 2, row = Math.floor(i / 2);
@@ -140,15 +140,15 @@ async function generatePptx(DATA) {
   s3.addText("Meta Ads", { x: 0.5, y: 0.22, w: 6, h: 0.52, fontSize: 28, bold: true, color: WHITE, fontFace: "Trebuchet MS" });
   s3.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.72, w: 6, h: 0.3, fontSize: 13, color: "FFD4B8", fontFace: "DM Sans" });
   s3.addShape(pres.shapes.RECTANGLE, { x: 7.2, y: 0.35, w: 2.3, h: 0.5, fill: { color: WHITE, transparency: 20 }, line: { color: WHITE, transparency: 50 } });
-  s3.addText(`Inversión: ${DATA.META_COSTO_ACT || ""}`, { x: 7.2, y: 0.35, w: 2.3, h: 0.5, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
+  s3.addText(`Inversión: ${DATA.META_COSTO || ""}`, { x: 7.2, y: 0.35, w: 2.3, h: 0.5, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
 
   const metaKPIs = [
-    { label: "Costo",       val: DATA.META_COSTO_ACT  || "", prev: DATA.META_COSTO_ANT  || "", delta: DATA.META_COSTO_DELTA  || "", up: DATA.META_COSTO_UP  === true,  warn: DATA.META_COSTO_WARN  === true },
-    { label: "Clicks",      val: DATA.META_CLICKS_ACT || "", prev: DATA.META_CLICKS_ANT || "", delta: DATA.META_CLICKS_DELTA || "", up: DATA.META_CLICKS_UP === true,  warn: DATA.META_CLICKS_WARN !== false },
-    { label: "Impresiones", val: DATA.META_IMP_ACT    || "", prev: DATA.META_IMP_ANT    || "", delta: DATA.META_IMP_DELTA    || "", up: DATA.META_IMP_UP    === true,  warn: DATA.META_IMP_WARN    !== false },
-    { label: "CTR",         val: DATA.META_CTR_ACT    || "", prev: DATA.META_CTR_ANT    || "", delta: DATA.META_CTR_DELTA    || "", up: DATA.META_CTR_UP    === true,  warn: DATA.META_CTR_WARN    === true },
-    { label: "CPC",         val: DATA.META_CPC_ACT    || "", prev: DATA.META_CPC_ANT    || "", delta: DATA.META_CPC_DELTA    || "", up: DATA.META_CPC_UP    === true,  warn: DATA.META_CPC_WARN    !== false },
-    { label: "ROAS",        val: DATA.META_ROAS_ACT   || "", prev: DATA.META_ROAS_ANT   || "", delta: DATA.META_ROAS_DELTA   || "", up: DATA.META_ROAS_UP   === true,  warn: DATA.META_ROAS_WARN   !== false },
+    { label: "Costo",       val: DATA.META_COSTO        || "", prev: DATA.META_COSTO_PREV        || "", delta: DATA.META_COSTO_DELTA        || "", up: DATA.META_COSTO_DELTA_UP        === true, warn: false },
+    { label: "Clicks",      val: DATA.META_CLICKS       || "", prev: DATA.META_CLICKS_PREV       || "", delta: DATA.META_CLICKS_DELTA       || "", up: DATA.META_CLICKS_DELTA_UP       === true, warn: false },
+    { label: "Impresiones", val: DATA.META_IMPRESIONES  || "", prev: DATA.META_IMPRESIONES_PREV  || "", delta: DATA.META_IMPRESIONES_DELTA  || "", up: DATA.META_IMPRESIONES_DELTA_UP  === true, warn: false },
+    { label: "CTR",         val: DATA.META_CTR          || "", prev: DATA.META_CTR_PREV          || "", delta: DATA.META_CTR_DELTA          || "", up: DATA.META_CTR_DELTA_UP          === true, warn: false },
+    { label: "CPC",         val: DATA.META_CPC          || "", prev: DATA.META_CPC_PREV          || "", delta: DATA.META_CPC_DELTA          || "", up: DATA.META_CPC_DELTA_UP          === true, warn: false },
+    { label: "ROAS",        val: DATA.META_ROAS         || "", prev: DATA.META_ROAS_PREV         || "", delta: DATA.META_ROAS_DELTA         || "", up: DATA.META_ROAS_DELTA_UP         === true, warn: false },
   ];
   metaKPIs.forEach((k, i) => {
     const col = i % 3, row = Math.floor(i / 3);
@@ -163,7 +163,7 @@ async function generatePptx(DATA) {
 
   s3.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.7, w: 9.2, h: 0.65, fill: { color: "FFF0EB" }, line: { color: "FA5A1E", width: 0.5 } });
   s3.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.7, w: 0.08, h: 0.65, fill: { color: ORANGE }, line: { color: ORANGE } });
-  s3.addText(DATA.META_INSIGHT || "", { x: 0.6, y: 4.72, w: 8.9, h: 0.6, fontSize: 11, color: DARK, fontFace: "DM Sans", valign: "middle" });
+  s3.addText(DATA.META_ALERTA || "", { x: 0.6, y: 4.72, w: 8.9, h: 0.6, fontSize: 11, color: DARK, fontFace: "DM Sans", valign: "middle" });
 
   s3.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
   s3.addText(`Known Online  ·  ${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
@@ -176,15 +176,15 @@ async function generatePptx(DATA) {
   s4.addText("Google Ads", { x: 0.5, y: 0.22, w: 6, h: 0.52, fontSize: 28, bold: true, color: WHITE, fontFace: "Trebuchet MS" });
   s4.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.72, w: 6, h: 0.3, fontSize: 13, color: "B5D4F4", fontFace: "DM Sans" });
   s4.addShape(pres.shapes.RECTANGLE, { x: 7.2, y: 0.35, w: 2.3, h: 0.5, fill: { color: WHITE, transparency: 20 }, line: { color: WHITE, transparency: 50 } });
-  s4.addText(`Inversión: ${DATA.GOOGLE_COSTO_ACT || ""}`, { x: 7.2, y: 0.35, w: 2.3, h: 0.5, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
+  s4.addText(`Inversión: ${DATA.GOOGLE_COSTO || ""}`, { x: 7.2, y: 0.35, w: 2.3, h: 0.5, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
 
   const googleKPIs = [
-    { label: "Costo",       val: DATA.GOOGLE_COSTO_ACT  || "", prev: DATA.GOOGLE_COSTO_ANT  || "", delta: DATA.GOOGLE_COSTO_DELTA  || "", good: DATA.GOOGLE_COSTO_GOOD  !== false },
-    { label: "Clicks",      val: DATA.GOOGLE_CLICKS_ACT || "", prev: DATA.GOOGLE_CLICKS_ANT || "", delta: DATA.GOOGLE_CLICKS_DELTA || "", good: DATA.GOOGLE_CLICKS_GOOD !== false },
-    { label: "Impresiones", val: DATA.GOOGLE_IMP_ACT    || "", prev: DATA.GOOGLE_IMP_ANT    || "", delta: DATA.GOOGLE_IMP_DELTA    || "", good: DATA.GOOGLE_IMP_GOOD    !== false },
-    { label: "CTR",         val: DATA.GOOGLE_CTR_ACT    || "", prev: DATA.GOOGLE_CTR_ANT    || "", delta: DATA.GOOGLE_CTR_DELTA    || "", good: DATA.GOOGLE_CTR_GOOD    === true  },
-    { label: "CPC",         val: DATA.GOOGLE_CPC_ACT    || "", prev: DATA.GOOGLE_CPC_ANT    || "", delta: DATA.GOOGLE_CPC_DELTA    || "", good: DATA.GOOGLE_CPC_GOOD    !== false },
-    { label: "ROAS",        val: DATA.GOOGLE_ROAS_ACT   || "", prev: DATA.GOOGLE_ROAS_ANT   || "", delta: DATA.GOOGLE_ROAS_DELTA   || "", good: DATA.GOOGLE_ROAS_GOOD   !== false },
+    { label: "Costo",       val: DATA.GOOGLE_COSTO       || "", prev: DATA.GOOGLE_COSTO_PREV       || "", delta: DATA.GOOGLE_COSTO_DELTA       || "", good: DATA.GOOGLE_COSTO_DELTA_UP       === true },
+    { label: "Clicks",      val: DATA.GOOGLE_CLICKS      || "", prev: DATA.GOOGLE_CLICKS_PREV      || "", delta: DATA.GOOGLE_CLICKS_DELTA      || "", good: DATA.GOOGLE_CLICKS_DELTA_UP      === true },
+    { label: "Impresiones", val: DATA.GOOGLE_IMPRESIONES || "", prev: DATA.GOOGLE_IMPRESIONES_PREV || "", delta: DATA.GOOGLE_IMPRESIONES_DELTA || "", good: DATA.GOOGLE_IMPRESIONES_DELTA_UP === true },
+    { label: "CTR",         val: DATA.GOOGLE_CTR         || "", prev: DATA.GOOGLE_CTR_PREV         || "", delta: DATA.GOOGLE_CTR_DELTA         || "", good: DATA.GOOGLE_CTR_DELTA_UP         === true },
+    { label: "CPC",         val: DATA.GOOGLE_CPC         || "", prev: DATA.GOOGLE_CPC_PREV         || "", delta: DATA.GOOGLE_CPC_DELTA         || "", good: DATA.GOOGLE_CPC_DELTA_UP         === true },
+    { label: "ROAS",        val: DATA.GOOGLE_ROAS        || "", prev: DATA.GOOGLE_ROAS_PREV        || "", delta: DATA.GOOGLE_ROAS_DELTA        || "", good: DATA.GOOGLE_ROAS_DELTA_UP        === true },
   ];
   googleKPIs.forEach((k, i) => {
     const col = i % 3, row = Math.floor(i / 3);
@@ -199,7 +199,7 @@ async function generatePptx(DATA) {
 
   s4.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.7, w: 9.2, h: 0.65, fill: { color: "EAF3DE" }, line: { color: "63992250", width: 0.5 } });
   s4.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.7, w: 0.08, h: 0.65, fill: { color: "3B6D11" }, line: { color: "3B6D11" } });
-  s4.addText(DATA.GOOGLE_INSIGHT || "", { x: 0.6, y: 4.72, w: 8.9, h: 0.6, fontSize: 11, color: DARK, fontFace: "DM Sans", valign: "middle" });
+  s4.addText(DATA.GOOGLE_ALERTA || "", { x: 0.6, y: 4.72, w: 8.9, h: 0.6, fontSize: 11, color: DARK, fontFace: "DM Sans", valign: "middle" });
 
   s4.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
   s4.addText(`Known Online  ·  ${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
@@ -237,7 +237,7 @@ async function generatePptx(DATA) {
     s5.addText(row.plataforma || "", { x: rx, y: y + 0.1, w: 0.78, h: 0.24, fontSize: 9, color: isGoogle ? BLUE : ORANGE, fontFace: "DM Sans", align: "center", bold: true });
     rx += colW[1];
 
-    s5.addText(row.inversion || "", { x: rx, y: y + 0.07, w: colW[2], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans", align: "right" });
+    s5.addText(row.costo || "", { x: rx, y: y + 0.07, w: colW[2], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans", align: "right" });
     rx += colW[2];
     s5.addText(row.clicks || "", { x: rx, y: y + 0.07, w: colW[3], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans", align: "right" });
     rx += colW[3];
@@ -292,12 +292,12 @@ async function generatePptx(DATA) {
   s7.addText("GA4", { x: 8.2, y: 0.28, w: 1.4, h: 0.3, fontSize: 11, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
 
   const ga4Metrics = [
-    { icon: "S", label: "Sesiones",              sub: "Sesiones frente al año anterior",          val26: DATA.GA4_SESIONES_ACT  || "", val25: DATA.GA4_SESIONES_ANT  || "", delta: DATA.GA4_SESIONES_DELTA  || "", deltaColor: DATA.GA4_SESIONES_UP  === true ? GREEN : RED, deltaBg: DATA.GA4_SESIONES_UP  === true ? GREEN_BG : RED_BG },
-    { icon: "U", label: "Usuarios activos",      sub: "Usuarios activos frente al año anterior",  val26: DATA.GA4_USUARIOS_ACT  || "", val25: DATA.GA4_USUARIOS_ANT  || "", delta: DATA.GA4_USUARIOS_DELTA  || "", deltaColor: DATA.GA4_USUARIOS_UP  === true ? GREEN : RED, deltaBg: DATA.GA4_USUARIOS_UP  === true ? GREEN_BG : RED_BG },
-    { icon: "T", label: "Transacciones",         sub: "Transacciones ecommerce (VTEX/GA4)",        val26: DATA.GA4_TRANSACC_ACT  || "", val25: DATA.GA4_TRANSACC_ANT  || "", delta: DATA.GA4_TRANSACC_DELTA  || "", deltaColor: DATA.GA4_TRANSACC_UP  === true ? GREEN : RED, deltaBg: DATA.GA4_TRANSACC_UP  === true ? GREEN_BG : RED_BG },
-    { icon: "$", label: "Inversión publicitaria", sub: "Total Meta Ads + Google Ads",              val26: DATA.TOTAL_COSTO_ACT   || "", val25: DATA.TOTAL_COSTO_ANT   || "", delta: DATA.TOTAL_COSTO_DELTA   || "", deltaColor: DATA.TOTAL_COSTO_UP  !== false ? GREEN : RED, deltaBg: DATA.TOTAL_COSTO_UP  !== false ? GREEN_BG : RED_BG },
-    { icon: "%", label: "Tasa de conversión",    sub: "Conv. por sesión (Purchase)",               val26: DATA.GA4_CONVRATE_ACT  || "", val25: DATA.GA4_CONVRATE_ANT  || "", delta: DATA.GA4_CONVRATE_DELTA  || "", deltaColor: DATA.GA4_CONVRATE_UP  === true ? GREEN : RED, deltaBg: DATA.GA4_CONVRATE_UP  === true ? GREEN_BG : RED_BG },
-    { icon: "B", label: "Tasa de rebote",        sub: "Bounce rate GA4",                           val26: DATA.GA4_BOUNCE_ACT    || "", val25: DATA.GA4_BOUNCE_ANT    || "", delta: DATA.GA4_BOUNCE_DELTA    || "", deltaColor: DATA.GA4_BOUNCE_UP   === true ? GREEN : RED, deltaBg: DATA.GA4_BOUNCE_UP   === true ? GREEN_BG : RED_BG },
+    { icon: "S", label: "Sesiones",              sub: "Sesiones frente al año anterior",          val26: DATA.GA4_SESIONES     || "", val25: DATA.GA4_SESIONES_PREV     || "", delta: DATA.GA4_SESIONES_DELTA     || "", deltaColor: DATA.GA4_SESIONES_DELTA_UP     === true ? GREEN : RED, deltaBg: DATA.GA4_SESIONES_DELTA_UP     === true ? GREEN_BG : RED_BG },
+    { icon: "U", label: "Usuarios activos",      sub: "Usuarios activos frente al año anterior",  val26: DATA.GA4_USUARIOS     || "", val25: DATA.GA4_USUARIOS_PREV     || "", delta: DATA.GA4_USUARIOS_DELTA     || "", deltaColor: DATA.GA4_USUARIOS_DELTA_UP     === true ? GREEN : RED, deltaBg: DATA.GA4_USUARIOS_DELTA_UP     === true ? GREEN_BG : RED_BG },
+    { icon: "T", label: "Transacciones",         sub: "Transacciones ecommerce (VTEX/GA4)",        val26: DATA.GA4_TRANSACCIONES || "", val25: DATA.GA4_TRANSACCIONES_PREV || "", delta: DATA.GA4_TRANSACCIONES_DELTA || "", deltaColor: DATA.GA4_TRANSACCIONES_DELTA_UP === true ? GREEN : RED, deltaBg: DATA.GA4_TRANSACCIONES_DELTA_UP === true ? GREEN_BG : RED_BG },
+    { icon: "$", label: "Inversión publicitaria", sub: "Total Meta Ads + Google Ads",              val26: DATA.INVERSION_TOTAL  || "", val25: DATA.INVERSION_PREV        || "", delta: DATA.INVERSION_DELTA        || "", deltaColor: DATA.INVERSION_DELTA_UP        === true ? GREEN : RED, deltaBg: DATA.INVERSION_DELTA_UP        === true ? GREEN_BG : RED_BG },
+    { icon: "%", label: "Tasa de conversión",    sub: "Conv. por sesión (Purchase)",               val26: DATA.GA4_CONV_RATE    || "", val25: DATA.GA4_CONV_RATE_PREV    || "", delta: DATA.GA4_CONV_RATE_DELTA    || "", deltaColor: DATA.GA4_CONV_RATE_DELTA_UP    === true ? GREEN : RED, deltaBg: DATA.GA4_CONV_RATE_DELTA_UP    === true ? GREEN_BG : RED_BG },
+    { icon: "B", label: "Tasa de rebote",        sub: "Bounce rate GA4",                           val26: DATA.GA4_REBOTE       || "", val25: DATA.GA4_REBOTE_PREV       || "", delta: DATA.GA4_REBOTE_DELTA       || "", deltaColor: DATA.GA4_REBOTE_DELTA_UP       === true ? GREEN : RED, deltaBg: DATA.GA4_REBOTE_DELTA_UP       === true ? GREEN_BG : RED_BG },
   ];
   ga4Metrics.forEach((m, i) => {
     const col = i % 3, row = Math.floor(i / 3);
