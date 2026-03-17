@@ -1,0 +1,12 @@
+{
+  "name": "known-online-pptx",
+  "version": "1.0.0",
+  "description": "Serverless PPTX generator for Known Online marketing reports",
+  "main": "api/generate.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "pptxgenjs": "^3.12.0"
+  }
+}
