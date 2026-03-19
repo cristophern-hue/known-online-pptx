@@ -348,7 +348,79 @@ async function generatePptx(DATA) {
   s5.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
   s5.addText(`Known Online  ·  ${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
 
-  // ── SLIDE 5B – TOP ANUNCIOS META POR COMPRAS ─────────────────────────────
+  // ── SLIDE 5B – TOP FUENTE / MEDIO (GA4) ──────────────────────────────────
+  // fuenteMedio: array of { nombre, sesiones, txns, tc, tc_prev, tc_delta, tc_delta_up, revenue }
+  const fuenteMedio = DATA.FUENTE_MEDIO || [];
+  if (fuenteMedio.length > 0) {
+    let sFm = pres.addSlide();
+    sFm.background = { color: WHITE };
+    sFm.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
+    sFm.addText("Top 10 Fuente / Medio", { x: 0.5, y: 0.18, w: 7, h: 0.52, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sFm.addText(`GA4  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.71, w: 7, h: 0.28, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+    sFm.addShape(pres.shapes.RECTANGLE, { x: 8.2, y: 0.25, w: 1.4, h: 0.28, fill: { color: "34A853" }, line: { color: "34A853" } });
+    sFm.addText("GA4", { x: 8.2, y: 0.25, w: 1.4, h: 0.28, fontSize: 11, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
+
+    // Table header
+    const fmColW = [2.7, 1.05, 0.9, 1.0, 1.0, 0.85, 1.6];
+    const fmHeaders = ["Fuente / Medio", "Sesiones", "Txns", `TC% ${DATA.PERIODO_ACTUAL_LABEL || "Actual"}`, `TC% ${DATA.PERIODO_ANTERIOR_LABEL || "Ant."}`, "ΔTC", "Revenue"];
+    const fmY0 = 1.08;
+
+    sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: fmY0, w: 9.2, h: 0.36, fill: { color: DARK }, line: { color: DARK } });
+    let fmCx = 0.55;
+    fmHeaders.forEach((h, i) => {
+      const align = i === 0 ? "left" : "center";
+      sFm.addText(h, { x: fmCx, y: fmY0 + 0.02, w: fmColW[i], h: 0.32, fontSize: 9, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle", align });
+      fmCx += fmColW[i];
+    });
+
+    // Table rows
+    fuenteMedio.slice(0, 10).forEach((row, i) => {
+      const ry = fmY0 + 0.36 + i * 0.37;
+      const bg = i % 2 === 0 ? WHITE : LIGHT_BG;
+      sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry, w: 9.2, h: 0.36, fill: { color: bg }, line: { color: "E8E0D8", width: 0.5 } });
+
+      const up = row.tc_delta_up === true;
+      const tcColor  = up ? DARK : RED;
+      const deltaBg  = up ? GREEN_BG  : RED_BG;
+      const deltaTxt = up ? GREEN     : RED;
+
+      let rx = 0.55;
+      // Fuente / Medio
+      sFm.addText(row.nombre || "", { x: rx, y: ry + 0.07, w: fmColW[0], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans" });
+      rx += fmColW[0];
+      // Sesiones
+      sFm.addText(String(row.sesiones ?? ""), { x: rx, y: ry + 0.07, w: fmColW[1], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
+      rx += fmColW[1];
+      // Txns
+      sFm.addText(String(row.txns ?? ""), { x: rx, y: ry + 0.07, w: fmColW[2], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
+      rx += fmColW[2];
+      // TC% actual (rojo si bajó)
+      sFm.addText(row.tc || "", { x: rx, y: ry + 0.07, w: fmColW[3], h: 0.26, fontSize: 9.5, bold: !up, color: tcColor, fontFace: "DM Sans", align: "center" });
+      rx += fmColW[3];
+      // TC% anterior
+      sFm.addText(row.tc_prev || "", { x: rx, y: ry + 0.07, w: fmColW[4], h: 0.26, fontSize: 9.5, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
+      rx += fmColW[4];
+      // ΔTC badge
+      sFm.addShape(pres.shapes.RECTANGLE, { x: rx + 0.05, y: ry + 0.09, w: 0.72, h: 0.22, fill: { color: deltaBg }, line: { color: deltaBg } });
+      sFm.addText(row.tc_delta || "", { x: rx + 0.05, y: ry + 0.09, w: 0.72, h: 0.22, fontSize: 9, bold: true, color: deltaTxt, fontFace: "DM Sans", align: "center", valign: "middle" });
+      rx += fmColW[5];
+      // Revenue
+      sFm.addText(row.revenue || "", { x: rx, y: ry + 0.07, w: fmColW[6], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "right" });
+    });
+
+    // Insight box (opcional)
+    const fmTableBottom = fmY0 + 0.36 + Math.min(fuenteMedio.length, 10) * 0.37;
+    if (DATA.FUENTE_MEDIO_INSIGHT && fmTableBottom < 5.1) {
+      sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: fmTableBottom + 0.06, w: 9.2, h: 0.38, fill: { color: "FFF0EB" }, line: { color: "FA5A1E", width: 0.5 } });
+      sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: fmTableBottom + 0.06, w: 0.08, h: 0.38, fill: { color: ORANGE }, line: { color: ORANGE } });
+      sFm.addText(DATA.FUENTE_MEDIO_INSIGHT, { x: 0.6, y: fmTableBottom + 0.08, w: 8.9, h: 0.34, fontSize: 9.5, color: DARK, fontFace: "DM Sans", valign: "middle" });
+    }
+
+    sFm.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
+    sFm.addText(`Known Online  ·  ${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+  }
+
+  // ── SLIDE 5C – TOP ANUNCIOS META POR COMPRAS ─────────────────────────────
   if (DATA.TOP_ANUNCIOS_META_TIENE_DATOS && Array.isArray(DATA.TOP_ANUNCIOS_META) && DATA.TOP_ANUNCIOS_META.length > 0) {
     const ads = DATA.TOP_ANUNCIOS_META.slice(0, 3);
 
