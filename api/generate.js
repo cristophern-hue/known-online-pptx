@@ -115,6 +115,43 @@ async function generatePptx(DATA) {
   s7.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
   s7.addText(`Known Online  ·  ${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
 
+  // ── SLIDE 2B – ECOMMERCE PLATFORM (OPCIONAL) ─────────────────────────────
+  if (DATA.ECOMMERCE_INGRESOS) {
+    let sEc = pres.addSlide();
+    sEc.background = { color: WHITE };
+    sEc.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
+    sEc.addText("Performance Ecommerce", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sEc.addText(`Plataforma  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+    sEc.addShape(pres.shapes.RECTANGLE, { x: 7.9, y: 0.28, w: 1.7, h: 0.3, fill: { color: ORANGE }, line: { color: ORANGE } });
+    sEc.addText("Ecommerce", { x: 7.9, y: 0.28, w: 1.7, h: 0.3, fontSize: 11, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
+
+    const ecMetrics = [
+      { icon: "R", label: "Ingresos",       sub: "Revenue de plataforma ecommerce", val: DATA.ECOMMERCE_INGRESOS || "", prev: DATA.ECOMMERCE_INGRESOS_PREV || "", delta: DATA.ECOMMERCE_INGRESOS_DELTA || "", up: DATA.ECOMMERCE_INGRESOS_DELTA_UP === true },
+      { icon: "O", label: "Órdenes",        sub: "Transacciones / pedidos",         val: DATA.ECOMMERCE_ORDENES  || "", prev: DATA.ECOMMERCE_ORDENES_PREV  || "", delta: DATA.ECOMMERCE_ORDENES_DELTA  || "", up: DATA.ECOMMERCE_ORDENES_DELTA_UP  === true },
+      { icon: "T", label: "Ticket promedio", sub: "Ingreso promedio por orden",      val: DATA.ECOMMERCE_TICKET   || "", prev: DATA.ECOMMERCE_TICKET_PREV   || "", delta: DATA.ECOMMERCE_TICKET_DELTA   || "", up: DATA.ECOMMERCE_TICKET_DELTA_UP   === true },
+    ];
+
+    ecMetrics.forEach((m, i) => {
+      const x = 0.85 + i * 2.8, y = 1.3;
+      sEc.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.6, h: 3.2, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+      sEc.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.6, h: 0.06, fill: { color: ORANGE }, line: { color: ORANGE } });
+      sEc.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.2, w: 0.45, h: 0.45, fill: { color: ORANGE }, line: { color: ORANGE } });
+      sEc.addText(m.icon,  { x: x + 0.14, y: y + 0.2,  w: 0.45, h: 0.45, fontSize: 14, bold: true, color: WHITE,     fontFace: "DM Sans",       align: "center", valign: "middle" });
+      sEc.addText(m.label, { x: x + 0.7,  y: y + 0.22, w: 1.8,  h: 0.28, fontSize: 12, bold: true, color: DARK,      fontFace: "DM Sans" });
+      sEc.addText(m.sub,   { x: x + 0.7,  y: y + 0.48, w: 1.8,  h: 0.2,  fontSize: 8.5,            color: GRAY_TEXT, fontFace: "DM Sans" });
+      sEc.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.82, w: 2.32, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
+      sEc.addText(DATA.PERIODO_ACTUAL_LABEL || "", { x: x + 0.14, y: y + 0.92, w: 2.0, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      sEc.addText(m.val,   { x: x + 0.14, y: y + 1.12, w: 2.32, h: 0.65, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+      sEc.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 1.82, w: 2.32, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
+      sEc.addText(`${DATA.PERIODO_ANTERIOR_LABEL || "Período ant."}: ${m.prev}`, { x: x + 0.14, y: y + 1.92, w: 2.32, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      sEc.addShape(pres.shapes.RECTANGLE, { x: x + 0.5, y: y + 2.25, w: 1.6, h: 0.38, fill: { color: m.up ? GREEN_BG : RED_BG }, line: { color: m.up ? GREEN_BG : RED_BG } });
+      sEc.addText(m.delta, { x: x + 0.5, y: y + 2.25, w: 1.6, h: 0.38, fontSize: 16, bold: true, color: m.up ? GREEN : RED, fontFace: "DM Sans", align: "center", valign: "middle" });
+    });
+
+    sEc.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
+    sEc.addText(`Known Online  ·  ${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+  }
+
   // ── SLIDE 3 – RESUMEN EJECUTIVO ───────────────────────────────────────────
   let s2 = pres.addSlide();
   s2.background = { color: WHITE };
