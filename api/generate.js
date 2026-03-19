@@ -317,7 +317,7 @@ async function generatePptx(DATA) {
       // Metrics grid (2x2)
       const metricsY = imgY + imgSize + 0.55;
       const metricsList = [
-        { lbl: "Conversiones", val: ad.conversiones || "0" },
+        { lbl: "Compras (Pixel)", val: ad.conversiones || "0" },
         { lbl: "ROAS",         val: ad.roas || "0x" },
         { lbl: "Costo",        val: ad.costo || "$0" },
         { lbl: "Clicks",       val: ad.clicks || "0" },
