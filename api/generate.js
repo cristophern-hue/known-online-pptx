@@ -1,5 +1,16 @@
 const pptxgen = require("pptxgenjs");
 
+async function fetchImageAsBase64(url) {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return null;
+    const ct = res.headers.get("content-type") || "image/jpeg";
+    const buf = Buffer.from(await res.arrayBuffer());
+    const mime = ct.startsWith("image/") ? ct.split(";")[0] : "image/jpeg";
+    return `image/${mime.split("/")[1]};base64,${buf.toString("base64")}`;
+  } catch { return null; }
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed. Use POST." });
@@ -258,6 +269,75 @@ async function generatePptx(DATA) {
 
   s5.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
   s5.addText(`Known Online  ·  ${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+  // ── SLIDE 5B – TOP ANUNCIOS META POR COMPRAS ─────────────────────────────
+  if (DATA.TOP_ANUNCIOS_META_TIENE_DATOS && Array.isArray(DATA.TOP_ANUNCIOS_META) && DATA.TOP_ANUNCIOS_META.length > 0) {
+    const ads = DATA.TOP_ANUNCIOS_META.slice(0, 3);
+
+    // Pre-fetch all ad images in parallel
+    const adImages = await Promise.all(
+      ads.map(ad => ad.imagen_url ? fetchImageAsBase64(ad.imagen_url) : Promise.resolve(null))
+    );
+
+    let s5b = pres.addSlide();
+    s5b.background = { color: WHITE };
+    s5b.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
+    s5b.addText("Top Anuncios Meta por Compras", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s5b.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  Ordenados por conversiones`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    const cardW = 2.8, cardH = 3.8, cardGap = 0.3;
+    const totalW = ads.length * cardW + (ads.length - 1) * cardGap;
+    const startX = (10 - totalW) / 2;
+
+    ads.forEach((ad, i) => {
+      const cx = startX + i * (cardW + cardGap);
+      const cy = 1.2;
+
+      // Card background
+      s5b.addShape(pres.shapes.RECTANGLE, { x: cx, y: cy, w: cardW, h: cardH, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+      s5b.addShape(pres.shapes.RECTANGLE, { x: cx, y: cy, w: cardW, h: 0.06, fill: { color: ORANGE }, line: { color: ORANGE } });
+
+      // Image area (1.8 x 1.8 centered, or placeholder)
+      const imgSize = 1.8;
+      const imgX = cx + (cardW - imgSize) / 2;
+      const imgY = cy + 0.2;
+
+      if (adImages[i]) {
+        s5b.addImage({ data: adImages[i], x: imgX, y: imgY, w: imgSize, h: imgSize, rounding: false });
+      } else {
+        // Gray placeholder
+        s5b.addShape(pres.shapes.RECTANGLE, { x: imgX, y: imgY, w: imgSize, h: imgSize, fill: { color: "E0E0E0" }, line: { color: "D0D0D0", width: 0.5 } });
+        s5b.addText("Sin imagen", { x: imgX, y: imgY, w: imgSize, h: imgSize, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans", align: "center", valign: "middle" });
+      }
+
+      // Ad name (truncated)
+      const nombre = (ad.nombre || "").length > 45 ? (ad.nombre || "").substring(0, 42) + "..." : (ad.nombre || "");
+      s5b.addText(nombre, { x: cx + 0.12, y: imgY + imgSize + 0.1, w: cardW - 0.24, h: 0.45, fontSize: 9, bold: true, color: DARK, fontFace: "DM Sans", valign: "top" });
+
+      // Metrics grid (2x2)
+      const metricsY = imgY + imgSize + 0.55;
+      const metricsList = [
+        { lbl: "Conversiones", val: ad.conversiones || "0" },
+        { lbl: "ROAS",         val: ad.roas || "0x" },
+        { lbl: "Costo",        val: ad.costo || "$0" },
+        { lbl: "Clicks",       val: ad.clicks || "0" },
+      ];
+      metricsList.forEach((m, mi) => {
+        const mcol = mi % 2, mrow = Math.floor(mi / 2);
+        const mx = cx + 0.12 + mcol * 1.35;
+        const my = metricsY + mrow * 0.5;
+        s5b.addText(m.lbl, { x: mx, y: my, w: 1.3, h: 0.2, fontSize: 8, color: GRAY_TEXT, fontFace: "DM Sans" });
+        s5b.addText(m.val, { x: mx, y: my + 0.18, w: 1.3, h: 0.25, fontSize: 12, bold: true, color: DARK, fontFace: "DM Sans" });
+      });
+
+      // Rank badge
+      s5b.addShape(pres.shapes.OVAL, { x: cx + 0.1, y: cy + 0.12, w: 0.32, h: 0.32, fill: { color: ORANGE }, line: { color: ORANGE } });
+      s5b.addText(`#${i + 1}`, { x: cx + 0.1, y: cy + 0.12, w: 0.32, h: 0.32, fontSize: 10, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+    });
+
+    s5b.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
+    s5b.addText(`Known Online  ·  ${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+  }
 
   // ── SLIDE 6 – RECOMENDACIONES ─────────────────────────────────────────────
   let s6 = pres.addSlide();
