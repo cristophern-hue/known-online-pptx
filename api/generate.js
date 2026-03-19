@@ -349,7 +349,7 @@ async function generatePptx(DATA) {
   s5.addText(`Known Online  ·  ${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
 
   // ── SLIDE 5B – TOP FUENTE / MEDIO (GA4) ──────────────────────────────────
-  // fuenteMedio: array of { nombre, sesiones, txns, tc, tc_prev, tc_delta, tc_delta_up, revenue }
+  // fuenteMedio: array of { nombre, sesiones, txns, tc, tc_prev, tc_delta, tc_delta_up, revenue, revenue_prev, revenue_delta, revenue_delta_up }
   const fuenteMedio = DATA.FUENTE_MEDIO || [];
   if (fuenteMedio.length > 0) {
     let sFm = pres.addSlide();
@@ -361,8 +361,8 @@ async function generatePptx(DATA) {
     sFm.addText("GA4", { x: 8.2, y: 0.25, w: 1.4, h: 0.28, fontSize: 11, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
 
     // Table header
-    const fmColW = [2.7, 1.05, 0.9, 1.0, 1.0, 0.85, 1.6];
-    const fmHeaders = ["Fuente / Medio", "Sesiones", "Txns", `TC% ${DATA.PERIODO_ACTUAL_LABEL || "Actual"}`, `TC% ${DATA.PERIODO_ANTERIOR_LABEL || "Ant."}`, "ΔTC", "Revenue"];
+    const fmColW = [2.7, 1.05, 0.9, 1.0, 1.0, 0.85, 1.05, 0.55];
+    const fmHeaders = ["Fuente / Medio", "Sesiones", "Txns", `TC% ${DATA.PERIODO_ACTUAL_LABEL || "Actual"}`, `TC% ${DATA.PERIODO_ANTERIOR_LABEL || "Ant."}`, "ΔTC", "Revenue", "ΔRev"];
     const fmY0 = 1.08;
 
     sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: fmY0, w: 9.2, h: 0.36, fill: { color: DARK }, line: { color: DARK } });
@@ -406,6 +406,13 @@ async function generatePptx(DATA) {
       rx += fmColW[5];
       // Revenue
       sFm.addText(row.revenue || "", { x: rx, y: ry + 0.07, w: fmColW[6], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "right" });
+      rx += fmColW[6];
+      // ΔRevenue badge
+      const revUp = row.revenue_delta_up === true;
+      const revDeltaBg  = revUp ? GREEN_BG  : RED_BG;
+      const revDeltaTxt = revUp ? GREEN     : RED;
+      sFm.addShape(pres.shapes.RECTANGLE, { x: rx + 0.04, y: ry + 0.09, w: 0.48, h: 0.22, fill: { color: revDeltaBg }, line: { color: revDeltaBg } });
+      sFm.addText(row.revenue_delta || "", { x: rx + 0.04, y: ry + 0.09, w: 0.48, h: 0.22, fontSize: 8, bold: true, color: revDeltaTxt, fontFace: "DM Sans", align: "center", valign: "middle" });
     });
 
     // Insight box (opcional)
