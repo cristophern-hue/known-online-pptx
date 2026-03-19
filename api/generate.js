@@ -315,11 +315,6 @@ async function generatePptx(DATA) {
   if (DATA.TOP_ANUNCIOS_META_TIENE_DATOS && Array.isArray(DATA.TOP_ANUNCIOS_META) && DATA.TOP_ANUNCIOS_META.length > 0) {
     const ads = DATA.TOP_ANUNCIOS_META.slice(0, 3);
 
-    // Pre-fetch all ad images in parallel
-    const adImages = await Promise.all(
-      ads.map(ad => ad.imagen_url ? fetchImageAsBase64(ad.imagen_url) : Promise.resolve(null))
-    );
-
     let s5b = pres.addSlide();
     s5b.background = { color: WHITE };
     s5b.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
@@ -343,9 +338,7 @@ async function generatePptx(DATA) {
       const imgX = cx + (cardW - imgSize) / 2;
       const imgY = cy + 0.2;
 
-      if (adImages[i]) {
-        s5b.addImage({ data: adImages[i], x: imgX, y: imgY, w: imgSize, h: imgSize, rounding: false });
-      } else if (ad.preview_url) {
+      if (ad.preview_url) {
         // Preview link button
         s5b.addShape(pres.shapes.RECTANGLE, { x: imgX, y: imgY, w: imgSize, h: imgSize, fill: { color: "FFF4EC" }, line: { color: ORANGE, width: 1 } });
         s5b.addShape(pres.shapes.OVAL, { x: imgX + 0.64, y: imgY + 0.35, w: 0.52, h: 0.52, fill: { color: ORANGE }, line: { color: ORANGE } });
