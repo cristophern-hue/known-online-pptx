@@ -304,8 +304,15 @@ async function generatePptx(DATA) {
 
       if (adImages[i]) {
         s5b.addImage({ data: adImages[i], x: imgX, y: imgY, w: imgSize, h: imgSize, rounding: false });
+      } else if (ad.preview_url) {
+        // Preview link button
+        s5b.addShape(pres.shapes.RECTANGLE, { x: imgX, y: imgY, w: imgSize, h: imgSize, fill: { color: "FFF4EC" }, line: { color: ORANGE, width: 1 } });
+        s5b.addShape(pres.shapes.OVAL, { x: imgX + 0.64, y: imgY + 0.35, w: 0.52, h: 0.52, fill: { color: ORANGE }, line: { color: ORANGE } });
+        s5b.addText("▶", { x: imgX + 0.64, y: imgY + 0.35, w: 0.52, h: 0.52, fontSize: 16, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+        s5b.addText("Ver anuncio", { x: imgX, y: imgY + 0.98, w: imgSize, h: 0.28, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "center" });
+        s5b.addText([{ text: "Abrir preview →", options: { hyperlink: { url: ad.preview_url } } }], { x: imgX, y: imgY + 1.28, w: imgSize, h: 0.25, fontSize: 9, color: ORANGE, fontFace: "DM Sans", align: "center" });
       } else {
-        // Gray placeholder
+        // Gray placeholder sin link
         s5b.addShape(pres.shapes.RECTANGLE, { x: imgX, y: imgY, w: imgSize, h: imgSize, fill: { color: "E0E0E0" }, line: { color: "D0D0D0", width: 0.5 } });
         s5b.addText("Sin imagen", { x: imgX, y: imgY, w: imgSize, h: imgSize, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans", align: "center", valign: "middle" });
       }
