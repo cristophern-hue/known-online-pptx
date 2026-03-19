@@ -283,7 +283,7 @@ async function generatePptx(DATA) {
     s5b.background = { color: WHITE };
     s5b.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
     s5b.addText("Top Anuncios Meta por Compras", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-    s5b.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  Ordenados por conversiones`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+    s5b.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  Ordenados por ROAS`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
     const cardW = 2.8, cardH = 3.8, cardGap = 0.3;
     const totalW = ads.length * cardW + (ads.length - 1) * cardGap;
@@ -317,7 +317,7 @@ async function generatePptx(DATA) {
       // Metrics grid (2x2)
       const metricsY = imgY + imgSize + 0.55;
       const metricsList = [
-        { lbl: "Conversiones", val: ad.conversiones || "0" },
+        { lbl: "Compras (Pixel)", val: ad.conversiones || "0" },
         { lbl: "ROAS",         val: ad.roas || "0x" },
         { lbl: "Costo",        val: ad.costo || "$0" },
         { lbl: "Clicks",       val: ad.clicks || "0" },
