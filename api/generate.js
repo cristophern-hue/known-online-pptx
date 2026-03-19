@@ -373,7 +373,7 @@ async function generatePptx(DATA) {
   let s7 = pres.addSlide();
   s7.background = { color: WHITE };
   s7.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
-  s7.addText("Datos Reales del Sitio", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+  s7.addText("Informe del Sitio", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
   s7.addText(`GA4  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
   s7.addShape(pres.shapes.RECTANGLE, { x: 8.2, y: 0.28, w: 1.4, h: 0.3, fill: { color: "34A853" }, line: { color: "34A853" } });
   s7.addText("GA4", { x: 8.2, y: 0.28, w: 1.4, h: 0.3, fontSize: 11, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
