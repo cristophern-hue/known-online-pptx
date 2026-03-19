@@ -74,7 +74,7 @@ async function generatePptx(DATA) {
   s1.addShape(pres.shapes.RECTANGLE, { x: 0.45, y: 4.1, w: 3.5, h: 0.04, fill: { color: ORANGE, transparency: 50 }, line: { color: ORANGE, transparency: 50 } });
   s1.addText(`Google Ads  ·  Meta Ads  ·  Generado el ${DATA.FECHA_GENERACION || ""}`, { x: 0.45, y: 4.3, w: 8, h: 0.35, fontSize: 12, color: GRAY_TEXT, fontFace: "DM Sans" });
 
-  // ── SLIDE 2 – GA4 ─────────────────────────────────────────────────────────
+  // ── SLIDE 2 – RESUMEN EJECUTIVO ───────────────────────────────────────────
   let s7 = pres.addSlide();
   s7.background = { color: WHITE };
   s7.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
