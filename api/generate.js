@@ -223,6 +223,29 @@ async function generatePptx(DATA) {
 
   // ── SLIDE 3C – CANAL AGENTES (CHAIDE – OPCIONAL) ─────────────────────────
   if (DATA.CHAIDE_VENTAS_AGENTES_ACTUAL) {
+    // Parsea string ARS ("$12.500.000") a número
+    const parseARS = str => parseFloat((str || "0").replace(/[^0-9,]/g, "").replace(",", ".")) || 0;
+    const fmtARS   = n   => "$" + Math.round(n).toLocaleString("es-AR");
+    const fmtDelta = n   => (n >= 0 ? "+" : "") + n.toFixed(1).replace(".", ",") + "%";
+
+    const agActual = parseARS(DATA.CHAIDE_VENTAS_AGENTES_ACTUAL);
+    const agPrev   = parseARS(DATA.CHAIDE_VENTAS_AGENTES_PREV);
+    const agDelta  = agPrev !== 0 ? ((agActual - agPrev) / agPrev) * 100 : 0;
+
+    if (!DATA.CHAIDE_VENTAS_AGENTES_DELTA) DATA.CHAIDE_VENTAS_AGENTES_DELTA = fmtDelta(agDelta);
+    if (DATA.CHAIDE_VENTAS_AGENTES_UP == null) DATA.CHAIDE_VENTAS_AGENTES_UP = agActual >= agPrev;
+
+    const ga4Actual  = parseARS(DATA.GA4_INGRESOS);
+    const ga4Prev    = parseARS(DATA.GA4_INGRESOS_PREV);
+    const consActual = ga4Actual + agActual;
+    const consPrev   = ga4Prev + agPrev;
+    const consDelta  = consPrev !== 0 ? ((consActual - consPrev) / consPrev) * 100 : 0;
+
+    if (!DATA.CHAIDE_CONSOLIDADO_ACTUAL)   DATA.CHAIDE_CONSOLIDADO_ACTUAL   = fmtARS(consActual);
+    if (!DATA.CHAIDE_CONSOLIDADO_PREV)     DATA.CHAIDE_CONSOLIDADO_PREV     = fmtARS(consPrev);
+    if (!DATA.CHAIDE_CONSOLIDADO_DELTA)    DATA.CHAIDE_CONSOLIDADO_DELTA    = fmtDelta(consDelta);
+    if (DATA.CHAIDE_CONSOLIDADO_DELTA_UP == null) DATA.CHAIDE_CONSOLIDADO_DELTA_UP = consActual >= consPrev;
+
     let sAg = pres.addSlide();
     sAg.background = { color: WHITE };
     sAg.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
