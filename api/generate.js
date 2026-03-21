@@ -376,13 +376,13 @@ async function generatePptx(DATA) {
     s7.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.18, w: 0.36, h: 0.36, fill: { color: ORANGE }, line: { color: ORANGE } });
     s7.addText(m.icon, { x: x + 0.14, y: y + 0.18, w: 0.36, h: 0.36, fontSize: 11, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
     s7.addText(m.label, { x: x + 0.58, y: y + 0.18, w: 2.2, h: 0.22, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
-    s7.addText(m.sub,   { x: x + 0.58, y: y + 0.38, w: 2.2, h: 0.2,  fontSize: 8,  color: GRAY_TEXT, fontFace: "DM Sans" });
+    s7.addText(m.sub,   { x: x + 0.58, y: y + 0.38, w: 2.2, h: 0.2, fontSize: 8, color: GRAY_TEXT, fontFace: "DM Sans" });
     s7.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.65, w: 2.62, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
-    s7.addText(DATA.PERIODO_ACTUAL_LABEL || "", { x: x + 0.14, y: y + 0.75, w: 1.3,  h: 0.18, fontSize: 9,  color: GRAY_TEXT, fontFace: "DM Sans" });
-    s7.addText(m.val26,  { x: x + 0.14, y: y + 0.92, w: 1.5,  h: 0.38, fontSize: 22, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s7.addText(DATA.PERIODO_ACTUAL_SHORT || "", { x: x + 0.14, y: y + 0.75, w: 1.3, h: 0.18, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    s7.addText(m.val26, { x: x + 0.14, y: y + 0.92, w: 1.5, h: 0.38, fontSize: 22, bold: true, color: DARK, fontFace: "Trebuchet MS" });
     s7.addShape(pres.shapes.RECTANGLE, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fill: { color: m.deltaBg }, line: { color: m.deltaBg } });
-    s7.addText(m.delta,  { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fontSize: 11, bold: true, color: m.deltaColor, fontFace: "DM Sans", align: "center" });
-    s7.addText(`${DATA.PERIODO_ANTERIOR_LABEL || ""}: ${m.val25}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    s7.addText(m.delta, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fontSize: 11, bold: true, color: m.deltaColor, fontFace: "DM Sans", align: "center" });
+    s7.addText(`${DATA.PERIODO_ANTERIOR_SHORT || ""}: ${m.val25}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
   });
 
   s7.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.95, w: 9.2, h: 0.55, fill: { color: "FFF0EB" }, line: { color: "FA5A1E", width: 0.5 } });
