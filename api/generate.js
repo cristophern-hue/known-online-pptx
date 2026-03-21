@@ -147,8 +147,6 @@ async function generatePptx(DATA) {
     ], { x: bx, y: by + 0.2, w: 1.9, h: 0.28, fontSize: 12, fontFace: "DM Sans" });
   });
 
-  s2.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
-  s2.addText(`Known Online  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
 
   // ── SLIDE 3 – GA4 ─────────────────────────────────────────────────────────
   let s7 = pres.addSlide();
@@ -188,9 +186,6 @@ async function generatePptx(DATA) {
   s7.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.95, w: 0.08, h: 0.55, fill: { color: ORANGE }, line: { color: ORANGE } });
   s7.addText(DATA.GA4_INSIGHT || "", { x: 0.6, y: 4.97, w: 8.9, h: 0.5, fontSize: 10, color: DARK, fontFace: "DM Sans", valign: "middle" });
 
-  s7.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
-  s7.addText(`Known Online  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-
   // ── SLIDE 3B – ECOMMERCE PLATFORM (OPCIONAL) ─────────────────────────────
   if (DATA.ECOMMERCE_INGRESOS) {
     let sEc = pres.addSlide();
@@ -223,9 +218,6 @@ async function generatePptx(DATA) {
       sEc.addShape(pres.shapes.RECTANGLE, { x: x + 0.5, y: y + 2.25, w: 1.6, h: 0.38, fill: { color: m.up ? GREEN_BG : RED_BG }, line: { color: m.up ? GREEN_BG : RED_BG } });
       sEc.addText(m.delta, { x: x + 0.5, y: y + 2.25, w: 1.6, h: 0.38, fontSize: 16, bold: true, color: m.up ? GREEN : RED, fontFace: "DM Sans", align: "center", valign: "middle" });
     });
-
-    sEc.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
-    sEc.addText(`Known Online  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
   }
 
   // ── SLIDE 3C – CANAL AGENTES (CHAIDE – OPCIONAL) ─────────────────────────
@@ -309,9 +301,6 @@ async function generatePptx(DATA) {
         sAg.addText(`vs ${DATA.PERIODO_ANTERIOR_LABEL || "período anterior"}`, { x: x + 1.8, y: y + 1.5, w: 2.5, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
       }
     });
-
-    sAg.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
-    sAg.addText(`Known Online  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
   }
 
   // ── SLIDE 4 – META ADS DETALLE ────────────────────────────────────────────
@@ -347,9 +336,6 @@ async function generatePptx(DATA) {
   s3.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.7, w: 0.08, h: 0.65, fill: { color: ORANGE }, line: { color: ORANGE } });
   s3.addText(DATA.META_ALERTA || "", { x: 0.6, y: 4.72, w: 8.9, h: 0.6, fontSize: 11, color: DARK, fontFace: "DM Sans", valign: "middle" });
 
-  s3.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
-  s3.addText(`Known Online  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-
   // ── SLIDE 4 – GOOGLE ADS DETALLE ──────────────────────────────────────────
   let s4 = pres.addSlide();
   s4.background = { color: WHITE };
@@ -382,9 +368,6 @@ async function generatePptx(DATA) {
   s4.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.7, w: 9.2, h: 0.65, fill: { color: "EAF3DE" }, line: { color: "63992250", width: 0.5 } });
   s4.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.7, w: 0.08, h: 0.65, fill: { color: "3B6D11" }, line: { color: "3B6D11" } });
   s4.addText(DATA.GOOGLE_ALERTA || "", { x: 0.6, y: 4.72, w: 8.9, h: 0.6, fontSize: 11, color: DARK, fontFace: "DM Sans", valign: "middle" });
-
-  s4.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
-  s4.addText(`Known Online  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
 
   // ── SLIDE 5 – TOP CAMPAÑAS POR ROAS ──────────────────────────────────────
   let s5 = pres.addSlide();
@@ -437,9 +420,6 @@ async function generatePptx(DATA) {
   s5.addText("ROAS medio (5-30x)", { x: 3.5,  y: 5.1, w: 1.9, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
   s5.addShape(pres.shapes.RECTANGLE, { x: 5.5,  y: 5.1, w: 0.55, h: 0.2, fill: { color: RED_BG    }, line: { color: RED_BG    } });
   s5.addText("ROAS bajo (<5x)",     { x: 6.1,  y: 5.1, w: 1.6, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-
-  s5.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
-  s5.addText(`Known Online  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
 
   // ── SLIDE 5B – TOP FUENTE / MEDIO (GA4) ──────────────────────────────────
   // fuenteMedio: array of { nombre, sesiones, txns, tc, tc_prev, tc_delta, tc_delta_up, revenue, revenue_prev, revenue_delta, revenue_delta_up }
@@ -515,9 +495,6 @@ async function generatePptx(DATA) {
       sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: fmTableBottom + 0.06, w: 0.08, h: 0.38, fill: { color: ORANGE }, line: { color: ORANGE } });
       sFm.addText(DATA.FUENTE_MEDIO_INSIGHT, { x: 0.6, y: fmTableBottom + 0.08, w: 8.9, h: 0.34, fontSize: 9.5, color: DARK, fontFace: "DM Sans", valign: "middle" });
     }
-
-    sFm.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
-    sFm.addText(`Known Online  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
   }
 
   // ── SLIDE 5C – TOP ANUNCIOS META POR COMPRAS ─────────────────────────────
@@ -584,9 +561,6 @@ async function generatePptx(DATA) {
       s5b.addShape(pres.shapes.OVAL, { x: cx + 0.1, y: cy + 0.12, w: 0.32, h: 0.32, fill: { color: ORANGE }, line: { color: ORANGE } });
       s5b.addText(`#${i + 1}`, { x: cx + 0.1, y: cy + 0.12, w: 0.32, h: 0.32, fontSize: 10, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
     });
-
-    s5b.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: LIGHT_GRAY }, line: { color: LIGHT_GRAY } });
-    s5b.addText(`Known Online  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
   }
 
   // ── SLIDE 6 – RECOMENDACIONES ─────────────────────────────────────────────
@@ -608,9 +582,6 @@ async function generatePptx(DATA) {
     s6.addText(r.titulo || "", { x: 1.05, y: y + 0.02, w: 8.5, h: 0.28, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
     s6.addText(r.texto  || "", { x: 1.05, y: y + 0.29, w: 8.5, h: 0.25, fontSize: 11, color: "B0B8C8", fontFace: "DM Sans" });
   });
-
-  s6.addShape(pres.shapes.RECTANGLE, { x: 0, y: 5.35, w: 10, h: 0.275, fill: { color: "12121E" }, line: { color: "12121E" } });
-  s6.addText(`Known Online  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.4, y: 5.36, w: 9, h: 0.25, fontSize: 9, color: "505070", fontFace: "DM Sans" });
 
   // ── SLIDE 8 – CIERRE ──────────────────────────────────────────────────────
   let s8 = pres.addSlide();
