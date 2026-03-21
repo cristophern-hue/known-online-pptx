@@ -242,8 +242,8 @@ async function generatePptx(DATA) {
     if (!DATA.CHAIDE_VENTAS_AGENTES_DELTA) DATA.CHAIDE_VENTAS_AGENTES_DELTA = fmtDelta(agDelta);
     if (DATA.CHAIDE_VENTAS_AGENTES_UP == null) DATA.CHAIDE_VENTAS_AGENTES_UP = agActual >= agPrev;
 
-    const ga4Actual  = parseARS(DATA.GA4_INGRESOS);
-    const ga4Prev    = parseARS(DATA.GA4_INGRESOS_PREV);
+    const ga4Actual  = parseARS(DATA.ECOMMERCE_INGRESOS);
+    const ga4Prev    = parseARS(DATA.ECOMMERCE_INGRESOS_PREV);
     const consActual = ga4Actual + agActual;
     const consPrev   = ga4Prev + agPrev;
     const consDelta  = consPrev !== 0 ? ((consActual - consPrev) / consPrev) * 100 : 0;
