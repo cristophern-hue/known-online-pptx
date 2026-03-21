@@ -286,8 +286,8 @@ async function generatePptx(DATA) {
     sAg.addText("Consolidado Total · Ecommerce + Agentes", { x: 0.5, y: 2.76, w: 9, h: 0.28, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
 
     const consolidadoCols = [
-      { label: DATA.PERIODO_ACTUAL_LABEL   || "Actual",   ga4: DATA.GA4_INGRESOS      || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_ACTUAL || "", total: DATA.CHAIDE_CONSOLIDADO_ACTUAL || "" },
-      { label: DATA.PERIODO_ANTERIOR_LABEL || "Anterior", ga4: DATA.GA4_INGRESOS_PREV || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_PREV   || "", total: DATA.CHAIDE_CONSOLIDADO_PREV   || "" },
+      { label: DATA.PERIODO_ACTUAL_LABEL   || "Actual",   ga4: DATA.ECOMMERCE_INGRESOS      || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_ACTUAL || "", total: DATA.CHAIDE_CONSOLIDADO_ACTUAL || "" },
+      { label: DATA.PERIODO_ANTERIOR_LABEL || "Anterior", ga4: DATA.ECOMMERCE_INGRESOS_PREV || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_PREV   || "", total: DATA.CHAIDE_CONSOLIDADO_PREV   || "" },
     ];
     consolidadoCols.forEach((col, i) => {
       const x = 0.4 + i * 4.7, y = 3.08;
@@ -295,7 +295,7 @@ async function generatePptx(DATA) {
       sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 4.5, h: 1.95, fill: { color: isActual ? LIGHT_BG : "F5F5F5" }, line: { color: isActual ? "F0E8E0" : "E0E0E0", width: 0.5 } });
       sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 4.5, h: 0.06, fill: { color: isActual ? ORANGE : GRAY_TEXT }, line: { color: isActual ? ORANGE : GRAY_TEXT } });
       sAg.addText(col.label,  { x: x + 0.2, y: y + 0.12, w: 4.1, h: 0.26, fontSize: 12, bold: true, color: DARK,      fontFace: "DM Sans" });
-      sAg.addText("GA4 Ecommerce",  { x: x + 0.2, y: y + 0.46, w: 2.2, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      sAg.addText("Ecommerce (VTEX)",  { x: x + 0.2, y: y + 0.46, w: 2.2, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
       sAg.addText(col.ga4,          { x: x + 2.4, y: y + 0.46, w: 1.9, h: 0.22, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
       sAg.addText("Canal Agentes",  { x: x + 0.2, y: y + 0.7,  w: 2.2, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
       sAg.addText(col.agentes,      { x: x + 2.4, y: y + 0.7,  w: 1.9, h: 0.22, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
