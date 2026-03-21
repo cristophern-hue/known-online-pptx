@@ -79,6 +79,89 @@ async function generatePptx(DATA) {
   s1.addText("Reporte\nPaid Media", { x: 0.45, y: 1.95, w: 7, h: 1.5, fontSize: 52, color: WHITE, bold: true, fontFace: "Trebuchet MS", valign: "top" });
   s1.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs. ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.45, y: 3.55, w: 7, h: 0.45, fontSize: 18, color: ORANGE2, fontFace: "DM Sans" });
 
+  // ── SLIDE ATIKA – TABLA KPIs GENERAL (CONDICIONAL) ───────────────────────
+  if (DATA.ATIKA_PINTEREST_INV) {
+    // Parsea string ARS/numérico ("$ 4.102.650", "7,42", "49 s") a número
+    const parseNum = str => {
+      const c = (str || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "");
+      return parseFloat(c) || 0;
+    };
+    const fmtARS    = n => "$ " + Math.round(n).toLocaleString("es-AR");
+    const fmtROAS   = n => n.toFixed(2).replace(".", ",") + "x";
+    const fmtDelta  = n => (n >= 0 ? "+" : "") + Math.round(n) + "%";
+    const calcDelta = (a, p) => p !== 0 ? fmtDelta((a - p) / p * 100) : "%";
+    const calcUp    = (a, p) => p !== 0 ? a >= p : true;
+
+    // Totales inversión
+    const invMetaA = parseNum(DATA.META_COSTO),        invMetaP = parseNum(DATA.META_COSTO_PREV);
+    const invGoogA = parseNum(DATA.GOOGLE_COSTO),      invGoogP = parseNum(DATA.GOOGLE_COSTO_PREV);
+    const invPinA  = parseNum(DATA.ATIKA_PINTEREST_INV), invPinP = parseNum(DATA.ATIKA_PINTEREST_INV_PREV);
+    const invTotA  = invMetaA + invGoogA + invPinA,    invTotP  = invMetaP + invGoogP + invPinP;
+
+    // Ventas sin canceladas
+    const vSinA = parseNum(DATA.VTEX_INGRESOS_ACTUAL), vSinP = parseNum(DATA.VTEX_INGRESOS_ANTERIOR);
+
+    // ROAS calculados
+    const vCpcA = parseNum(DATA.ATIKA_VENTAS_CPC),     vCpcP = parseNum(DATA.ATIKA_VENTAS_CPC_PREV);
+    const vPinA = parseNum(DATA.ATIKA_VENTAS_PINTEREST), vPinP = parseNum(DATA.ATIKA_VENTAS_PINTEREST_PREV);
+    const roasGenA = invGoogA ? vSinA / invGoogA : 0,  roasGenP = invGoogP ? vSinP / invGoogP : 0;
+    const roasCpcA = invGoogA ? vCpcA / invGoogA : 0,  roasCpcP = invGoogP ? vCpcP / invGoogP : 0;
+    const roasPinA = invPinA  ? vPinA / invPinA  : 0,  roasPinP = invPinP  ? vPinP / invPinP  : 0;
+
+    let sAtika = pres.addSlide();
+    sAtika.background = { color: WHITE };
+    sAtika.addText("Performance General", { x: 0.4, y: 0.17, w: 9.2, h: 0.42, fontSize: 26, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sAtika.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}  ·  Inversión · Tráfico · Tiempo · Ventas · ROAS`, { x: 0.4, y: 0.59, w: 9.2, h: 0.24, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    const atX = [0.4, 4.1, 5.95, 7.8], atW = [3.7, 1.85, 1.85, 1.8];
+    const hY = 0.88, hH = 0.30, rH = 0.227;
+
+    sAtika.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: hY, w: 9.2, h: hH, fill: { color: DARK }, line: { color: DARK } });
+    [["KPI","left"], [DATA.PERIODO_ACTUAL_LABEL||"Actual","center"], [DATA.PERIODO_ANTERIOR_LABEL||"Anterior","center"], ["Var %","center"]].forEach(([h,align],i) => {
+      sAtika.addText(h, { x: atX[i]+0.08, y: hY+0.04, w: atW[i], h: hH-0.08, fontSize: 9.5, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle", align });
+    });
+
+    const atikaRows = [
+      { label: "Inversión Meta",                    a: DATA.META_COSTO||"",                   p: DATA.META_COSTO_PREV||"",                d: DATA.META_COSTO_DELTA||"",                up: DATA.META_COSTO_DELTA_UP===true },
+      { label: "Inversión Google",                  a: DATA.GOOGLE_COSTO||"",                  p: DATA.GOOGLE_COSTO_PREV||"",              d: DATA.GOOGLE_COSTO_DELTA||"",              up: DATA.GOOGLE_COSTO_DELTA_UP===true },
+      { label: "Inversión Pinterest",               a: DATA.ATIKA_PINTEREST_INV||"",           p: DATA.ATIKA_PINTEREST_INV_PREV||"",       d: DATA.ATIKA_PINTEREST_INV_DELTA||"",       up: DATA.ATIKA_PINTEREST_INV_UP===true },
+      { label: "Total Inversión", bold: true,       a: fmtARS(invTotA),                        p: fmtARS(invTotP),                         d: calcDelta(invTotA,invTotP),               up: calcUp(invTotA,invTotP) },
+      { label: "Tráfico web",                       a: DATA.ATIKA_TRAFICO_TOTAL||"",           p: DATA.ATIKA_TRAFICO_TOTAL_PREV||"",       d: DATA.ATIKA_TRAFICO_TOTAL_DELTA||"",       up: DATA.ATIKA_TRAFICO_TOTAL_UP===true },
+      { label: "Tráfico CPC",                       a: DATA.ATIKA_TRAFICO_CPC||"",             p: DATA.ATIKA_TRAFICO_CPC_PREV||"",         d: DATA.ATIKA_TRAFICO_CPC_DELTA||"",         up: DATA.ATIKA_TRAFICO_CPC_UP===true },
+      { label: "Tráfico email mkt",                 a: DATA.ATIKA_TRAFICO_EMAIL||"",           p: DATA.ATIKA_TRAFICO_EMAIL_PREV||"",       d: DATA.ATIKA_TRAFICO_EMAIL_DELTA||"",       up: DATA.ATIKA_TRAFICO_EMAIL_UP===true },
+      { label: "Tiempo de permanencia Web",         a: DATA.ATIKA_TIEMPO_WEB||"",              p: DATA.ATIKA_TIEMPO_WEB_PREV||"",          d: DATA.ATIKA_TIEMPO_WEB_DELTA||"",          up: DATA.ATIKA_TIEMPO_WEB_UP===true },
+      { label: "Tiempo de permanencia CPC",         a: DATA.ATIKA_TIEMPO_CPC||"",              p: DATA.ATIKA_TIEMPO_CPC_PREV||"",          d: DATA.ATIKA_TIEMPO_CPC_DELTA||"",          up: DATA.ATIKA_TIEMPO_CPC_UP===true },
+      { label: "Tiempo de permanencia email mkt",   a: DATA.ATIKA_TIEMPO_EMAIL||"",            p: DATA.ATIKA_TIEMPO_EMAIL_PREV||"",        d: DATA.ATIKA_TIEMPO_EMAIL_DELTA||"",        up: DATA.ATIKA_TIEMPO_EMAIL_UP===true },
+      { label: "Tiempo de permanencia Orgánico",    a: DATA.ATIKA_TIEMPO_ORGANICO||"",         p: DATA.ATIKA_TIEMPO_ORGANICO_PREV||"",     d: DATA.ATIKA_TIEMPO_ORGANICO_DELTA||"",     up: DATA.ATIKA_TIEMPO_ORGANICO_UP===true },
+      { label: "Ventas sitio (con canceladas)",     a: DATA.GA4_INGRESOS||"",                  p: DATA.GA4_INGRESOS_PREV||"",              d: DATA.GA4_INGRESOS_DELTA||"",              up: DATA.GA4_INGRESOS_DELTA_UP===true },
+      { label: "Ventas sitio (sin canceladas)",     a: DATA.VTEX_INGRESOS_ACTUAL||"",          p: DATA.VTEX_INGRESOS_ANTERIOR||"",         d: calcDelta(vSinA,vSinP),                   up: calcUp(vSinA,vSinP) },
+      { label: "Ventas CPC",                        a: DATA.ATIKA_VENTAS_CPC||"",              p: DATA.ATIKA_VENTAS_CPC_PREV||"",          d: DATA.ATIKA_VENTAS_CPC_DELTA||"",          up: DATA.ATIKA_VENTAS_CPC_UP===true },
+      { label: "Ventas email mkt",                  a: DATA.ATIKA_VENTAS_EMAIL||"",            p: DATA.ATIKA_VENTAS_EMAIL_PREV||"",        d: DATA.ATIKA_VENTAS_EMAIL_DELTA||"",        up: DATA.ATIKA_VENTAS_EMAIL_UP===true },
+      { label: "Ventas Pinterest",                  a: DATA.ATIKA_VENTAS_PINTEREST||"",        p: DATA.ATIKA_VENTAS_PINTEREST_PREV||"",    d: DATA.ATIKA_VENTAS_PINTEREST_DELTA||"",    up: DATA.ATIKA_VENTAS_PINTEREST_UP===true },
+      { label: "ROAS General (VTEX) · inv. Google", a: fmtROAS(roasGenA),                      p: fmtROAS(roasGenP),                       d: calcDelta(roasGenA,roasGenP),             up: calcUp(roasGenA,roasGenP) },
+      { label: "ROAS CPC",                          a: fmtROAS(roasCpcA),                      p: fmtROAS(roasCpcP),                       d: calcDelta(roasCpcA,roasCpcP),             up: calcUp(roasCpcA,roasCpcP) },
+      { label: "ROAS Pinterest",                    a: fmtROAS(roasPinA),                      p: fmtROAS(roasPinP),                       d: calcDelta(roasPinA,roasPinP),             up: calcUp(roasPinA,roasPinP) },
+    ];
+
+    const sepAfter = new Set([3, 6, 10, 15]);
+    atikaRows.forEach((row, i) => {
+      const ry = hY + hH + i * rH;
+      const bg = row.bold ? "EDE8E0" : (i % 2 === 0 ? WHITE : LIGHT_BG);
+      sAtika.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry, w: 9.2, h: rH, fill: { color: bg }, line: { color: "E8E0D8", width: 0.3 } });
+      sAtika.addText(row.label, { x: atX[0]+0.08, y: ry+0.02, w: atW[0]-0.1, h: rH-0.04, fontSize: 8.5, bold: !!row.bold, color: DARK,      fontFace: "DM Sans", valign: "middle" });
+      sAtika.addText(row.a,     { x: atX[1],       y: ry+0.02, w: atW[1],     h: rH-0.04, fontSize: 8.5, bold: !!row.bold, color: DARK,      fontFace: "DM Sans", align: "center", valign: "middle" });
+      sAtika.addText(row.p,     { x: atX[2],       y: ry+0.02, w: atW[2],     h: rH-0.04, fontSize: 8.5,                   color: GRAY_TEXT, fontFace: "DM Sans", align: "center", valign: "middle" });
+      if (row.d) {
+        const bw = 1.1, bh = rH - 0.06, bx = atX[3] + (atW[3] - bw) / 2;
+        sAtika.addShape(pres.shapes.RECTANGLE, { x: bx, y: ry+0.03, w: bw, h: bh, fill: { color: row.up ? GREEN_BG : RED_BG }, line: { color: row.up ? GREEN_BG : RED_BG } });
+        sAtika.addText(row.d,   { x: bx,           y: ry+0.03, w: bw,         h: bh,      fontSize: 8.5, bold: true, color: row.up ? GREEN : RED, fontFace: "DM Sans", align: "center", valign: "middle" });
+      }
+      if (sepAfter.has(i)) {
+        sAtika.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry + rH - 0.012, w: 9.2, h: 0.012, fill: { color: "C8BEB5" }, line: { color: "C8BEB5" } });
+      }
+    });
+  }
+
   // ── SLIDE 3 – GA4 ─────────────────────────────────────────────────────────
   let s7 = pres.addSlide();
   s7.background = { color: WHITE };
@@ -294,88 +377,7 @@ async function generatePptx(DATA) {
     });
   }
 
-  // ── SLIDE ATIKA – TABLA KPIs GENERAL (CONDICIONAL) ───────────────────────
-  if (DATA.ATIKA_PINTEREST_INV) {
-    // Parsea string ARS/numérico ("$ 4.102.650", "7,42", "49 s") a número
-    const parseNum = str => {
-      const c = (str || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "");
-      return parseFloat(c) || 0;
-    };
-    const fmtARS    = n => "$ " + Math.round(n).toLocaleString("es-AR");
-    const fmtROAS   = n => n.toFixed(2).replace(".", ",") + "x";
-    const fmtDelta  = n => (n >= 0 ? "+" : "") + Math.round(n) + "%";
-    const calcDelta = (a, p) => p !== 0 ? fmtDelta((a - p) / p * 100) : "%";
-    const calcUp    = (a, p) => p !== 0 ? a >= p : true;
 
-    // Totales inversión
-    const invMetaA = parseNum(DATA.META_COSTO),        invMetaP = parseNum(DATA.META_COSTO_PREV);
-    const invGoogA = parseNum(DATA.GOOGLE_COSTO),      invGoogP = parseNum(DATA.GOOGLE_COSTO_PREV);
-    const invPinA  = parseNum(DATA.ATIKA_PINTEREST_INV), invPinP = parseNum(DATA.ATIKA_PINTEREST_INV_PREV);
-    const invTotA  = invMetaA + invGoogA + invPinA,    invTotP  = invMetaP + invGoogP + invPinP;
-
-    // Ventas sin canceladas
-    const vSinA = parseNum(DATA.VTEX_INGRESOS_ACTUAL), vSinP = parseNum(DATA.VTEX_INGRESOS_ANTERIOR);
-
-    // ROAS calculados
-    const vCpcA = parseNum(DATA.ATIKA_VENTAS_CPC),     vCpcP = parseNum(DATA.ATIKA_VENTAS_CPC_PREV);
-    const vPinA = parseNum(DATA.ATIKA_VENTAS_PINTEREST), vPinP = parseNum(DATA.ATIKA_VENTAS_PINTEREST_PREV);
-    const roasGenA = invGoogA ? vSinA / invGoogA : 0,  roasGenP = invGoogP ? vSinP / invGoogP : 0;
-    const roasCpcA = invGoogA ? vCpcA / invGoogA : 0,  roasCpcP = invGoogP ? vCpcP / invGoogP : 0;
-    const roasPinA = invPinA  ? vPinA / invPinA  : 0,  roasPinP = invPinP  ? vPinP / invPinP  : 0;
-
-    let sAtika = pres.addSlide();
-    sAtika.background = { color: WHITE };
-    sAtika.addText("Performance General", { x: 0.4, y: 0.17, w: 9.2, h: 0.42, fontSize: 26, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-    sAtika.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}  ·  Inversión · Tráfico · Tiempo · Ventas · ROAS`, { x: 0.4, y: 0.59, w: 9.2, h: 0.24, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
-
-    const atX = [0.4, 4.1, 5.95, 7.8], atW = [3.7, 1.85, 1.85, 1.8];
-    const hY = 0.88, hH = 0.30, rH = 0.227;
-
-    sAtika.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: hY, w: 9.2, h: hH, fill: { color: DARK }, line: { color: DARK } });
-    [["KPI","left"], [DATA.PERIODO_ACTUAL_LABEL||"Actual","center"], [DATA.PERIODO_ANTERIOR_LABEL||"Anterior","center"], ["Var %","center"]].forEach(([h,align],i) => {
-      sAtika.addText(h, { x: atX[i]+0.08, y: hY+0.04, w: atW[i], h: hH-0.08, fontSize: 9.5, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle", align });
-    });
-
-    const rows = [
-      { label: "Inversión Meta",                    a: DATA.META_COSTO||"",                   p: DATA.META_COSTO_PREV||"",                d: DATA.META_COSTO_DELTA||"",                up: DATA.META_COSTO_DELTA_UP===true },
-      { label: "Inversión Google",                  a: DATA.GOOGLE_COSTO||"",                  p: DATA.GOOGLE_COSTO_PREV||"",              d: DATA.GOOGLE_COSTO_DELTA||"",              up: DATA.GOOGLE_COSTO_DELTA_UP===true },
-      { label: "Inversión Pinterest",               a: DATA.ATIKA_PINTEREST_INV||"",           p: DATA.ATIKA_PINTEREST_INV_PREV||"",       d: DATA.ATIKA_PINTEREST_INV_DELTA||"",       up: DATA.ATIKA_PINTEREST_INV_UP===true },
-      { label: "Total Inversión", bold: true,       a: fmtARS(invTotA),                        p: fmtARS(invTotP),                         d: calcDelta(invTotA,invTotP),               up: calcUp(invTotA,invTotP) },
-      { label: "Tráfico web",                       a: DATA.ATIKA_TRAFICO_TOTAL||"",           p: DATA.ATIKA_TRAFICO_TOTAL_PREV||"",       d: DATA.ATIKA_TRAFICO_TOTAL_DELTA||"",       up: DATA.ATIKA_TRAFICO_TOTAL_UP===true },
-      { label: "Tráfico CPC",                       a: DATA.ATIKA_TRAFICO_CPC||"",             p: DATA.ATIKA_TRAFICO_CPC_PREV||"",         d: DATA.ATIKA_TRAFICO_CPC_DELTA||"",         up: DATA.ATIKA_TRAFICO_CPC_UP===true },
-      { label: "Tráfico email mkt",                 a: DATA.ATIKA_TRAFICO_EMAIL||"",           p: DATA.ATIKA_TRAFICO_EMAIL_PREV||"",       d: DATA.ATIKA_TRAFICO_EMAIL_DELTA||"",       up: DATA.ATIKA_TRAFICO_EMAIL_UP===true },
-      { label: "Tiempo de permanencia Web",         a: DATA.ATIKA_TIEMPO_WEB||"",              p: DATA.ATIKA_TIEMPO_WEB_PREV||"",          d: DATA.ATIKA_TIEMPO_WEB_DELTA||"",          up: DATA.ATIKA_TIEMPO_WEB_UP===true },
-      { label: "Tiempo de permanencia CPC",         a: DATA.ATIKA_TIEMPO_CPC||"",              p: DATA.ATIKA_TIEMPO_CPC_PREV||"",          d: DATA.ATIKA_TIEMPO_CPC_DELTA||"",          up: DATA.ATIKA_TIEMPO_CPC_UP===true },
-      { label: "Tiempo de permanencia email mkt",   a: DATA.ATIKA_TIEMPO_EMAIL||"",            p: DATA.ATIKA_TIEMPO_EMAIL_PREV||"",        d: DATA.ATIKA_TIEMPO_EMAIL_DELTA||"",        up: DATA.ATIKA_TIEMPO_EMAIL_UP===true },
-      { label: "Tiempo de permanencia Orgánico",    a: DATA.ATIKA_TIEMPO_ORGANICO||"",         p: DATA.ATIKA_TIEMPO_ORGANICO_PREV||"",     d: DATA.ATIKA_TIEMPO_ORGANICO_DELTA||"",     up: DATA.ATIKA_TIEMPO_ORGANICO_UP===true },
-      { label: "Ventas sitio (con canceladas)",     a: DATA.GA4_INGRESOS||"",                  p: DATA.GA4_INGRESOS_PREV||"",              d: DATA.GA4_INGRESOS_DELTA||"",              up: DATA.GA4_INGRESOS_DELTA_UP===true },
-      { label: "Ventas sitio (sin canceladas)",     a: DATA.VTEX_INGRESOS_ACTUAL||"",          p: DATA.VTEX_INGRESOS_ANTERIOR||"",         d: calcDelta(vSinA,vSinP),                   up: calcUp(vSinA,vSinP) },
-      { label: "Ventas CPC",                        a: DATA.ATIKA_VENTAS_CPC||"",              p: DATA.ATIKA_VENTAS_CPC_PREV||"",          d: DATA.ATIKA_VENTAS_CPC_DELTA||"",          up: DATA.ATIKA_VENTAS_CPC_UP===true },
-      { label: "Ventas email mkt",                  a: DATA.ATIKA_VENTAS_EMAIL||"",            p: DATA.ATIKA_VENTAS_EMAIL_PREV||"",        d: DATA.ATIKA_VENTAS_EMAIL_DELTA||"",        up: DATA.ATIKA_VENTAS_EMAIL_UP===true },
-      { label: "Ventas Pinterest",                  a: DATA.ATIKA_VENTAS_PINTEREST||"",        p: DATA.ATIKA_VENTAS_PINTEREST_PREV||"",    d: DATA.ATIKA_VENTAS_PINTEREST_DELTA||"",    up: DATA.ATIKA_VENTAS_PINTEREST_UP===true },
-      { label: "ROAS General (VTEX) · inv. Google", a: fmtROAS(roasGenA),                      p: fmtROAS(roasGenP),                       d: calcDelta(roasGenA,roasGenP),             up: calcUp(roasGenA,roasGenP) },
-      { label: "ROAS CPC",                          a: fmtROAS(roasCpcA),                      p: fmtROAS(roasCpcP),                       d: calcDelta(roasCpcA,roasCpcP),             up: calcUp(roasCpcA,roasCpcP) },
-      { label: "ROAS Pinterest",                    a: fmtROAS(roasPinA),                      p: fmtROAS(roasPinP),                       d: calcDelta(roasPinA,roasPinP),             up: calcUp(roasPinA,roasPinP) },
-    ];
-
-    const sepAfter = new Set([3, 6, 10, 15]);
-    rows.forEach((row, i) => {
-      const ry = hY + hH + i * rH;
-      const bg = row.bold ? "EDE8E0" : (i % 2 === 0 ? WHITE : LIGHT_BG);
-      sAtika.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry, w: 9.2, h: rH, fill: { color: bg }, line: { color: "E8E0D8", width: 0.3 } });
-      sAtika.addText(row.label, { x: atX[0]+0.08, y: ry+0.02, w: atW[0]-0.1, h: rH-0.04, fontSize: 8.5, bold: !!row.bold, color: DARK,      fontFace: "DM Sans", valign: "middle" });
-      sAtika.addText(row.a,     { x: atX[1],       y: ry+0.02, w: atW[1],     h: rH-0.04, fontSize: 8.5, bold: !!row.bold, color: DARK,      fontFace: "DM Sans", align: "center", valign: "middle" });
-      sAtika.addText(row.p,     { x: atX[2],       y: ry+0.02, w: atW[2],     h: rH-0.04, fontSize: 8.5,                   color: GRAY_TEXT, fontFace: "DM Sans", align: "center", valign: "middle" });
-      if (row.d) {
-        const bw = 1.1, bh = rH - 0.06, bx = atX[3] + (atW[3] - bw) / 2;
-        sAtika.addShape(pres.shapes.RECTANGLE, { x: bx, y: ry+0.03, w: bw, h: bh, fill: { color: row.up ? GREEN_BG : RED_BG }, line: { color: row.up ? GREEN_BG : RED_BG } });
-        sAtika.addText(row.d,   { x: bx,           y: ry+0.03, w: bw,         h: bh,      fontSize: 8.5, bold: true, color: row.up ? GREEN : RED, fontFace: "DM Sans", align: "center", valign: "middle" });
-      }
-      if (sepAfter.has(i)) {
-        sAtika.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry + rH - 0.012, w: 9.2, h: 0.012, fill: { color: "C8BEB5" }, line: { color: "C8BEB5" } });
-      }
-    });
-  }
 
   // ── SLIDE 4 – META ADS DETALLE ────────────────────────────────────────────
   let s3 = pres.addSlide();
