@@ -330,6 +330,110 @@ async function generatePptx(DATA) {
 
   }
 
+  // ── SLIDE 5C – CANAL AGENTES (CHAIDE – CONDICIONAL) ──────────────────────
+  if (DATA.CHAIDE_VENTAS_AGENTES_ACTUAL) {
+    // Parse Argentine-formatted currency strings back to numbers for consolidado
+    const parseAR = s => {
+      if (!s) return 0;
+      return parseFloat(String(s).replace(/\$/g, "").replace(/\./g, "").replace(/,/g, ".").trim()) || 0;
+    };
+    const fmtAR = n => "$" + new Intl.NumberFormat("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+    const deltaAR = (a, p) => {
+      if (!p) return { v: "N/D", up: null };
+      const d = ((a - p) / Math.abs(p)) * 100;
+      return { v: (d >= 0 ? "+" : "") + d.toFixed(1).replace(".", ",") + "%", up: d >= 0 };
+    };
+
+    const va_a  = parseAR(DATA.CHAIDE_VENTAS_AGENTES_ACTUAL);
+    const va_p  = parseAR(DATA.CHAIDE_VENTAS_AGENTES_PREV);
+    const vtx_a = parseAR(DATA.ECOMMERCE_INGRESOS);
+    const vtx_p = parseAR(DATA.ECOMMERCE_INGRESOS_PREV);
+
+    const cons_a     = va_a + vtx_a;
+    const cons_p     = va_p + vtx_p;
+    const consDelta  = deltaAR(cons_a, cons_p);
+
+    let s5c = pres.addSlide();
+    s5c.background = { color: WHITE };
+    s5c.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
+    s5c.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0.08, w: 10, h: 1.0, fill: { color: ORANGE }, line: { color: ORANGE } });
+    s5c.addText("Canal Agentes", { x: 0.5, y: 0.22, w: 7, h: 0.52, fontSize: 28, bold: true, color: WHITE, fontFace: "Trebuchet MS" });
+    s5c.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}  ·  Venta Agentes + VTEX`, { x: 0.5, y: 0.72, w: 8, h: 0.3, fontSize: 13, color: "FFD4B8", fontFace: "DM Sans" });
+
+    // 3 cards: Venta Agentes | VTEX Ecommerce | Consolidado
+    const cards = [
+      {
+        titulo:  "Venta Agentes",
+        sub:     "Ventas por canal agentes",
+        val:     DATA.CHAIDE_VENTAS_AGENTES_ACTUAL || "N/D",
+        prev:    DATA.CHAIDE_VENTAS_AGENTES_PREV   || "N/D",
+        delta:   DATA.CHAIDE_VENTAS_AGENTES_DELTA  || "N/D",
+        up:      DATA.CHAIDE_VENTAS_AGENTES_UP === true,
+        accent:  ORANGE,
+        bg:      LIGHT_BG,
+        border:  "F0E8E0",
+      },
+      {
+        titulo:  "VTEX Ecommerce",
+        sub:     "Ingresos plataforma VTEX",
+        val:     DATA.ECOMMERCE_INGRESOS       || "N/D",
+        prev:    DATA.ECOMMERCE_INGRESOS_PREV  || "N/D",
+        delta:   DATA.ECOMMERCE_INGRESOS_DELTA || "N/D",
+        up:      DATA.ECOMMERCE_INGRESOS_DELTA_UP === true,
+        accent:  "2E7D32",
+        bg:      "F1F8E9",
+        border:  "C8E6C9",
+      },
+      {
+        titulo:  "Total Consolidado",
+        sub:     "Venta Agentes + VTEX",
+        val:     fmtAR(cons_a),
+        prev:    fmtAR(cons_p),
+        delta:   consDelta.v,
+        up:      consDelta.up === true,
+        accent:  DARK,
+        bg:      "F0EEF8",
+        border:  "C5C0DC",
+      },
+    ];
+
+    cards.forEach((card, i) => {
+      const x = 0.4 + i * 3.1;
+      const y = 1.28;
+      s5c.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.85, h: 3.9, fill: { color: card.bg }, line: { color: card.border, width: 0.5 } });
+      s5c.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.85, h: 0.06, fill: { color: card.accent }, line: { color: card.accent } });
+
+      // Icon circle
+      s5c.addShape(pres.shapes.OVAL, { x: x + 0.18, y: y + 0.22, w: 0.44, h: 0.44, fill: { color: card.accent }, line: { color: card.accent } });
+      s5c.addText(["$", "V", "Σ"][i], { x: x + 0.18, y: y + 0.22, w: 0.44, h: 0.44, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+
+      s5c.addText(card.titulo, { x: x + 0.72, y: y + 0.24, w: 2.0, h: 0.26, fontSize: 12, bold: true, color: DARK, fontFace: "DM Sans" });
+      s5c.addText(card.sub,    { x: x + 0.72, y: y + 0.48, w: 2.0, h: 0.18, fontSize: 8,  color: GRAY_TEXT, fontFace: "DM Sans" });
+
+      s5c.addShape(pres.shapes.RECTANGLE, { x: x + 0.18, y: y + 0.82, w: 2.5, h: 0.02, fill: { color: "E0DADA" }, line: { color: "E0DADA" } });
+
+      // Período actual
+      s5c.addText(DATA.PERIODO_ACTUAL_LABEL || "Actual", { x: x + 0.18, y: y + 0.96, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      s5c.addText(card.val, { x: x + 0.18, y: y + 1.14, w: 2.5, h: 0.6, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS", shrinkText: true });
+
+      // Delta badge
+      const deltaUp   = card.up;
+      const deltaBg   = deltaUp ? GREEN_BG  : RED_BG;
+      const deltaClr  = deltaUp ? GREEN     : RED;
+      s5c.addShape(pres.shapes.RECTANGLE, { x: x + 0.18, y: y + 1.8, w: 1.2, h: 0.3, fill: { color: deltaBg }, line: { color: deltaBg } });
+      s5c.addText(card.delta, { x: x + 0.18, y: y + 1.8, w: 1.2, h: 0.3, fontSize: 11, bold: true, color: deltaClr, fontFace: "DM Sans", align: "center" });
+
+      s5c.addShape(pres.shapes.RECTANGLE, { x: x + 0.18, y: y + 2.26, w: 2.5, h: 0.02, fill: { color: "E0DADA" }, line: { color: "E0DADA" } });
+
+      // Período anterior
+      s5c.addText(`${DATA.PERIODO_ANTERIOR_LABEL || "Anterior"}:`, { x: x + 0.18, y: y + 2.4, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      s5c.addText(card.prev, { x: x + 0.18, y: y + 2.58, w: 2.5, h: 0.45, fontSize: 22, bold: true, color: GRAY_TEXT, fontFace: "Trebuchet MS", shrinkText: true });
+
+      // Accent bottom bar
+      s5c.addShape(pres.shapes.RECTANGLE, { x, y: y + 3.84, w: 2.85, h: 0.06, fill: { color: card.accent }, line: { color: card.accent } });
+    });
+  }
+
   // ── SLIDE 6 – RECOMENDACIONES ─────────────────────────────────────────────
   let s6 = pres.addSlide();
   s6.background = { color: DARK };
