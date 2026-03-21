@@ -242,8 +242,8 @@ async function generatePptx(DATA) {
     if (!DATA.CHAIDE_VENTAS_AGENTES_DELTA) DATA.CHAIDE_VENTAS_AGENTES_DELTA = fmtDelta(agDelta);
     if (DATA.CHAIDE_VENTAS_AGENTES_UP == null) DATA.CHAIDE_VENTAS_AGENTES_UP = agActual >= agPrev;
 
-    const ga4Actual  = parseARS(DATA.ECOMMERCE_INGRESOS);
-    const ga4Prev    = parseARS(DATA.ECOMMERCE_INGRESOS_PREV);
+    const ga4Actual  = parseARS(DATA.VTEX_INGRESOS_ACTUAL);
+    const ga4Prev    = parseARS(DATA.VTEX_INGRESOS_ANTERIOR);
     const consActual = ga4Actual + agActual;
     const consPrev   = ga4Prev + agPrev;
     const consDelta  = consPrev !== 0 ? ((consActual - consPrev) / consPrev) * 100 : 0;
@@ -286,8 +286,8 @@ async function generatePptx(DATA) {
     sAg.addText("Consolidado Total · Ecommerce + Agentes", { x: 0.5, y: 2.76, w: 9, h: 0.28, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
 
     const consolidadoCols = [
-      { label: DATA.PERIODO_ACTUAL_LABEL   || "Actual",   ga4: DATA.ECOMMERCE_INGRESOS      || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_ACTUAL || "", total: DATA.CHAIDE_CONSOLIDADO_ACTUAL || "" },
-      { label: DATA.PERIODO_ANTERIOR_LABEL || "Anterior", ga4: DATA.ECOMMERCE_INGRESOS_PREV || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_PREV   || "", total: DATA.CHAIDE_CONSOLIDADO_PREV   || "" },
+      { label: DATA.PERIODO_ACTUAL_LABEL   || "Actual",   ga4: DATA.VTEX_INGRESOS_ACTUAL   || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_ACTUAL || "", total: DATA.CHAIDE_CONSOLIDADO_ACTUAL || "" },
+      { label: DATA.PERIODO_ANTERIOR_LABEL || "Anterior", ga4: DATA.VTEX_INGRESOS_ANTERIOR || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_PREV   || "", total: DATA.CHAIDE_CONSOLIDADO_PREV   || "" },
     ];
     consolidadoCols.forEach((col, i) => {
       const x = 0.4 + i * 4.7, y = 3.08;
