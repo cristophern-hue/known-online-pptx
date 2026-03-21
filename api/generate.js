@@ -294,6 +294,89 @@ async function generatePptx(DATA) {
     });
   }
 
+  // ── SLIDE ATIKA – TABLA KPIs GENERAL (CONDICIONAL) ───────────────────────
+  if (DATA.ATIKA_PINTEREST_INV) {
+    // Parsea string ARS/numérico ("$ 4.102.650", "7,42", "49 s") a número
+    const parseNum = str => {
+      const c = (str || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "");
+      return parseFloat(c) || 0;
+    };
+    const fmtARS    = n => "$ " + Math.round(n).toLocaleString("es-AR");
+    const fmtROAS   = n => n.toFixed(2).replace(".", ",") + "x";
+    const fmtDelta  = n => (n >= 0 ? "+" : "") + Math.round(n) + "%";
+    const calcDelta = (a, p) => p !== 0 ? fmtDelta((a - p) / p * 100) : "%";
+    const calcUp    = (a, p) => p !== 0 ? a >= p : true;
+
+    // Totales inversión
+    const invMetaA = parseNum(DATA.META_COSTO),        invMetaP = parseNum(DATA.META_COSTO_PREV);
+    const invGoogA = parseNum(DATA.GOOGLE_COSTO),      invGoogP = parseNum(DATA.GOOGLE_COSTO_PREV);
+    const invPinA  = parseNum(DATA.ATIKA_PINTEREST_INV), invPinP = parseNum(DATA.ATIKA_PINTEREST_INV_PREV);
+    const invTotA  = invMetaA + invGoogA + invPinA,    invTotP  = invMetaP + invGoogP + invPinP;
+
+    // Ventas sin canceladas
+    const vSinA = parseNum(DATA.VTEX_INGRESOS_ACTUAL), vSinP = parseNum(DATA.VTEX_INGRESOS_ANTERIOR);
+
+    // ROAS calculados
+    const vCpcA = parseNum(DATA.ATIKA_VENTAS_CPC),     vCpcP = parseNum(DATA.ATIKA_VENTAS_CPC_PREV);
+    const vPinA = parseNum(DATA.ATIKA_VENTAS_PINTEREST), vPinP = parseNum(DATA.ATIKA_VENTAS_PINTEREST_PREV);
+    const roasGenA = invGoogA ? vSinA / invGoogA : 0,  roasGenP = invGoogP ? vSinP / invGoogP : 0;
+    const roasCpcA = invGoogA ? vCpcA / invGoogA : 0,  roasCpcP = invGoogP ? vCpcP / invGoogP : 0;
+    const roasPinA = invPinA  ? vPinA / invPinA  : 0,  roasPinP = invPinP  ? vPinP / invPinP  : 0;
+
+    let sAtika = pres.addSlide();
+    sAtika.background = { color: WHITE };
+    sAtika.addText("Performance General", { x: 0.4, y: 0.17, w: 9.2, h: 0.42, fontSize: 26, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sAtika.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}  ·  Inversión · Tráfico · Tiempo · Ventas · ROAS`, { x: 0.4, y: 0.59, w: 9.2, h: 0.24, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    const atX = [0.4, 4.1, 5.95, 7.8], atW = [3.7, 1.85, 1.85, 1.8];
+    const hY = 0.88, hH = 0.30, rH = 0.227;
+
+    sAtika.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: hY, w: 9.2, h: hH, fill: { color: DARK }, line: { color: DARK } });
+    [["KPI","left"], [DATA.PERIODO_ACTUAL_LABEL||"Actual","center"], [DATA.PERIODO_ANTERIOR_LABEL||"Anterior","center"], ["Var %","center"]].forEach(([h,align],i) => {
+      sAtika.addText(h, { x: atX[i]+0.08, y: hY+0.04, w: atW[i], h: hH-0.08, fontSize: 9.5, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle", align });
+    });
+
+    const rows = [
+      { label: "Inversión Meta",                    a: DATA.META_COSTO||"",                   p: DATA.META_COSTO_PREV||"",                d: DATA.META_COSTO_DELTA||"",                up: DATA.META_COSTO_DELTA_UP===true },
+      { label: "Inversión Google",                  a: DATA.GOOGLE_COSTO||"",                  p: DATA.GOOGLE_COSTO_PREV||"",              d: DATA.GOOGLE_COSTO_DELTA||"",              up: DATA.GOOGLE_COSTO_DELTA_UP===true },
+      { label: "Inversión Pinterest",               a: DATA.ATIKA_PINTEREST_INV||"",           p: DATA.ATIKA_PINTEREST_INV_PREV||"",       d: DATA.ATIKA_PINTEREST_INV_DELTA||"",       up: DATA.ATIKA_PINTEREST_INV_UP===true },
+      { label: "Total Inversión", bold: true,       a: fmtARS(invTotA),                        p: fmtARS(invTotP),                         d: calcDelta(invTotA,invTotP),               up: calcUp(invTotA,invTotP) },
+      { label: "Tráfico web",                       a: DATA.ATIKA_TRAFICO_TOTAL||"",           p: DATA.ATIKA_TRAFICO_TOTAL_PREV||"",       d: DATA.ATIKA_TRAFICO_TOTAL_DELTA||"",       up: DATA.ATIKA_TRAFICO_TOTAL_UP===true },
+      { label: "Tráfico CPC",                       a: DATA.ATIKA_TRAFICO_CPC||"",             p: DATA.ATIKA_TRAFICO_CPC_PREV||"",         d: DATA.ATIKA_TRAFICO_CPC_DELTA||"",         up: DATA.ATIKA_TRAFICO_CPC_UP===true },
+      { label: "Tráfico email mkt",                 a: DATA.ATIKA_TRAFICO_EMAIL||"",           p: DATA.ATIKA_TRAFICO_EMAIL_PREV||"",       d: DATA.ATIKA_TRAFICO_EMAIL_DELTA||"",       up: DATA.ATIKA_TRAFICO_EMAIL_UP===true },
+      { label: "Tiempo de permanencia Web",         a: DATA.ATIKA_TIEMPO_WEB||"",              p: DATA.ATIKA_TIEMPO_WEB_PREV||"",          d: DATA.ATIKA_TIEMPO_WEB_DELTA||"",          up: DATA.ATIKA_TIEMPO_WEB_UP===true },
+      { label: "Tiempo de permanencia CPC",         a: DATA.ATIKA_TIEMPO_CPC||"",              p: DATA.ATIKA_TIEMPO_CPC_PREV||"",          d: DATA.ATIKA_TIEMPO_CPC_DELTA||"",          up: DATA.ATIKA_TIEMPO_CPC_UP===true },
+      { label: "Tiempo de permanencia email mkt",   a: DATA.ATIKA_TIEMPO_EMAIL||"",            p: DATA.ATIKA_TIEMPO_EMAIL_PREV||"",        d: DATA.ATIKA_TIEMPO_EMAIL_DELTA||"",        up: DATA.ATIKA_TIEMPO_EMAIL_UP===true },
+      { label: "Tiempo de permanencia Orgánico",    a: DATA.ATIKA_TIEMPO_ORGANICO||"",         p: DATA.ATIKA_TIEMPO_ORGANICO_PREV||"",     d: DATA.ATIKA_TIEMPO_ORGANICO_DELTA||"",     up: DATA.ATIKA_TIEMPO_ORGANICO_UP===true },
+      { label: "Ventas sitio (con canceladas)",     a: DATA.GA4_INGRESOS||"",                  p: DATA.GA4_INGRESOS_PREV||"",              d: DATA.GA4_INGRESOS_DELTA||"",              up: DATA.GA4_INGRESOS_DELTA_UP===true },
+      { label: "Ventas sitio (sin canceladas)",     a: DATA.VTEX_INGRESOS_ACTUAL||"",          p: DATA.VTEX_INGRESOS_ANTERIOR||"",         d: calcDelta(vSinA,vSinP),                   up: calcUp(vSinA,vSinP) },
+      { label: "Ventas CPC",                        a: DATA.ATIKA_VENTAS_CPC||"",              p: DATA.ATIKA_VENTAS_CPC_PREV||"",          d: DATA.ATIKA_VENTAS_CPC_DELTA||"",          up: DATA.ATIKA_VENTAS_CPC_UP===true },
+      { label: "Ventas email mkt",                  a: DATA.ATIKA_VENTAS_EMAIL||"",            p: DATA.ATIKA_VENTAS_EMAIL_PREV||"",        d: DATA.ATIKA_VENTAS_EMAIL_DELTA||"",        up: DATA.ATIKA_VENTAS_EMAIL_UP===true },
+      { label: "Ventas Pinterest",                  a: DATA.ATIKA_VENTAS_PINTEREST||"",        p: DATA.ATIKA_VENTAS_PINTEREST_PREV||"",    d: DATA.ATIKA_VENTAS_PINTEREST_DELTA||"",    up: DATA.ATIKA_VENTAS_PINTEREST_UP===true },
+      { label: "ROAS General (VTEX) · inv. Google", a: fmtROAS(roasGenA),                      p: fmtROAS(roasGenP),                       d: calcDelta(roasGenA,roasGenP),             up: calcUp(roasGenA,roasGenP) },
+      { label: "ROAS CPC",                          a: fmtROAS(roasCpcA),                      p: fmtROAS(roasCpcP),                       d: calcDelta(roasCpcA,roasCpcP),             up: calcUp(roasCpcA,roasCpcP) },
+      { label: "ROAS Pinterest",                    a: fmtROAS(roasPinA),                      p: fmtROAS(roasPinP),                       d: calcDelta(roasPinA,roasPinP),             up: calcUp(roasPinA,roasPinP) },
+    ];
+
+    const sepAfter = new Set([3, 6, 10, 15]);
+    rows.forEach((row, i) => {
+      const ry = hY + hH + i * rH;
+      const bg = row.bold ? "EDE8E0" : (i % 2 === 0 ? WHITE : LIGHT_BG);
+      sAtika.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry, w: 9.2, h: rH, fill: { color: bg }, line: { color: "E8E0D8", width: 0.3 } });
+      sAtika.addText(row.label, { x: atX[0]+0.08, y: ry+0.02, w: atW[0]-0.1, h: rH-0.04, fontSize: 8.5, bold: !!row.bold, color: DARK,      fontFace: "DM Sans", valign: "middle" });
+      sAtika.addText(row.a,     { x: atX[1],       y: ry+0.02, w: atW[1],     h: rH-0.04, fontSize: 8.5, bold: !!row.bold, color: DARK,      fontFace: "DM Sans", align: "center", valign: "middle" });
+      sAtika.addText(row.p,     { x: atX[2],       y: ry+0.02, w: atW[2],     h: rH-0.04, fontSize: 8.5,                   color: GRAY_TEXT, fontFace: "DM Sans", align: "center", valign: "middle" });
+      if (row.d) {
+        const bw = 1.1, bh = rH - 0.06, bx = atX[3] + (atW[3] - bw) / 2;
+        sAtika.addShape(pres.shapes.RECTANGLE, { x: bx, y: ry+0.03, w: bw, h: bh, fill: { color: row.up ? GREEN_BG : RED_BG }, line: { color: row.up ? GREEN_BG : RED_BG } });
+        sAtika.addText(row.d,   { x: bx,           y: ry+0.03, w: bw,         h: bh,      fontSize: 8.5, bold: true, color: row.up ? GREEN : RED, fontFace: "DM Sans", align: "center", valign: "middle" });
+      }
+      if (sepAfter.has(i)) {
+        sAtika.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry + rH - 0.012, w: 9.2, h: 0.012, fill: { color: "C8BEB5" }, line: { color: "C8BEB5" } });
+      }
+    });
+  }
+
   // ── SLIDE 4 – META ADS DETALLE ────────────────────────────────────────────
   let s3 = pres.addSlide();
   s3.background = { color: WHITE };
@@ -474,86 +557,6 @@ async function generatePptx(DATA) {
     ], { x: bx, y: by + 0.2, w: 1.9, h: 0.28, fontSize: 12, fontFace: "DM Sans" });
   });
 
-
-  // ── SLIDE 3C – CANAL AGENTES (CHAIDE – OPCIONAL) ─────────────────────────
-  if (DATA.CHAIDE_VENTAS_AGENTES_ACTUAL) {
-    // Parsea string ARS ("$12.500.000") a número
-    const parseARS = str => parseFloat((str || "0").replace(/[^0-9,]/g, "").replace(",", ".")) || 0;
-    const fmtARS   = n   => "$" + Math.round(n).toLocaleString("es-AR");
-    const fmtDelta = n   => (n >= 0 ? "+" : "") + n.toFixed(1).replace(".", ",") + "%";
-
-    const agActual = parseARS(DATA.CHAIDE_VENTAS_AGENTES_ACTUAL);
-    const agPrev   = parseARS(DATA.CHAIDE_VENTAS_AGENTES_PREV);
-    const agDelta  = agPrev !== 0 ? ((agActual - agPrev) / agPrev) * 100 : 0;
-
-    if (!DATA.CHAIDE_VENTAS_AGENTES_DELTA) DATA.CHAIDE_VENTAS_AGENTES_DELTA = fmtDelta(agDelta);
-    if (DATA.CHAIDE_VENTAS_AGENTES_UP == null) DATA.CHAIDE_VENTAS_AGENTES_UP = agActual >= agPrev;
-
-    const ga4Actual  = parseARS(DATA.VTEX_INGRESOS_ACTUAL);
-    const ga4Prev    = parseARS(DATA.VTEX_INGRESOS_ANTERIOR);
-    const consActual = ga4Actual + agActual;
-    const consPrev   = ga4Prev + agPrev;
-    const consDelta  = consPrev !== 0 ? ((consActual - consPrev) / consPrev) * 100 : 0;
-
-    if (!DATA.CHAIDE_CONSOLIDADO_ACTUAL)   DATA.CHAIDE_CONSOLIDADO_ACTUAL   = fmtARS(consActual);
-    if (!DATA.CHAIDE_CONSOLIDADO_PREV)     DATA.CHAIDE_CONSOLIDADO_PREV     = fmtARS(consPrev);
-    if (!DATA.CHAIDE_CONSOLIDADO_DELTA)    DATA.CHAIDE_CONSOLIDADO_DELTA    = fmtDelta(consDelta);
-    if (DATA.CHAIDE_CONSOLIDADO_DELTA_UP == null) DATA.CHAIDE_CONSOLIDADO_DELTA_UP = consActual >= consPrev;
-
-    let sAg = pres.addSlide();
-    sAg.background = { color: WHITE };
-    sAg.addText("Canal Agentes", { x: 0.5, y: 0.18, w: 7, h: 0.52, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-    sAg.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.71, w: 7, h: 0.28, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
-
-    // ── Sección 1: 3 KPI cards ────────────────────────────────────────────
-    sAg.addText("Ventas Canal Agentes", { x: 0.5, y: 1.1, w: 9, h: 0.28, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
-
-    const agKPIs = [
-      { icon: "$", label: "Ventas Agentes",  sub: DATA.PERIODO_ACTUAL_LABEL   || "Actual",   val: DATA.CHAIDE_VENTAS_AGENTES_ACTUAL || "", isDelta: false },
-      { icon: "$", label: "Ventas Agentes",  sub: DATA.PERIODO_ANTERIOR_LABEL || "Anterior", val: DATA.CHAIDE_VENTAS_AGENTES_PREV   || "", isDelta: false },
-      { icon: "Δ", label: "Variación",       sub: "vs período anterior",                     val: DATA.CHAIDE_VENTAS_AGENTES_DELTA  || "", isDelta: true, up: DATA.CHAIDE_VENTAS_AGENTES_UP === true },
-    ];
-    agKPIs.forEach((k, i) => {
-      const x = 0.4 + i * 3.1, y = 1.42;
-      const cardBg  = k.isDelta ? (k.up ? GREEN_BG : RED_BG) : LIGHT_BG;
-      const cardBdr = k.isDelta ? (k.up ? GREEN_BG : RED_BG) : "F0E8E0";
-      const valColor = k.isDelta ? (k.up ? GREEN : RED) : DARK;
-      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 1.1, fill: { color: cardBg }, line: { color: cardBdr, width: 0.5 } });
-      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 0.06, fill: { color: ORANGE }, line: { color: ORANGE } });
-      sAg.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.14, w: 0.3, h: 0.3, fill: { color: ORANGE }, line: { color: ORANGE } });
-      sAg.addText(k.label, { x: x + 0.52, y: y + 0.14, w: 2.2,  h: 0.18, fontSize: 9,  bold: true, color: DARK,     fontFace: "DM Sans" });
-      sAg.addText(k.val,   { x: x + 0.14, y: y + 0.52, w: 2.62, h: 0.48, fontSize: 22, bold: true, color: valColor,  fontFace: "Trebuchet MS", align: "center" });
-    });
-
-    // ── Sección 2: Consolidado Ecommerce + Agentes ────────────────────────
-    sAg.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 2.68, w: 9.2, h: 0.04, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
-    sAg.addText("Consolidado Total · Ecommerce + Agentes", { x: 0.5, y: 2.76, w: 9, h: 0.28, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
-
-    const consolidadoCols = [
-      { label: DATA.PERIODO_ACTUAL_LABEL   || "Actual",   ga4: DATA.VTEX_INGRESOS_ACTUAL   || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_ACTUAL || "", total: DATA.CHAIDE_CONSOLIDADO_ACTUAL || "" },
-      { label: DATA.PERIODO_ANTERIOR_LABEL || "Anterior", ga4: DATA.VTEX_INGRESOS_ANTERIOR || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_PREV   || "", total: DATA.CHAIDE_CONSOLIDADO_PREV   || "" },
-    ];
-    consolidadoCols.forEach((col, i) => {
-      const x = 0.4 + i * 4.7, y = 3.08;
-      const isActual = i === 0;
-      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 4.5, h: 1.95, fill: { color: isActual ? LIGHT_BG : "F5F5F5" }, line: { color: isActual ? "F0E8E0" : "E0E0E0", width: 0.5 } });
-      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 4.5, h: 0.06, fill: { color: isActual ? ORANGE : GRAY_TEXT }, line: { color: isActual ? ORANGE : GRAY_TEXT } });
-      sAg.addText(col.label,  { x: x + 0.2, y: y + 0.12, w: 4.1, h: 0.26, fontSize: 12, bold: true, color: DARK,      fontFace: "DM Sans" });
-      sAg.addText("Ecommerce (VTEX)",  { x: x + 0.2, y: y + 0.46, w: 2.2, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-      sAg.addText(col.ga4,          { x: x + 2.4, y: y + 0.46, w: 1.9, h: 0.22, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
-      sAg.addText("Canal Agentes",  { x: x + 0.2, y: y + 0.7,  w: 2.2, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-      sAg.addText(col.agentes,      { x: x + 2.4, y: y + 0.7,  w: 1.9, h: 0.22, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
-      sAg.addShape(pres.shapes.RECTANGLE, { x: x + 0.2, y: y + 0.98, w: 4.1, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
-      sAg.addText("Total",   { x: x + 0.2, y: y + 1.04, w: 2.0, h: 0.3, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans" });
-      sAg.addText(col.total, { x: x + 2.4, y: y + 1.04, w: 1.9, h: 0.3, fontSize: 14, bold: true, color: DARK, fontFace: "Trebuchet MS", align: "right" });
-      if (isActual && DATA.CHAIDE_CONSOLIDADO_DELTA) {
-        const revUp = DATA.CHAIDE_CONSOLIDADO_DELTA_UP === true;
-        sAg.addShape(pres.shapes.RECTANGLE, { x: x + 0.2, y: y + 1.48, w: 1.5, h: 0.26, fill: { color: revUp ? GREEN_BG : RED_BG }, line: { color: revUp ? GREEN_BG : RED_BG } });
-        sAg.addText(DATA.CHAIDE_CONSOLIDADO_DELTA, { x: x + 0.2, y: y + 1.48, w: 1.5, h: 0.26, fontSize: 11, bold: true, color: revUp ? GREEN : RED, fontFace: "DM Sans", align: "center", valign: "middle" });
-        sAg.addText(`vs ${DATA.PERIODO_ANTERIOR_LABEL || "período anterior"}`, { x: x + 1.8, y: y + 1.5, w: 2.5, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-      }
-    });
-  }
 
   // ── SLIDE 5C – TOP ANUNCIOS META POR COMPRAS ─────────────────────────────
   if (DATA.TOP_ANUNCIOS_META_TIENE_DATOS && Array.isArray(DATA.TOP_ANUNCIOS_META) && DATA.TOP_ANUNCIOS_META.length > 0) {
