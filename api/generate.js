@@ -103,7 +103,8 @@ const labelCortoAnterior =
     const invTotA  = invMetaA + invGoogA + invPinA,    invTotP  = invMetaP + invGoogP + invPinP;
 
     // Ventas sin canceladas
-    const vSinA = parseNum(DATA.VTEX_INGRESOS_ACTUAL), vSinP = parseNum(DATA.VTEX_INGRESOS_ANTERIOR);
+    const vSinA = parseNum(DATA.ECOMMERCE_INGRESOS), 
+      vSinP = parseNum(DATA.ECOMMERCE_INGRESOS_PREV);
 
     // ROAS calculados
     const vCpcA = parseNum(DATA.ATIKA_VENTAS_CPC),     vCpcP = parseNum(DATA.ATIKA_VENTAS_CPC_PREV);
