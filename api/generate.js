@@ -50,6 +50,12 @@ function normalizeDataForUSD(DATA, rate) {
   for (const f of ARS_FIELDS) {
     if (d[f]) d[f] = fmtUSD(arsToUsd(d[f], rate));
   }
+  if (Array.isArray(d.CAMPANAS)) {
+    d.CAMPANAS = d.CAMPANAS.map(c => c.costo ? { ...c, costo: fmtUSD(arsToUsd(c.costo, rate)) } : c);
+  }
+  if (Array.isArray(d.TOP_ANUNCIOS_META)) {
+    d.TOP_ANUNCIOS_META = d.TOP_ANUNCIOS_META.map(a => a.costo ? { ...a, costo: fmtUSD(arsToUsd(a.costo, rate)) } : a);
+  }
   return d;
 }
 
