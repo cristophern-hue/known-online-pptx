@@ -302,18 +302,18 @@ async function generatePptx(DATA) {
     });
   }
 
-  // ── SLIDE 5B – TOP FUENTE / MEDIO (GA4) ──────────────────────────────────
+  // ── SLIDE 5B – TOP CANALES (GA4) ─────────────────────────────────────────
   // fuenteMedio: array of { nombre, sesiones, txns, tc, tc_prev, tc_delta, tc_delta_up, revenue, revenue_prev, revenue_delta, revenue_delta_up }
   const fuenteMedio = DATA.FUENTE_MEDIO || [];
   if (fuenteMedio.length > 0) {
     let sFm = pres.addSlide();
     sFm.background = { color: WHITE };
-    sFm.addText("Top 10 Fuente / Medio", { x: 0.5, y: 0.18, w: 7, h: 0.52, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sFm.addText("Top 10 Canales", { x: 0.5, y: 0.18, w: 7, h: 0.52, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
     sFm.addText(`GA4  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.71, w: 7, h: 0.28, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
     // Table header
     const fmColW = [2.7, 1.05, 0.9, 1.0, 1.0, 0.85, 1.05, 0.55];
-    const fmHeaders = ["Fuente / Medio", "Sesiones", "Txns", `TC% ${DATA.PERIODO_ACTUAL_LABEL || "Actual"}`, `TC% ${DATA.PERIODO_ANTERIOR_LABEL || "Ant."}`, "ΔTC", "Revenue", "ΔRev"];
+    const fmHeaders = ["Canal", "Sesiones", "Txns", `TC% ${DATA.PERIODO_ACTUAL_LABEL || "Actual"}`, `TC% ${DATA.PERIODO_ANTERIOR_LABEL || "Ant."}`, "ΔTC", "Revenue", "ΔRev"];
     const fmY0 = 1.08;
 
     sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: fmY0, w: 9.2, h: 0.36, fill: { color: DARK }, line: { color: DARK } });
