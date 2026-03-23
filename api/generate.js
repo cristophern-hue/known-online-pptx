@@ -11,6 +11,48 @@ async function fetchImageAsBase64(url) {
   } catch { return null; }
 }
 
+// ── USD conversion (Cummins) ─────────────────────────────────────────────────
+const FALLBACK_RATE = 1050;
+
+async function getUsdRate() {
+  try {
+    const r = await fetch("https://dolarapi.com/v1/dolares/oficial", { signal: AbortSignal.timeout(4000) });
+    if (!r.ok) throw new Error();
+    const j = await r.json();
+    const rate = parseFloat(j.venta);
+    if (!rate || rate <= 0) throw new Error();
+    return { rate, fallback: false };
+  } catch {
+    return { rate: FALLBACK_RATE, fallback: true };
+  }
+}
+
+function arsToUsd(str, rate) {
+  const c = (str || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "");
+  return (parseFloat(c) || 0) / rate;
+}
+
+function fmtUSD(n) {
+  return "$ " + n.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+const ARS_FIELDS = [
+  "META_COSTO", "META_COSTO_PREV",
+  "GOOGLE_COSTO", "GOOGLE_COSTO_PREV",
+  "INVERSION_TOTAL", "INVERSION_PREV",
+  "META_CPC", "META_CPC_PREV",
+  "GOOGLE_CPC", "GOOGLE_CPC_PREV",
+  "CPC_TOTAL", "CPC_PREV",
+];
+
+function normalizeDataForUSD(DATA, rate) {
+  const d = { ...DATA };
+  for (const f of ARS_FIELDS) {
+    if (d[f]) d[f] = fmtUSD(arsToUsd(d[f], rate));
+  }
+  return d;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed. Use POST." });
@@ -22,8 +64,19 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const base64 = await generatePptx(DATA);
-    const filename = `Reporte_${DATA.CLIENTE_NOMBRE || "Cliente"}_${DATA.PERIODO_ACTUAL_LABEL || "Periodo"}.pptx`
+    const isCummins = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("cummins");
+    let pptxData = DATA;
+    if (isCummins) {
+      const override = parseFloat(DATA.TIPO_CAMBIO_OVERRIDE);
+      const { rate, fallback } = override > 0
+        ? { rate: override, fallback: false }
+        : await getUsdRate();
+      pptxData = normalizeDataForUSD(DATA, rate);
+      pptxData.TIPO_CAMBIO_USADO = rate;
+      pptxData.TIPO_CAMBIO_FALLBACK = fallback;
+    }
+    const base64 = await generatePptx(pptxData);
+    const filename = `Reporte_${pptxData.CLIENTE_NOMBRE || "Cliente"}_${pptxData.PERIODO_ACTUAL_LABEL || "Periodo"}.pptx`
       .replace(/\s+/g, "_");
     return res.status(200).json({ pptx: base64, filename });
   } catch (err) {
@@ -90,6 +143,13 @@ async function generatePptx(DATA) {
 
   s1.addText("Reporte\nPaid Media", { x: 0.45, y: 1.95, w: 7, h: 1.5, fontSize: 52, color: WHITE, bold: true, fontFace: "Trebuchet MS", valign: "top" });
   s1.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs. ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.45, y: 3.55, w: 7, h: 0.45, fontSize: 18, color: ORANGE2, fontFace: "DM Sans" });
+
+  if (DATA.TIPO_CAMBIO_USADO) {
+    const tcLabel = DATA.TIPO_CAMBIO_FALLBACK
+      ? `Inversión convertida a USD · TC ref: $${DATA.TIPO_CAMBIO_USADO.toLocaleString("es-AR")} ARS (sin conexión a API — verificar)`
+      : `Inversión convertida a USD · TC oficial: $${DATA.TIPO_CAMBIO_USADO.toLocaleString("es-AR")} ARS`;
+    s1.addText(tcLabel, { x: 0.45, y: 5.28, w: 9.1, h: 0.22, fontSize: 7.5, color: "999999", fontFace: "DM Sans" });
+  }
 
   // ── SLIDE ATIKA – TABLA KPIs GENERAL (CONDICIONAL) ───────────────────────
   if (DATA.ATIKA_PINTEREST_INV) {
