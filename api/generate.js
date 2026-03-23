@@ -527,7 +527,7 @@ async function generatePptx(DATA) {
   s5.addText("Top Campañas por ROAS", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
   s5.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  Google Ads + Meta Ads`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
-  // campaigns: array of { nombre, plataforma, inversion, clicks, roas, nivel }
+  // campaigns: array of { nombre, plataforma, costo, clicks, roas, nivel }
   // nivel: "high" | "mid" | "low"
   const campaigns = DATA.CAMPANAS || [];
   s5.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 1.2, w: 9.2, h: 0.38, fill: { color: DARK }, line: { color: DARK } });
