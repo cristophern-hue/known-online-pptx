@@ -89,7 +89,7 @@ async function generatePptx(DATA) {
     const invTotA  = invMetaA + invGoogA + invPinA,    invTotP  = invMetaP + invGoogP + invPinP;
 
     // Ventas sin canceladas
-    const vSinA = parseNum(DATA.VTEX_INGRESOS_ACTUAL), vSinP = parseNum(DATA.VTEX_INGRESOS_ANTERIOR);
+    const vSinA = parseNum(DATA.VTEX_INGRESOS_ACTUAL || DATA.ECOMMERCE_INGRESOS), vSinP = parseNum(DATA.VTEX_INGRESOS_ANTERIOR || DATA.ECOMMERCE_INGRESOS_PREV);
 
     // ROAS calculados
     const vCpcA = parseNum(DATA.ATIKA_VENTAS_CPC),     vCpcP = parseNum(DATA.ATIKA_VENTAS_CPC_PREV);
@@ -124,7 +124,7 @@ async function generatePptx(DATA) {
       { label: "Tiempo de permanencia email mkt",   a: DATA.ATIKA_TIEMPO_EMAIL||"",            p: DATA.ATIKA_TIEMPO_EMAIL_PREV||"",        d: DATA.ATIKA_TIEMPO_EMAIL_DELTA||"",        up: DATA.ATIKA_TIEMPO_EMAIL_UP===true },
       { label: "Tiempo de permanencia Orgánico",    a: DATA.ATIKA_TIEMPO_ORGANICO||"",         p: DATA.ATIKA_TIEMPO_ORGANICO_PREV||"",     d: DATA.ATIKA_TIEMPO_ORGANICO_DELTA||"",     up: DATA.ATIKA_TIEMPO_ORGANICO_UP===true },
       { label: "Ventas sitio (con canceladas)",     a: DATA.GA4_INGRESOS||"",                  p: DATA.GA4_INGRESOS_PREV||"",              d: DATA.GA4_INGRESOS_DELTA||"",              up: DATA.GA4_INGRESOS_DELTA_UP===true },
-      { label: "Ventas sitio (sin canceladas)",     a: DATA.VTEX_INGRESOS_ACTUAL||"",          p: DATA.VTEX_INGRESOS_ANTERIOR||"",         d: calcDelta(vSinA,vSinP),                   up: calcUp(vSinA,vSinP) },
+      { label: "Ventas sitio (sin canceladas)",     a: DATA.VTEX_INGRESOS_ACTUAL||DATA.ECOMMERCE_INGRESOS||"",  p: DATA.VTEX_INGRESOS_ANTERIOR||DATA.ECOMMERCE_INGRESOS_PREV||"",  d: calcDelta(vSinA,vSinP), up: calcUp(vSinA,vSinP) },
       { label: "Ventas CPC",                        a: DATA.ATIKA_VENTAS_CPC||"",              p: DATA.ATIKA_VENTAS_CPC_PREV||"",          d: DATA.ATIKA_VENTAS_CPC_DELTA||"",          up: DATA.ATIKA_VENTAS_CPC_UP===true },
       { label: "Ventas email mkt",                  a: DATA.ATIKA_VENTAS_EMAIL||"",            p: DATA.ATIKA_VENTAS_EMAIL_PREV||"",        d: DATA.ATIKA_VENTAS_EMAIL_DELTA||"",        up: DATA.ATIKA_VENTAS_EMAIL_UP===true },
       { label: "Ventas Pinterest",                  a: DATA.ATIKA_VENTAS_PINTEREST||"",        p: DATA.ATIKA_VENTAS_PINTEREST_PREV||"",    d: DATA.ATIKA_VENTAS_PINTEREST_DELTA||"",    up: DATA.ATIKA_VENTAS_PINTEREST_UP===true },
