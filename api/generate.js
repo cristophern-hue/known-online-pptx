@@ -175,7 +175,8 @@ async function generatePptx(DATA) {
     s7.addText(m.label, { x: x + 0.58, y: y + 0.18, w: 2.2, h: 0.22, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
     s7.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.65, w: 2.62, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
     s7.addText(labelCortoActual, { x: x + 0.14, y: y + 0.75, w: 1.3,  h: 0.18, fontSize: 9,  color: GRAY_TEXT, fontFace: "DM Sans" });
-    s7.addText(m.val26,  { x: x + 0.14, y: y + 0.92, w: 1.5,  h: 0.38, fontSize: 22, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    const fs7 = String(m.val26).length > 12 ? 15 : String(m.val26).length > 9 ? 18 : 22;
+    s7.addText(m.val26,  { x: x + 0.14, y: y + 0.92, w: 1.5,  h: 0.38, fontSize: fs7, bold: true, color: DARK, fontFace: "Trebuchet MS" });
     s7.addShape(pres.shapes.RECTANGLE, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fill: { color: m.deltaBg }, line: { color: m.deltaBg } });
     s7.addText(m.delta,  { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fontSize: 11, bold: true, color: m.deltaColor, fontFace: "DM Sans", align: "center" });
     s7.addText(`${labelCortoAnterior}: ${m.val25}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
@@ -206,7 +207,8 @@ async function generatePptx(DATA) {
       sEc.addText(m.label, { x: x + 0.7,  y: y + 0.22, w: 1.8,  h: 0.28, fontSize: 12, bold: true, color: DARK,      fontFace: "DM Sans" });
       sEc.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.82, w: 2.32, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
       sEc.addText(DATA.PERIODO_ACTUAL_LABEL || "", { x: x + 0.14, y: y + 0.92, w: 2.0, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-      sEc.addText(m.val,   { x: x + 0.14, y: y + 1.12, w: 2.32, h: 0.65, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+      const fsEc = String(m.val).length > 12 ? 18 : String(m.val).length > 9 ? 22 : 28;
+      sEc.addText(m.val,   { x: x + 0.14, y: y + 1.12, w: 2.32, h: 0.65, fontSize: fsEc, bold: true, color: DARK, fontFace: "Trebuchet MS" });
       sEc.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 1.82, w: 2.32, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
       sEc.addText(`${DATA.PERIODO_ANTERIOR_LABEL || "Período ant."}: ${m.prev}`, { x: x + 0.14, y: y + 1.92, w: 2.32, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
       sEc.addShape(pres.shapes.RECTANGLE, { x: x + 0.5, y: y + 2.25, w: 1.6, h: 0.38, fill: { color: m.up ? GREEN_BG : RED_BG }, line: { color: m.up ? GREEN_BG : RED_BG } });
