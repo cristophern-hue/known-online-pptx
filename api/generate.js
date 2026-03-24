@@ -225,9 +225,12 @@ async function generatePptx(DATA) {
     if (gRows.length >= 1) {
       const sumInt = key => gRows.reduce((s, r) => s + (parseInt(String(r[key] ?? "0").replace(/\./g, "")) || 0), 0);
       const fmtN   = n => n.toLocaleString("es-AR");
+      const fmtARS = n => n > 0 ? "$" + Math.round(n).toLocaleString("es-AR") : "";
       const sesA   = sumInt("sesiones"),      sesP = sumInt("sesiones_prev");
-      const txnA   = sumInt("txns"),          txnP = sumInt("txns_prev");
-      const tcDelta = sesP ? ((sesA - sesP) / sesP * 100) : 0;
+      const txnA   = sumInt("txns");
+      const revA   = sumInt("revenue"),       revP = sumInt("revenue_prev");
+      const tcDelta  = sesP ? ((sesA - sesP) / sesP * 100) : 0;
+      const revDelta = revP ? ((revA - revP) / revP * 100) : 0;
       googleAcum = {
         nombre: `▸ Google Ads (${gRows.length > 1 ? "Total CPC" : "google / cpc"})`,
         sesiones: fmtN(sesA), sesiones_prev: fmtN(sesP),
@@ -235,7 +238,10 @@ async function generatePptx(DATA) {
         tc: "", tc_prev: "",
         tc_delta: (tcDelta >= 0 ? "+" : "") + tcDelta.toFixed(1) + "%",
         tc_delta_up: sesA >= sesP,
-        revenue: "", revenue_prev: "", revenue_delta: "", revenue_delta_up: true,
+        revenue: fmtARS(revA),
+        revenue_prev: fmtARS(revP),
+        revenue_delta: revP ? (revDelta >= 0 ? "+" : "") + revDelta.toFixed(1) + "%" : "",
+        revenue_delta_up: revA >= revP,
         esAcumulado: true,
       };
     }
