@@ -253,9 +253,9 @@ async function generatePptx(DATA) {
       let rx = 0.55;
       sFm.addText(row.nombre || "", { x: rx, y: ry + 0.07, w: fmColW[0], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans" });
       rx += fmColW[0];
-      sFm.addText(String(row.sesiones ?? ""), { x: rx, y: ry + 0.07, w: fmColW[1], h: 0.26, fontSize: 9.5, bold: isAcum, color: DARK, fontFace: "DM Sans", align: "center" });
+      sFm.addText(String(row.sesiones ?? ""), { x: rx, y: ry + 0.07, w: fmColW[1], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
       rx += fmColW[1];
-      sFm.addText(String(row.txns ?? ""), { x: rx, y: ry + 0.07, w: fmColW[2], h: 0.26, fontSize: 9.5, bold: isAcum, color: DARK, fontFace: "DM Sans", align: "center" });
+      sFm.addText(String(row.txns ?? ""), { x: rx, y: ry + 0.07, w: fmColW[2], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
       rx += fmColW[2];
       sFm.addText(row.tc || "", { x: rx, y: ry + 0.07, w: fmColW[3], h: 0.26, fontSize: 9.5, bold: !up, color: tcColor, fontFace: "DM Sans", align: "center" });
       rx += fmColW[3];
@@ -432,56 +432,62 @@ async function generatePptx(DATA) {
   s4.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.7, w: 0.08, h: 0.65, fill: { color: "3B6D11" }, line: { color: "3B6D11" } });
   s4.addText(DATA.GOOGLE_ALERTA || "", { x: 0.6, y: 4.72, w: 8.9, h: 0.6, fontSize: 11, color: DARK, fontFace: "DM Sans", valign: "middle" });
 
-  // ── SLIDE 5 – TOP CAMPAÑAS POR ROAS ──────────────────────────────────────
-  let s5 = pres.addSlide();
-  s5.background = { color: WHITE };
-  s5.addText("Top Campañas por ROAS", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-  s5.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  Google Ads + Meta Ads`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
-
-  // campaigns: array of { nombre, plataforma, costo, clicks, roas, nivel }
-  // nivel: "high" | "mid" | "low"
+  // ── SLIDES 5A & 5B – TOP CAMPAÑAS POR ROAS (Google / Meta separados) ────
   const campaigns = DATA.CAMPANAS || [];
-  s5.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 1.2, w: 9.2, h: 0.38, fill: { color: DARK }, line: { color: DARK } });
-  const headers = ["Campaña", "Plat.", "Inversión", "Clicks", "ROAS"];
-  const colW    = [3.6, 0.85, 1.25, 1.15, 1.35];
-  let cx = 0.55;
-  headers.forEach((h, i) => {
-    s5.addText(h, { x: cx, y: 1.22, w: colW[i], h: 0.34, fontSize: 10, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle" });
-    cx += colW[i];
-  });
+  const campGoogle = campaigns.filter(c => (c.plataforma || "").toLowerCase() === "google");
+  const campMeta   = campaigns.filter(c => (c.plataforma || "").toLowerCase() === "meta");
 
-  campaigns.slice(0, 8).forEach((row, i) => {
-    const y  = 1.6 + i * 0.44;
-    const bg = i % 2 === 0 ? WHITE : LIGHT_BG;
-    s5.addShape(pres.shapes.RECTANGLE, { x: 0.4, y, w: 9.2, h: 0.43, fill: { color: bg }, line: { color: "E8E0D8", width: 0.5 } });
-    let rx = 0.55;
+  const buildCampSlide = (pres, rows, plat) => {
+    const isGoogle = plat === "Google";
+    const accentColor = isGoogle ? BLUE : ORANGE;
+    const accentBg    = isGoogle ? LIGHT_BLUE : "FFF0EB";
 
-    s5.addText(row.nombre || "", { x: rx, y: y + 0.07, w: colW[0], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans" });
-    rx += colW[0];
+    const s = pres.addSlide();
+    s.background = { color: WHITE };
+    s.addText(`Top Campañas ${plat} Ads por ROAS`, { x: 0.5, y: 0.2, w: 9, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  ${plat} Ads`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
-    const isGoogle = (row.plataforma || "").toLowerCase() === "google";
-    s5.addShape(pres.shapes.RECTANGLE, { x: rx, y: y + 0.1, w: 0.78, h: 0.24, fill: { color: isGoogle ? LIGHT_BLUE : "FFF0EB" }, line: { color: isGoogle ? "B5D4F4" : "F5C4B3" } });
-    s5.addText(row.plataforma || "", { x: rx, y: y + 0.1, w: 0.78, h: 0.24, fontSize: 9, color: isGoogle ? BLUE : ORANGE, fontFace: "DM Sans", align: "center", bold: true });
-    rx += colW[1];
+    // Accent bar top-right
+    s.addShape(pres.shapes.RECTANGLE, { x: 8.8, y: 0, w: 0.8, h: 0.08, fill: { color: accentColor }, line: { color: accentColor } });
 
-    s5.addText(row.costo || "", { x: rx, y: y + 0.07, w: colW[2], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans", align: "right" });
-    rx += colW[2];
-    s5.addText(row.clicks || "", { x: rx, y: y + 0.07, w: colW[3], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans", align: "right" });
-    rx += colW[3];
+    const colW   = [4.45, 1.4, 1.4, 1.55];
+    const headers = ["Campaña", "Inversión", "Clicks", "ROAS"];
+    s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 1.2, w: 9.2, h: 0.38, fill: { color: DARK }, line: { color: DARK } });
+    let cx = 0.55;
+    headers.forEach((h, i) => {
+      const align = i === 0 ? "left" : "right";
+      s.addText(h, { x: cx, y: 1.22, w: colW[i], h: 0.34, fontSize: 10, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle", align });
+      cx += colW[i];
+    });
 
-    const nivel    = row.nivel || "mid";
-    const roasColor = nivel === "high" ? GREEN : nivel === "mid" ? AMBER : RED;
-    const roasBg    = nivel === "high" ? GREEN_BG : nivel === "mid" ? AMBER_BG : RED_BG;
-    s5.addShape(pres.shapes.RECTANGLE, { x: rx, y: y + 0.1, w: 1.0, h: 0.24, fill: { color: roasBg }, line: { color: roasBg } });
-    s5.addText(row.roas || "", { x: rx, y: y + 0.1, w: 1.0, h: 0.24, fontSize: 10, bold: true, color: roasColor, fontFace: "DM Sans", align: "center" });
-  });
+    rows.slice(0, 8).forEach((row, i) => {
+      const y  = 1.6 + i * 0.44;
+      const bg = i % 2 === 0 ? WHITE : LIGHT_BG;
+      s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y, w: 9.2, h: 0.43, fill: { color: bg }, line: { color: "E8E0D8", width: 0.5 } });
+      let rx = 0.55;
+      s.addText(row.nombre || "", { x: rx, y: y + 0.07, w: colW[0], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans" });
+      rx += colW[0];
+      s.addText(row.costo  || "", { x: rx, y: y + 0.07, w: colW[1], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans", align: "right" });
+      rx += colW[1];
+      s.addText(row.clicks || "", { x: rx, y: y + 0.07, w: colW[2], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans", align: "right" });
+      rx += colW[2];
+      const nivel     = row.nivel || "mid";
+      const roasColor = nivel === "high" ? GREEN : nivel === "mid" ? AMBER : RED;
+      const roasBg    = nivel === "high" ? GREEN_BG : nivel === "mid" ? AMBER_BG : RED_BG;
+      s.addShape(pres.shapes.RECTANGLE, { x: rx, y: y + 0.1, w: 1.2, h: 0.24, fill: { color: roasBg }, line: { color: roasBg } });
+      s.addText(row.roas || "", { x: rx, y: y + 0.1, w: 1.2, h: 0.24, fontSize: 10, bold: true, color: roasColor, fontFace: "DM Sans", align: "center" });
+    });
 
-  s5.addShape(pres.shapes.RECTANGLE, { x: 0.4,  y: 5.1, w: 0.55, h: 0.2, fill: { color: GREEN_BG  }, line: { color: GREEN_BG  } });
-  s5.addText("ROAS alto (>30x)",    { x: 1.0,  y: 5.1, w: 1.8, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-  s5.addShape(pres.shapes.RECTANGLE, { x: 2.9,  y: 5.1, w: 0.55, h: 0.2, fill: { color: AMBER_BG  }, line: { color: AMBER_BG  } });
-  s5.addText("ROAS medio (5-30x)", { x: 3.5,  y: 5.1, w: 1.9, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-  s5.addShape(pres.shapes.RECTANGLE, { x: 5.5,  y: 5.1, w: 0.55, h: 0.2, fill: { color: RED_BG    }, line: { color: RED_BG    } });
-  s5.addText("ROAS bajo (<5x)",     { x: 6.1,  y: 5.1, w: 1.6, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 0.55, h: 0.2, fill: { color: GREEN_BG }, line: { color: GREEN_BG } });
+    s.addText("ROAS alto",  { x: 1.0, y: 5.1, w: 1.2, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    s.addShape(pres.shapes.RECTANGLE, { x: 2.4, y: 5.1, w: 0.55, h: 0.2, fill: { color: AMBER_BG }, line: { color: AMBER_BG } });
+    s.addText("ROAS medio", { x: 3.0, y: 5.1, w: 1.2, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    s.addShape(pres.shapes.RECTANGLE, { x: 4.4, y: 5.1, w: 0.55, h: 0.2, fill: { color: RED_BG   }, line: { color: RED_BG   } });
+    s.addText("ROAS bajo",  { x: 5.0, y: 5.1, w: 1.2, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+  };
+
+  if (campGoogle.length > 0) buildCampSlide(pres, campGoogle, "Google");
+  if (campMeta.length   > 0) buildCampSlide(pres, campMeta,   "Meta");
 
   // ── SLIDE 2 – RESUMEN EJECUTIVO ───────────────────────────────────────────
   let s2 = pres.addSlide();
