@@ -253,9 +253,9 @@ async function generatePptx(DATA) {
       let rx = 0.55;
       sFm.addText(row.nombre || "", { x: rx, y: ry + 0.07, w: fmColW[0], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans" });
       rx += fmColW[0];
-      sFm.addText(String(row.sesiones ?? ""), { x: rx, y: ry + 0.07, w: fmColW[1], h: 0.26, fontSize: 9.5, bold: isAcum, color: DARK, fontFace: "DM Sans", align: "center" });
+      sFm.addText(String(row.sesiones ?? ""), { x: rx, y: ry + 0.07, w: fmColW[1], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
       rx += fmColW[1];
-      sFm.addText(String(row.txns ?? ""), { x: rx, y: ry + 0.07, w: fmColW[2], h: 0.26, fontSize: 9.5, bold: isAcum, color: DARK, fontFace: "DM Sans", align: "center" });
+      sFm.addText(String(row.txns ?? ""), { x: rx, y: ry + 0.07, w: fmColW[2], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
       rx += fmColW[2];
       sFm.addText(row.tc || "", { x: rx, y: ry + 0.07, w: fmColW[3], h: 0.26, fontSize: 9.5, bold: !up, color: tcColor, fontFace: "DM Sans", align: "center" });
       rx += fmColW[3];
