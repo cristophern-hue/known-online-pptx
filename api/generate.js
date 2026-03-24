@@ -222,14 +222,14 @@ async function generatePptx(DATA) {
     const GOOGLE_ADS_RE = /^(google\s*\/\s*(cpc|cross.network|display)|\(not set\)\s*\/\s*cross.network)$/i;
     const gRows = fuenteMedio.filter(r => GOOGLE_ADS_RE.test((r.nombre || "").trim()));
     let googleAcum = null;
-    if (gRows.length > 1) {
+    if (gRows.length >= 1) {
       const sumInt = key => gRows.reduce((s, r) => s + (parseInt(String(r[key] ?? "0").replace(/\./g, "")) || 0), 0);
       const fmtN   = n => n.toLocaleString("es-AR");
       const sesA   = sumInt("sesiones"),      sesP = sumInt("sesiones_prev");
       const txnA   = sumInt("txns"),          txnP = sumInt("txns_prev");
       const tcDelta = sesP ? ((sesA - sesP) / sesP * 100) : 0;
       googleAcum = {
-        nombre: "▸ Google Ads (Total CPC)",
+        nombre: `▸ Google Ads (${gRows.length > 1 ? "Total CPC" : "google / cpc"})`,
         sesiones: fmtN(sesA), sesiones_prev: fmtN(sesP),
         txns: fmtN(txnA),
         tc: "", tc_prev: "",
