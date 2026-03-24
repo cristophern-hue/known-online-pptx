@@ -237,7 +237,7 @@ async function generatePptx(DATA) {
     s4.addText(k.delta, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fontSize: 10, bold: true, color: k.good ? GREEN : RED, fontFace: "DM Sans", align: "center" });
   });
 
-  s4.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.7, w: 9.2, h: 0.65, fill: { color: "EAF3DE" }, line: { color: "63992250", width: 0.5 } });
+  s4.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.7, w: 9.2, h: 0.65, fill: { color: "EAF3DE" }, line: { color: "639922", width: 0.5 } });
   s4.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.7, w: 0.08, h: 0.65, fill: { color: "3B6D11" }, line: { color: "3B6D11" } });
   s4.addText(DATA.GOOGLE_ALERTA || "", { x: 0.6, y: 4.72, w: 8.9, h: 0.6, fontSize: 11, color: DARK, fontFace: "DM Sans", valign: "middle" });
 
