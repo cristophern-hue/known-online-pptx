@@ -177,6 +177,88 @@ async function generatePptx(DATA) {
     }
   }
 
+  // ── SLIDE – CAMPAÑAS META ADS (tabla por campaña) ────────────────────────
+  if (Array.isArray(DATA.META_CAMPANAS) && DATA.META_CAMPANAS.length > 0) {
+    let smc = pres.addSlide();
+    smc.background = { color: WHITE };
+
+    // Header
+    smc.addText("Campañas ", { x: 1.0, y: 0.15, w: 8.5, h: 0.6, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS",
+      paraSpaceAfter: 0,
+      objects: [
+        { text: "Campañas ", options: { bold: true, color: DARK } },
+        { text: `Facebook Ads – ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: ORANGE } },
+      ]
+    });
+    // Rewrite with two text runs
+    smc.addText([
+      { text: "Campañas ", options: { bold: true, color: DARK, fontSize: 26, fontFace: "Trebuchet MS" } },
+      { text: `Facebook Ads – ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: ORANGE, fontSize: 26, fontFace: "Trebuchet MS" } },
+    ], { x: 1.0, y: 0.15, w: 8.8, h: 0.6 });
+
+    // Orange circle icon placeholder
+    smc.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: ORANGE }, line: { color: ORANGE } });
+    smc.addText("f", { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fontSize: 18, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+
+    // Table columns: Conjunto de anuncios | Leads | CPL | Impresiones | Clicks | CPC | Inversión | Alcance
+    const mcColW  = [2.85, 0.72, 0.82, 1.08, 0.75, 0.82, 1.0, 0.88];
+    const mcHdrs  = ["Conjunto de anuncios", "Leads", "CPL", "Impresiones", "Clicks", "CPC", "Inversión", "Alcance"];
+    const mcY0    = 0.88;
+
+    smc.addShape(pres.shapes.RECTANGLE, { x: 0.18, y: mcY0, w: 9.65, h: 0.34, fill: { color: "F5F5F5" }, line: { color: "E0E0E0", width: 0.5 } });
+    let mcCx = 0.28;
+    mcHdrs.forEach((h, i) => {
+      const align = i === 0 ? "left" : "center";
+      smc.addText(h, { x: mcCx, y: mcY0 + 0.02, w: mcColW[i], h: 0.3, fontSize: 8.5, bold: true, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", align });
+      mcCx += mcColW[i];
+    });
+
+    // Rows
+    const maxRows = Math.min(DATA.META_CAMPANAS.length, 10);
+    DATA.META_CAMPANAS.slice(0, maxRows).forEach((row, i) => {
+      const ry  = mcY0 + 0.34 + i * 0.33;
+      const bg  = i % 2 === 0 ? WHITE : "FAFAFA";
+      smc.addShape(pres.shapes.RECTANGLE, { x: 0.18, y: ry, w: 9.65, h: 0.33, fill: { color: bg }, line: { color: "EEEEEE", width: 0.3 } });
+
+      let rx = 0.28;
+      const cells = [
+        { val: row.nombre   || "", align: "left",   color: ORANGE, bold: false },
+        { val: row.leads    || "", align: "center",  color: DARK,   bold: false },
+        { val: row.cpl      || "", align: "center",  color: DARK,   bold: false },
+        { val: row.impresiones || "", align: "center", color: DARK, bold: false },
+        { val: row.clicks   || "", align: "center",  color: DARK,   bold: false },
+        { val: row.cpc      || "", align: "center",  color: DARK,   bold: false },
+        { val: row.costo    || "", align: "center",  color: DARK,   bold: false },
+        { val: row.alcance  || "", align: "center",  color: DARK,   bold: false },
+      ];
+      cells.forEach((c, ci) => {
+        const nombre = c.val.length > 38 ? c.val.substring(0, 36) + "…" : c.val;
+        smc.addText(nombre, { x: rx, y: ry + 0.05, w: mcColW[ci], h: 0.24, fontSize: 8.5, color: c.color, fontFace: "DM Sans", align: c.align, valign: "middle" });
+        rx += mcColW[ci];
+      });
+    });
+
+    // Bottom KPI cards
+    const kpiY    = 4.42;
+    const kpiData = [
+      { label: "Inversión Total",  val: DATA.META_COSTO       || "" },
+      { label: "Coste por Lead",   val: DATA.META_CPL         || "" },
+      { label: "Impresiones",      val: DATA.META_IMPRESIONES || "" },
+      { label: "Leads Totales",    val: DATA.META_LEADS       || "" },
+    ];
+    kpiData.forEach((k, i) => {
+      const kx = 0.18 + i * 2.44;
+      smc.addShape(pres.shapes.RECTANGLE, { x: kx, y: kpiY, w: 2.3, h: 0.95, fill: { color: WHITE }, line: { color: "E8E8E8", width: 0.8 } });
+      smc.addShape(pres.shapes.OVAL, { x: kx + 0.12, y: kpiY + 0.18, w: 0.48, h: 0.48, fill: { color: ORANGE }, line: { color: ORANGE } });
+      smc.addText(k.label, { x: kx + 0.7, y: kpiY + 0.1,  w: 1.52, h: 0.28, fontSize: 9,  bold: true,  color: DARK,   fontFace: "DM Sans" });
+      smc.addText(k.val,   { x: kx + 0.7, y: kpiY + 0.36, w: 1.52, h: 0.32, fontSize: 14, bold: true,  color: ORANGE, fontFace: "DM Sans" });
+    });
+
+    // Footer
+    smc.addText(`Reporte ${DATA.CLIENTE_NOMBRE || ""} | ${DATA.AGENCIA_NOMBRE || "Known Online"}`,
+      { x: 0.18, y: 5.48, w: 6, h: 0.22, fontSize: 8.5, color: GRAY_TEXT, fontFace: "DM Sans" });
+  }
+
   // ── SLIDE 4 – META ADS DETALLE ────────────────────────────────────────────
   let s3 = pres.addSlide();
   s3.background = { color: WHITE };

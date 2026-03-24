@@ -149,6 +149,23 @@ const DATA = {
     { nombre: "Remarketing | Video corto 15s | Visitantes 30 días | Ene 2026",       leads: "32", cpl: "$6.875", costo: "$220.000", clicks: "2.100", preview_url: null },
   ],
 
+  // Meta leads (clientes potenciales Meta Ads)
+  META_LEADS: "7.273",
+
+  // Campañas Meta por campaña
+  META_CAMPANAS: [
+    { nombre: "Conjunto+ Idioma - Chino Mandarin",              leads: "1.093", cpl: "$0,52", impresiones: "392.921", clicks: "3.122", cpc: "$0,18", costo: "$570,10",   alcance: "204.904" },
+    { nombre: "Cursos de preparación IELTS - TOEFL - CAMBRIDGE",leads: "834",   cpl: "$2,52", impresiones: "808.787", clicks: "3.691", cpc: "$0,57", costo: "$2.104,76", alcance: "182.486" },
+    { nombre: "English for tots - English for juniors",          leads: "804",   cpl: "$2,24", impresiones: "532.698", clicks: "4.105", cpc: "$0,44", costo: "$1.801,53", alcance: "165.102" },
+    { nombre: "ClientesPotenciales+AO+CommunicationLevelPlus",  leads: "792",   cpl: "$2,09", impresiones: "364.451", clicks: "2.181", cpc: "$0,76", costo: "$1.651,96", alcance: "139.411" },
+    { nombre: "English-essentials",                              leads: "573",   cpl: "$0,89", impresiones: "152.723", clicks: "1.841", cpc: "$0,28", costo: "$512,43",   alcance: "68.358"  },
+    { nombre: "English-Flex",                                    leads: "567",   cpl: "$1,82", impresiones: "254.870", clicks: "1.413", cpc: "$0,73", costo: "$1.031,20", alcance: "70.887"  },
+    { nombre: "Conjunto+ Idioma - Frances",                      leads: "471",   cpl: "$1,08", impresiones: "269.031", clicks: "1.476", cpc: "$0,34", costo: "$507,42",   alcance: "123.143" },
+    { nombre: "Conjunto+ Idioma-Portugues",                      leads: "356",   cpl: "$1,31", impresiones: "191.994", clicks: "975",   cpc: "$0,48", costo: "$466,19",   alcance: "85.862"  },
+    { nombre: "Conjunto+ Idioma - Italiano",                     leads: "313",   cpl: "$1,48", impresiones: "162.972", clicks: "916",   cpc: "$0,51", costo: "$462,73",   alcance: "73.548"  },
+    { nombre: "Conjunto+ Idioma-Aleman",                         leads: "313",   cpl: "$1,48", impresiones: "256.356", clicks: "1.114", cpc: "$0,41", costo: "$462,03",   alcance: "110.019" },
+  ],
+
   // Top canales GA4
   FUENTE_MEDIO: [
     { nombre: "google / cpc",           sesiones: "14.200", txns: "497", tc: "3,50%", tc_prev: "3,10%", tc_delta: "+0,40pp", tc_delta_up: true,  revenue: "$2.150.000", revenue_prev: "$1.950.000", revenue_delta: "+10,3%", revenue_delta_up: true  },
