@@ -477,11 +477,11 @@ async function generatePptx(DATA) {
   });
 
   s5.addShape(pres.shapes.RECTANGLE, { x: 0.4,  y: 5.1, w: 0.55, h: 0.2, fill: { color: GREEN_BG  }, line: { color: GREEN_BG  } });
-  s5.addText("ROAS alto (>30x)",    { x: 1.0,  y: 5.1, w: 1.8, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-  s5.addShape(pres.shapes.RECTANGLE, { x: 2.9,  y: 5.1, w: 0.55, h: 0.2, fill: { color: AMBER_BG  }, line: { color: AMBER_BG  } });
-  s5.addText("ROAS medio (5-30x)", { x: 3.5,  y: 5.1, w: 1.9, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-  s5.addShape(pres.shapes.RECTANGLE, { x: 5.5,  y: 5.1, w: 0.55, h: 0.2, fill: { color: RED_BG    }, line: { color: RED_BG    } });
-  s5.addText("ROAS bajo (<5x)",     { x: 6.1,  y: 5.1, w: 1.6, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+  s5.addText("ROAS alto",  { x: 1.0,  y: 5.1, w: 1.2, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+  s5.addShape(pres.shapes.RECTANGLE, { x: 2.4,  y: 5.1, w: 0.55, h: 0.2, fill: { color: AMBER_BG  }, line: { color: AMBER_BG  } });
+  s5.addText("ROAS medio", { x: 3.0,  y: 5.1, w: 1.2, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+  s5.addShape(pres.shapes.RECTANGLE, { x: 4.4,  y: 5.1, w: 0.55, h: 0.2, fill: { color: RED_BG    }, line: { color: RED_BG    } });
+  s5.addText("ROAS bajo",  { x: 5.0,  y: 5.1, w: 1.2, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
 
   // ── SLIDE 2 – RESUMEN EJECUTIVO ───────────────────────────────────────────
   let s2 = pres.addSlide();
