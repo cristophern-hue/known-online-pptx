@@ -49,8 +49,8 @@ async function generatePptx(DATA) {
   const MESES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
   const mesIdx           = (parseInt(DATA.mes_actual) || 1) - 1;
   const añoActual        = parseInt(DATA.año_actual) || new Date().getFullYear();
-  const labelCortoActual   = `${MESES[mesIdx]} '${String(añoActual).slice(2)}`;
-  const labelCortoAnterior = `${MESES[mesIdx]} '${String(añoActual - 1).slice(2)}`;
+  const labelCortoActual   = DATA.PERIODO_ACTUAL_SHORT   || `${MESES[mesIdx]} '${String(añoActual).slice(2)}`;
+  const labelCortoAnterior = DATA.PERIODO_ANTERIOR_SHORT || `${MESES[mesIdx]} '${String(añoActual - 1).slice(2)}`;
 
   // ── Brand colors ──────────────────────────────────────────────────────────
   const { ORANGE, ORANGE2, DARK, WHITE, LIGHT_BG, GRAY_TEXT, LIGHT_GRAY,
