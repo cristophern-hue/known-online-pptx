@@ -218,37 +218,6 @@ async function generatePptx(DATA) {
   // fuenteMedio: array of { nombre, sesiones, txns, tc, tc_prev, tc_delta, tc_delta_up, revenue, revenue_prev, revenue_delta, revenue_delta_up }
   const fuenteMedio = DATA.FUENTE_MEDIO || [];
   if (fuenteMedio.length > 0) {
-    // ── Acumulado Google Ads (channel groups de GA4) ─────────────────────
-    const GOOGLE_ADS_RE = /^(paid search|cross.network|display|paid shopping)$/i;
-    const gRows = fuenteMedio.filter(r => GOOGLE_ADS_RE.test((r.nombre || "").trim()));
-    let googleAcum = null;
-    if (gRows.length >= 1) {
-      const sumInt = key => gRows.reduce((s, r) => s + (parseInt(String(r[key] ?? "0").replace(/\./g, "")) || 0), 0);
-      const fmtN   = n => n.toLocaleString("es-AR");
-      const fmtARS = n => n > 0 ? "$" + Math.round(n).toLocaleString("es-AR") : "";
-      const fmtPct = n => n.toFixed(2).replace(".", ",") + "%";
-      const sesA   = sumInt("sesiones"),      sesP = sumInt("sesiones_prev");
-      const txnA   = sumInt("txns"),          txnP = sumInt("txns_prev");
-      const revA   = sumInt("revenue"),       revP = sumInt("revenue_prev");
-      const tcA    = sesA > 0 ? txnA / sesA * 100 : 0;
-      const tcP    = sesP > 0 ? txnP / sesP * 100 : 0;
-      const tcDelta  = tcP  ? ((tcA  - tcP)  / tcP  * 100) : 0;
-      const revDelta = revP ? ((revA - revP) / revP * 100) : 0;
-      googleAcum = {
-        nombre: `▸ Google Ads (${gRows.map(r => r.nombre).join(" + ")})`,
-        sesiones: fmtN(sesA), sesiones_prev: fmtN(sesP),
-        txns: fmtN(txnA),
-        tc: sesA > 0 ? fmtPct(tcA) : "", tc_prev: sesP > 0 ? fmtPct(tcP) : "",
-        tc_delta: tcP ? (tcDelta >= 0 ? "+" : "") + tcDelta.toFixed(1) + "%" : "",
-        tc_delta_up: tcA >= tcP,
-        revenue: fmtARS(revA),
-        revenue_prev: fmtARS(revP),
-        revenue_delta: revP ? (revDelta >= 0 ? "+" : "") + revDelta.toFixed(1) + "%" : "",
-        revenue_delta_up: revA >= revP,
-        esAcumulado: true,
-      };
-    }
-
     let sFm = pres.addSlide();
     sFm.background = { color: WHITE };
     sFm.addText("Top 10 Canales", { x: 0.5, y: 0.18, w: 7, h: 0.52, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
@@ -267,18 +236,10 @@ async function generatePptx(DATA) {
       fmCx += fmColW[i];
     });
 
-    // Table rows + fila acumulado al final
-    const rowsToRender = [...fuenteMedio.slice(0, 10), ...(googleAcum ? [googleAcum] : [])];
-    rowsToRender.forEach((row, i) => {
+    fuenteMedio.slice(0, 10).forEach((row, i) => {
       const ry = fmY0 + 0.36 + i * 0.37;
-      const isAcum = row.esAcumulado === true;
-      const bg = isAcum ? LIGHT_BLUE : (i % 2 === 0 ? WHITE : LIGHT_BG);
-      const border = isAcum ? "B5D4F4" : "E8E0D8";
-
-      if (isAcum) {
-        // Línea separadora antes de la fila acumulado
-        sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry - 0.04, w: 9.2, h: 0.04, fill: { color: BLUE }, line: { color: BLUE } });
-      }
+      const bg = i % 2 === 0 ? WHITE : LIGHT_BG;
+      const border = "E8E0D8";
 
       sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry, w: 9.2, h: 0.36, fill: { color: bg }, line: { color: border, width: 0.5 } });
 
@@ -288,7 +249,7 @@ async function generatePptx(DATA) {
       const deltaTxt = up ? GREEN     : RED;
 
       let rx = 0.55;
-      sFm.addText(row.nombre || "", { x: rx, y: ry + 0.07, w: fmColW[0], h: 0.26, fontSize: 9.5, bold: isAcum, color: isAcum ? BLUE : DARK, fontFace: "DM Sans" });
+      sFm.addText(row.nombre || "", { x: rx, y: ry + 0.07, w: fmColW[0], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans" });
       rx += fmColW[0];
       sFm.addText(String(row.sesiones ?? ""), { x: rx, y: ry + 0.07, w: fmColW[1], h: 0.26, fontSize: 9.5, bold: isAcum, color: DARK, fontFace: "DM Sans", align: "center" });
       rx += fmColW[1];
@@ -315,7 +276,7 @@ async function generatePptx(DATA) {
     });
 
     // Insight box (opcional)
-    const fmTableBottom = fmY0 + 0.36 + rowsToRender.length * 0.37;
+    const fmTableBottom = fmY0 + 0.36 + Math.min(fuenteMedio.length, 10) * 0.37;
     if (DATA.FUENTE_MEDIO_INSIGHT && fmTableBottom < 5.1) {
       sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: fmTableBottom + 0.06, w: 9.2, h: 0.38, fill: { color: "FFF0EB" }, line: { color: "FA5A1E", width: 0.5 } });
       sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: fmTableBottom + 0.06, w: 0.08, h: 0.38, fill: { color: ORANGE }, line: { color: ORANGE } });
