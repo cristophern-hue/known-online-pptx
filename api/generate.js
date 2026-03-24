@@ -226,18 +226,21 @@ async function generatePptx(DATA) {
       const sumInt = key => gRows.reduce((s, r) => s + (parseInt(String(r[key] ?? "0").replace(/\./g, "")) || 0), 0);
       const fmtN   = n => n.toLocaleString("es-AR");
       const fmtARS = n => n > 0 ? "$" + Math.round(n).toLocaleString("es-AR") : "";
+      const fmtPct = n => n.toFixed(2).replace(".", ",") + "%";
       const sesA   = sumInt("sesiones"),      sesP = sumInt("sesiones_prev");
-      const txnA   = sumInt("txns");
+      const txnA   = sumInt("txns"),          txnP = sumInt("txns_prev");
       const revA   = sumInt("revenue"),       revP = sumInt("revenue_prev");
-      const tcDelta  = sesP ? ((sesA - sesP) / sesP * 100) : 0;
+      const tcA    = sesA > 0 ? txnA / sesA * 100 : 0;
+      const tcP    = sesP > 0 ? txnP / sesP * 100 : 0;
+      const tcDelta  = tcP  ? ((tcA  - tcP)  / tcP  * 100) : 0;
       const revDelta = revP ? ((revA - revP) / revP * 100) : 0;
       googleAcum = {
         nombre: `▸ Google Ads (${gRows.length > 1 ? "Total CPC" : "google / cpc"})`,
         sesiones: fmtN(sesA), sesiones_prev: fmtN(sesP),
         txns: fmtN(txnA),
-        tc: "", tc_prev: "",
-        tc_delta: (tcDelta >= 0 ? "+" : "") + tcDelta.toFixed(1) + "%",
-        tc_delta_up: sesA >= sesP,
+        tc: sesA > 0 ? fmtPct(tcA) : "", tc_prev: sesP > 0 ? fmtPct(tcP) : "",
+        tc_delta: tcP ? (tcDelta >= 0 ? "+" : "") + tcDelta.toFixed(1) + "%" : "",
+        tc_delta_up: tcA >= tcP,
         revenue: fmtARS(revA),
         revenue_prev: fmtARS(revP),
         revenue_delta: revP ? (revDelta >= 0 ? "+" : "") + revDelta.toFixed(1) + "%" : "",
