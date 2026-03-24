@@ -493,13 +493,22 @@ async function generatePptx(DATA) {
   let s2 = pres.addSlide();
   s2.background = { color: WHITE };
   s2.addText("Resumen Ejecutivo", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-  s2.addText("Inversión total · Meta Ads + Google Ads", { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+  s2.addText("Inversión · Revenue · ROAS  ·  Meta Ads + Google Ads", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+  const _invA  = parseNum(DATA.INVERSION_TOTAL), _invP = parseNum(DATA.INVERSION_PREV);
+  const _revA  = parseNum(DATA.GA4_INGRESOS),    _revP = parseNum(DATA.GA4_INGRESOS_PREV);
+  const _roasA = _invA > 0 ? _revA / _invA : 0;
+  const _roasP = _invP > 0 ? _revP / _invP : 0;
+  const _roasStr   = _roasA > 0 ? _roasA.toFixed(2).replace(".", ",") + "x" : "";
+  const _roasPrev  = _roasP > 0 ? _roasP.toFixed(2).replace(".", ",") + "x" : "";
+  const _roasDelta = _roasP > 0 ? (((_roasA - _roasP) / _roasP) * 100) : null;
+  const _roasDeltaStr = _roasDelta !== null ? (_roasDelta >= 0 ? "+" : "") + _roasDelta.toFixed(1).replace(".", ",") + "%" : "";
 
   const kpis = [
     { label: "Inversión total", val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: DATA.INVERSION_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.INVERSION_PREV || ""}`, up: DATA.INVERSION_DELTA_UP === true },
+    { label: "Revenue GA4",     val: fmtMoneyCompact(DATA.GA4_INGRESOS),    delta: DATA.GA4_INGRESOS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.GA4_INGRESOS_PREV || ""}`, up: DATA.GA4_INGRESOS_DELTA_UP === true },
+    { label: "ROAS total",      val: _roasStr, delta: _roasDeltaStr, note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${_roasPrev}`, up: _roasA >= _roasP },
     { label: "Clicks totales",  val: DATA.CLICKS_TOTAL || "", delta: DATA.CLICKS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CLICKS_PREV || ""}`, up: DATA.CLICKS_DELTA_UP === true },
-    { label: "Impresiones",     val: DATA.IMPRESIONES_TOTAL || "", delta: DATA.IMPRESIONES_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.IMPRESIONES_PREV || ""}`, up: DATA.IMPRESIONES_DELTA_UP === true },
-    { label: "CPC promedio",    val: DATA.CPC_TOTAL || "", delta: DATA.CPC_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CPC_PREV || ""}`, up: DATA.CPC_DELTA_UP === true },
   ];
   kpis.forEach((k, i) => {
     const x = 0.4 + i * 2.32;
