@@ -218,8 +218,8 @@ async function generatePptx(DATA) {
   // fuenteMedio: array of { nombre, sesiones, txns, tc, tc_prev, tc_delta, tc_delta_up, revenue, revenue_prev, revenue_delta, revenue_delta_up }
   const fuenteMedio = DATA.FUENTE_MEDIO || [];
   if (fuenteMedio.length > 0) {
-    // ── Acumulado Google Ads CPC ──────────────────────────────────────────
-    const GOOGLE_ADS_RE = /^(google\s*\/\s*(cpc|cross.network|display)|\(not set\)\s*\/\s*cross.network)$/i;
+    // ── Acumulado Google Ads (channel groups de GA4) ─────────────────────
+    const GOOGLE_ADS_RE = /^(paid search|cross.network|display|paid shopping)$/i;
     const gRows = fuenteMedio.filter(r => GOOGLE_ADS_RE.test((r.nombre || "").trim()));
     let googleAcum = null;
     if (gRows.length >= 1) {
@@ -235,7 +235,7 @@ async function generatePptx(DATA) {
       const tcDelta  = tcP  ? ((tcA  - tcP)  / tcP  * 100) : 0;
       const revDelta = revP ? ((revA - revP) / revP * 100) : 0;
       googleAcum = {
-        nombre: `▸ Google Ads (${gRows.length > 1 ? "Total CPC" : "google / cpc"})`,
+        nombre: `▸ Google Ads (${gRows.map(r => r.nombre).join(" + ")})`,
         sesiones: fmtN(sesA), sesiones_prev: fmtN(sesP),
         txns: fmtN(txnA),
         tc: sesA > 0 ? fmtPct(tcA) : "", tc_prev: sesP > 0 ? fmtPct(tcP) : "",
