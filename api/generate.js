@@ -89,7 +89,7 @@ async function generatePptx(DATA) {
     const invTotA  = invMetaA + invGoogA + invPinA,    invTotP  = invMetaP + invGoogP + invPinP;
 
     // Ventas sin canceladas
-    const vSinA = parseNum(DATA.VTEX_INGRESOS_ACTUAL), vSinP = parseNum(DATA.VTEX_INGRESOS_ANTERIOR);
+    const vSinA = parseNum(DATA.VTEX_INGRESOS_ACTUAL || DATA.ECOMMERCE_INGRESOS), vSinP = parseNum(DATA.VTEX_INGRESOS_ANTERIOR || DATA.ECOMMERCE_INGRESOS_PREV);
 
     // ROAS calculados
     const vCpcA = parseNum(DATA.ATIKA_VENTAS_CPC),     vCpcP = parseNum(DATA.ATIKA_VENTAS_CPC_PREV);
@@ -124,7 +124,7 @@ async function generatePptx(DATA) {
       { label: "Tiempo de permanencia email mkt",   a: DATA.ATIKA_TIEMPO_EMAIL||"",            p: DATA.ATIKA_TIEMPO_EMAIL_PREV||"",        d: DATA.ATIKA_TIEMPO_EMAIL_DELTA||"",        up: DATA.ATIKA_TIEMPO_EMAIL_UP===true },
       { label: "Tiempo de permanencia Orgánico",    a: DATA.ATIKA_TIEMPO_ORGANICO||"",         p: DATA.ATIKA_TIEMPO_ORGANICO_PREV||"",     d: DATA.ATIKA_TIEMPO_ORGANICO_DELTA||"",     up: DATA.ATIKA_TIEMPO_ORGANICO_UP===true },
       { label: "Ventas sitio (con canceladas)",     a: DATA.GA4_INGRESOS||"",                  p: DATA.GA4_INGRESOS_PREV||"",              d: DATA.GA4_INGRESOS_DELTA||"",              up: DATA.GA4_INGRESOS_DELTA_UP===true },
-      { label: "Ventas sitio (sin canceladas)",     a: DATA.VTEX_INGRESOS_ACTUAL||"",          p: DATA.VTEX_INGRESOS_ANTERIOR||"",         d: calcDelta(vSinA,vSinP),                   up: calcUp(vSinA,vSinP) },
+      { label: "Ventas sitio (sin canceladas)",     a: DATA.VTEX_INGRESOS_ACTUAL||DATA.ECOMMERCE_INGRESOS||"",  p: DATA.VTEX_INGRESOS_ANTERIOR||DATA.ECOMMERCE_INGRESOS_PREV||"",  d: calcDelta(vSinA,vSinP), up: calcUp(vSinA,vSinP) },
       { label: "Ventas CPC",                        a: DATA.ATIKA_VENTAS_CPC||"",              p: DATA.ATIKA_VENTAS_CPC_PREV||"",          d: DATA.ATIKA_VENTAS_CPC_DELTA||"",          up: DATA.ATIKA_VENTAS_CPC_UP===true },
       { label: "Ventas email mkt",                  a: DATA.ATIKA_VENTAS_EMAIL||"",            p: DATA.ATIKA_VENTAS_EMAIL_PREV||"",        d: DATA.ATIKA_VENTAS_EMAIL_DELTA||"",        up: DATA.ATIKA_VENTAS_EMAIL_UP===true },
       { label: "Ventas Pinterest",                  a: DATA.ATIKA_VENTAS_PINTEREST||"",        p: DATA.ATIKA_VENTAS_PINTEREST_PREV||"",    d: DATA.ATIKA_VENTAS_PINTEREST_DELTA||"",    up: DATA.ATIKA_VENTAS_PINTEREST_UP===true },
@@ -175,7 +175,8 @@ async function generatePptx(DATA) {
     s7.addText(m.label, { x: x + 0.58, y: y + 0.18, w: 2.2, h: 0.22, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
     s7.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.65, w: 2.62, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
     s7.addText(labelCortoActual, { x: x + 0.14, y: y + 0.75, w: 1.3,  h: 0.18, fontSize: 9,  color: GRAY_TEXT, fontFace: "DM Sans" });
-    s7.addText(m.val26,  { x: x + 0.14, y: y + 0.92, w: 1.5,  h: 0.38, fontSize: 22, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    const fs7 = String(m.val26).length > 12 ? 15 : String(m.val26).length > 9 ? 18 : 22;
+    s7.addText(m.val26,  { x: x + 0.14, y: y + 0.92, w: 1.5,  h: 0.38, fontSize: fs7, bold: true, color: DARK, fontFace: "Trebuchet MS" });
     s7.addShape(pres.shapes.RECTANGLE, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fill: { color: m.deltaBg }, line: { color: m.deltaBg } });
     s7.addText(m.delta,  { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fontSize: 11, bold: true, color: m.deltaColor, fontFace: "DM Sans", align: "center" });
     s7.addText(`${labelCortoAnterior}: ${m.val25}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
@@ -206,7 +207,8 @@ async function generatePptx(DATA) {
       sEc.addText(m.label, { x: x + 0.7,  y: y + 0.22, w: 1.8,  h: 0.28, fontSize: 12, bold: true, color: DARK,      fontFace: "DM Sans" });
       sEc.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.82, w: 2.32, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
       sEc.addText(DATA.PERIODO_ACTUAL_LABEL || "", { x: x + 0.14, y: y + 0.92, w: 2.0, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-      sEc.addText(m.val,   { x: x + 0.14, y: y + 1.12, w: 2.32, h: 0.65, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+      const fsEc = String(m.val).length > 12 ? 18 : String(m.val).length > 9 ? 22 : 28;
+      sEc.addText(m.val,   { x: x + 0.14, y: y + 1.12, w: 2.32, h: 0.65, fontSize: fsEc, bold: true, color: DARK, fontFace: "Trebuchet MS" });
       sEc.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 1.82, w: 2.32, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
       sEc.addText(`${DATA.PERIODO_ANTERIOR_LABEL || "Período ant."}: ${m.prev}`, { x: x + 0.14, y: y + 1.92, w: 2.32, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
       sEc.addShape(pres.shapes.RECTANGLE, { x: x + 0.5, y: y + 2.25, w: 1.6, h: 0.38, fill: { color: m.up ? GREEN_BG : RED_BG }, line: { color: m.up ? GREEN_BG : RED_BG } });
@@ -218,37 +220,6 @@ async function generatePptx(DATA) {
   // fuenteMedio: array of { nombre, sesiones, txns, tc, tc_prev, tc_delta, tc_delta_up, revenue, revenue_prev, revenue_delta, revenue_delta_up }
   const fuenteMedio = DATA.FUENTE_MEDIO || [];
   if (fuenteMedio.length > 0) {
-    // ── Acumulado Google Ads CPC ──────────────────────────────────────────
-    const GOOGLE_ADS_RE = /^(google\s*\/\s*(cpc|cross.network|display)|\(not set\)\s*\/\s*cross.network)$/i;
-    const gRows = fuenteMedio.filter(r => GOOGLE_ADS_RE.test((r.nombre || "").trim()));
-    let googleAcum = null;
-    if (gRows.length >= 1) {
-      const sumInt = key => gRows.reduce((s, r) => s + (parseInt(String(r[key] ?? "0").replace(/\./g, "")) || 0), 0);
-      const fmtN   = n => n.toLocaleString("es-AR");
-      const fmtARS = n => n > 0 ? "$" + Math.round(n).toLocaleString("es-AR") : "";
-      const fmtPct = n => n.toFixed(2).replace(".", ",") + "%";
-      const sesA   = sumInt("sesiones"),      sesP = sumInt("sesiones_prev");
-      const txnA   = sumInt("txns"),          txnP = sumInt("txns_prev");
-      const revA   = sumInt("revenue"),       revP = sumInt("revenue_prev");
-      const tcA    = sesA > 0 ? txnA / sesA * 100 : 0;
-      const tcP    = sesP > 0 ? txnP / sesP * 100 : 0;
-      const tcDelta  = tcP  ? ((tcA  - tcP)  / tcP  * 100) : 0;
-      const revDelta = revP ? ((revA - revP) / revP * 100) : 0;
-      googleAcum = {
-        nombre: `▸ Google Ads (${gRows.length > 1 ? "Total CPC" : "google / cpc"})`,
-        sesiones: fmtN(sesA), sesiones_prev: fmtN(sesP),
-        txns: fmtN(txnA),
-        tc: sesA > 0 ? fmtPct(tcA) : "", tc_prev: sesP > 0 ? fmtPct(tcP) : "",
-        tc_delta: tcP ? (tcDelta >= 0 ? "+" : "") + tcDelta.toFixed(1) + "%" : "",
-        tc_delta_up: tcA >= tcP,
-        revenue: fmtARS(revA),
-        revenue_prev: fmtARS(revP),
-        revenue_delta: revP ? (revDelta >= 0 ? "+" : "") + revDelta.toFixed(1) + "%" : "",
-        revenue_delta_up: revA >= revP,
-        esAcumulado: true,
-      };
-    }
-
     let sFm = pres.addSlide();
     sFm.background = { color: WHITE };
     sFm.addText("Top 10 Canales", { x: 0.5, y: 0.18, w: 7, h: 0.52, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
@@ -267,18 +238,10 @@ async function generatePptx(DATA) {
       fmCx += fmColW[i];
     });
 
-    // Table rows + fila acumulado al final
-    const rowsToRender = [...fuenteMedio.slice(0, 10), ...(googleAcum ? [googleAcum] : [])];
-    rowsToRender.forEach((row, i) => {
+    fuenteMedio.slice(0, 10).forEach((row, i) => {
       const ry = fmY0 + 0.36 + i * 0.37;
-      const isAcum = row.esAcumulado === true;
-      const bg = isAcum ? LIGHT_BLUE : (i % 2 === 0 ? WHITE : LIGHT_BG);
-      const border = isAcum ? "B5D4F4" : "E8E0D8";
-
-      if (isAcum) {
-        // Línea separadora antes de la fila acumulado
-        sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry - 0.04, w: 9.2, h: 0.04, fill: { color: BLUE }, line: { color: BLUE } });
-      }
+      const bg = i % 2 === 0 ? WHITE : LIGHT_BG;
+      const border = "E8E0D8";
 
       sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry, w: 9.2, h: 0.36, fill: { color: bg }, line: { color: border, width: 0.5 } });
 
@@ -288,7 +251,7 @@ async function generatePptx(DATA) {
       const deltaTxt = up ? GREEN     : RED;
 
       let rx = 0.55;
-      sFm.addText(row.nombre || "", { x: rx, y: ry + 0.07, w: fmColW[0], h: 0.26, fontSize: 9.5, bold: isAcum, color: isAcum ? BLUE : DARK, fontFace: "DM Sans" });
+      sFm.addText(row.nombre || "", { x: rx, y: ry + 0.07, w: fmColW[0], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans" });
       rx += fmColW[0];
       sFm.addText(String(row.sesiones ?? ""), { x: rx, y: ry + 0.07, w: fmColW[1], h: 0.26, fontSize: 9.5, bold: isAcum, color: DARK, fontFace: "DM Sans", align: "center" });
       rx += fmColW[1];
@@ -315,7 +278,7 @@ async function generatePptx(DATA) {
     });
 
     // Insight box (opcional)
-    const fmTableBottom = fmY0 + 0.36 + rowsToRender.length * 0.37;
+    const fmTableBottom = fmY0 + 0.36 + Math.min(fuenteMedio.length, 10) * 0.37;
     if (DATA.FUENTE_MEDIO_INSIGHT && fmTableBottom < 5.1) {
       sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: fmTableBottom + 0.06, w: 9.2, h: 0.38, fill: { color: "FFF0EB" }, line: { color: "FA5A1E", width: 0.5 } });
       sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: fmTableBottom + 0.06, w: 0.08, h: 0.38, fill: { color: ORANGE }, line: { color: ORANGE } });
