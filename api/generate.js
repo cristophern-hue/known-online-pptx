@@ -65,6 +65,11 @@ async function generatePptx(DATA) {
     if (n >= 1_000)     return `$${(n / 1_000).toFixed(1).replace(".", ",")} K`;
     return val || "";
   };
+  const fmtMoneyNoDecimals = val => {
+    const n = parseNum(val);
+    if (!n) return val || "";
+    return "$" + new Intl.NumberFormat("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+  };
 
   // ── SLIDE 1 – COVER ───────────────────────────────────────────────────────
   buildSlide_Cover(pres, DATA);
@@ -194,9 +199,9 @@ async function generatePptx(DATA) {
     sEc.addText(`Plataforma  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
     const ecMetrics = [
-      { icon: "R", label: "Ingresos",       sub: "Revenue de plataforma ecommerce", val: fmtMoneyCompact(DATA.ECOMMERCE_INGRESOS), prev: DATA.ECOMMERCE_INGRESOS_PREV || "", delta: DATA.ECOMMERCE_INGRESOS_DELTA || "", up: DATA.ECOMMERCE_INGRESOS_DELTA_UP === true },
+      { icon: "R", label: "Ingresos",       sub: "Revenue de plataforma ecommerce", val: fmtMoneyNoDecimals(DATA.ECOMMERCE_INGRESOS), prev: fmtMoneyNoDecimals(DATA.ECOMMERCE_INGRESOS_PREV), delta: DATA.ECOMMERCE_INGRESOS_DELTA || "", up: DATA.ECOMMERCE_INGRESOS_DELTA_UP === true },
       { icon: "O", label: "Órdenes",        sub: "Transacciones / pedidos",         val: DATA.ECOMMERCE_ORDENES  || "", prev: DATA.ECOMMERCE_ORDENES_PREV  || "", delta: DATA.ECOMMERCE_ORDENES_DELTA  || "", up: DATA.ECOMMERCE_ORDENES_DELTA_UP  === true },
-      { icon: "T", label: "Ticket promedio", sub: "Ingreso promedio por orden",      val: DATA.ECOMMERCE_TICKET   || "", prev: DATA.ECOMMERCE_TICKET_PREV   || "", delta: DATA.ECOMMERCE_TICKET_DELTA   || "", up: DATA.ECOMMERCE_TICKET_DELTA_UP   === true },
+      { icon: "T", label: "Ticket promedio", sub: "Ingreso promedio por orden",      val: fmtMoneyNoDecimals(DATA.ECOMMERCE_TICKET), prev: fmtMoneyNoDecimals(DATA.ECOMMERCE_TICKET_PREV), delta: DATA.ECOMMERCE_TICKET_DELTA   || "", up: DATA.ECOMMERCE_TICKET_DELTA_UP   === true },
     ];
 
     ecMetrics.forEach((m, i) => {
@@ -478,12 +483,6 @@ async function generatePptx(DATA) {
       s.addText(row.roas || "", { x: rx, y: y + 0.1, w: 1.2, h: 0.24, fontSize: 10, bold: true, color: roasColor, fontFace: "DM Sans", align: "center" });
     });
 
-    s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 0.55, h: 0.2, fill: { color: GREEN_BG }, line: { color: GREEN_BG } });
-    s.addText("ROAS alto",  { x: 1.0, y: 5.1, w: 1.2, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-    s.addShape(pres.shapes.RECTANGLE, { x: 2.4, y: 5.1, w: 0.55, h: 0.2, fill: { color: AMBER_BG }, line: { color: AMBER_BG } });
-    s.addText("ROAS medio", { x: 3.0, y: 5.1, w: 1.2, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-    s.addShape(pres.shapes.RECTANGLE, { x: 4.4, y: 5.1, w: 0.55, h: 0.2, fill: { color: RED_BG   }, line: { color: RED_BG   } });
-    s.addText("ROAS bajo",  { x: 5.0, y: 5.1, w: 1.2, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
   };
 
   if (campGoogle.length > 0) buildCampSlide(pres, campGoogle, "Google");
