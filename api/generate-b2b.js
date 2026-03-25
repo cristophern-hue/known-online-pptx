@@ -199,7 +199,7 @@ async function generatePptx(DATA) {
     { label: "Clicks",      val: DATA.GOOGLE_CLICKS      || "", prev: DATA.GOOGLE_CLICKS_PREV      || "", delta: DATA.GOOGLE_CLICKS_DELTA      || "", good: DATA.GOOGLE_CLICKS_DELTA_UP      === true },
     { label: "Impresiones", val: DATA.GOOGLE_IMPRESIONES || "", prev: DATA.GOOGLE_IMPRESIONES_PREV || "", delta: DATA.GOOGLE_IMPRESIONES_DELTA || "", good: DATA.GOOGLE_IMPRESIONES_DELTA_UP === true },
     { label: "CTR",         val: DATA.GOOGLE_CTR         || "", prev: DATA.GOOGLE_CTR_PREV         || "", delta: DATA.GOOGLE_CTR_DELTA         || "", good: DATA.GOOGLE_CTR_DELTA_UP         === true },
-    { label: "CPC",         val: DATA.GOOGLE_CPC         || "", prev: DATA.GOOGLE_CPC_PREV         || "", delta: DATA.GOOGLE_CPC_DELTA         || "", good: DATA.GOOGLE_CPC_DELTA_UP         === true },
+    { label: "Leads",       val: DATA.GOOGLE_LEADS       || "", prev: DATA.GOOGLE_LEADS_PREV       || "", delta: DATA.GOOGLE_LEADS_DELTA       || "", good: DATA.GOOGLE_LEADS_DELTA_UP       === true },
     { label: "CPL",         val: DATA.GOOGLE_CPL         || "", prev: DATA.GOOGLE_CPL_PREV         || "", delta: DATA.GOOGLE_CPL_DELTA         || "", good: DATA.GOOGLE_CPL_DELTA_UP         === true },
   ];
   googleKPIs.forEach((k, i) => {
