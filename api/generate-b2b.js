@@ -71,43 +71,45 @@ async function generatePptx(DATA) {
   // ── SLIDE 1 – COVER ───────────────────────────────────────────────────────
   buildSlide_Cover(pres, DATA);
 
-  // ── SLIDE 3 – GA4 ─────────────────────────────────────────────────────────
-  let s7 = pres.addSlide();
-  s7.background = { color: WHITE };
-  s7.addText("Informe del Sitio", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-  s7.addText(`GA4  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+  // ── SLIDE 3 – GA4 (CONDICIONAL) ───────────────────────────────────────────
+  if (DATA.GA4_TIENE_DATOS === true) {
+    let s7 = pres.addSlide();
+    s7.background = { color: WHITE };
+    s7.addText("Informe del Sitio", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s7.addText(`GA4  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
-  const ga4Metrics = [
-    { icon: "S", label: "Sesiones",              sub: "Sesiones frente al año anterior",          val26: DATA.GA4_SESIONES     || "", val25: DATA.GA4_SESIONES_PREV     || "", delta: DATA.GA4_SESIONES_DELTA     || "", deltaColor: DATA.GA4_SESIONES_DELTA_UP     === true ? GREEN : RED, deltaBg: DATA.GA4_SESIONES_DELTA_UP     === true ? GREEN_BG : RED_BG },
-    { icon: "L", label: "Leads",                  sub: "Leads / Formularios GA4",                  val26: DATA.GA4_LEADS        || "", val25: DATA.GA4_LEADS_PREV        || "", delta: DATA.GA4_LEADS_DELTA        || "", deltaColor: DATA.GA4_LEADS_DELTA_UP        === true ? GREEN : RED, deltaBg: DATA.GA4_LEADS_DELTA_UP        === true ? GREEN_BG : RED_BG },
-    { icon: "$", label: "CPL GA4",                sub: "Inversión total / Leads GA4",               val26: DATA.GA4_CPL          || "", val25: DATA.GA4_CPL_PREV          || "", delta: DATA.GA4_CPL_DELTA          || "", deltaColor: DATA.GA4_CPL_DELTA_UP          === true ? GREEN : RED, deltaBg: DATA.GA4_CPL_DELTA_UP          === true ? GREEN_BG : RED_BG },
-    { icon: "$", label: "Inversión publicitaria", sub: "Total Meta Ads + Google Ads",               val26: fmtMoneyCompact(DATA.INVERSION_TOTAL), val25: DATA.INVERSION_PREV   || "", delta: DATA.INVERSION_DELTA        || "", deltaColor: DATA.INVERSION_DELTA_UP        === true ? GREEN : RED, deltaBg: DATA.INVERSION_DELTA_UP        === true ? GREEN_BG : RED_BG },
-    { icon: "%", label: "Tasa de conversión",     sub: "Leads / Sesiones",                          val26: DATA.GA4_CONV_RATE    || "", val25: DATA.GA4_CONV_RATE_PREV    || "", delta: DATA.GA4_CONV_RATE_DELTA    || "", deltaColor: DATA.GA4_CONV_RATE_DELTA_UP    === true ? GREEN : RED, deltaBg: DATA.GA4_CONV_RATE_DELTA_UP    === true ? GREEN_BG : RED_BG },
-    { icon: "T", label: "Tiempo en sitio",         sub: "Duración media de sesión",                  val26: DATA.GA4_TIEMPO_SITIO || "", val25: DATA.GA4_TIEMPO_SITIO_PREV || "", delta: DATA.GA4_TIEMPO_SITIO_DELTA || "", deltaColor: DATA.GA4_TIEMPO_SITIO_DELTA_UP === true ? GREEN : RED, deltaBg: DATA.GA4_TIEMPO_SITIO_DELTA_UP === true ? GREEN_BG : RED_BG },
-  ];
-  ga4Metrics.forEach((m, i) => {
-    const col = i % 3, row = Math.floor(i / 3);
-    const x = 0.4 + col * 3.13, y = 1.2 + row * 1.85;
-    s7.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 1.7, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
-    s7.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 0.06, fill: { color: ORANGE }, line: { color: ORANGE } });
-    s7.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.18, w: 0.36, h: 0.36, fill: { color: ORANGE }, line: { color: ORANGE } });
-    s7.addText(m.label, { x: x + 0.58, y: y + 0.18, w: 2.2, h: 0.22, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
-    s7.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.65, w: 2.62, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
-    s7.addText(labelCortoActual, { x: x + 0.14, y: y + 0.75, w: 1.3,  h: 0.18, fontSize: 9,  color: GRAY_TEXT, fontFace: "DM Sans" });
-    s7.addText(m.val26,  { x: x + 0.14, y: y + 0.92, w: 1.5,  h: 0.38, fontSize: 22, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-    s7.addShape(pres.shapes.RECTANGLE, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fill: { color: m.deltaBg }, line: { color: m.deltaBg } });
-    s7.addText(m.delta,  { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fontSize: 11, bold: true, color: m.deltaColor, fontFace: "DM Sans", align: "center" });
-    s7.addText(`${labelCortoAnterior}: ${m.val25}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-  });
+    const ga4Metrics = [
+      { icon: "S", label: "Sesiones",              sub: "Sesiones frente al año anterior",          val26: DATA.GA4_SESIONES     || "", val25: DATA.GA4_SESIONES_PREV     || "", delta: DATA.GA4_SESIONES_DELTA     || "", deltaColor: DATA.GA4_SESIONES_DELTA_UP     === true ? GREEN : RED, deltaBg: DATA.GA4_SESIONES_DELTA_UP     === true ? GREEN_BG : RED_BG },
+      { icon: "L", label: "Leads",                  sub: "Leads / Formularios GA4",                  val26: DATA.GA4_LEADS        || "", val25: DATA.GA4_LEADS_PREV        || "", delta: DATA.GA4_LEADS_DELTA        || "", deltaColor: DATA.GA4_LEADS_DELTA_UP        === true ? GREEN : RED, deltaBg: DATA.GA4_LEADS_DELTA_UP        === true ? GREEN_BG : RED_BG },
+      { icon: "$", label: "CPL GA4",                sub: "Inversión total / Leads GA4",               val26: DATA.GA4_CPL          || "", val25: DATA.GA4_CPL_PREV          || "", delta: DATA.GA4_CPL_DELTA          || "", deltaColor: DATA.GA4_CPL_DELTA_UP          === true ? GREEN : RED, deltaBg: DATA.GA4_CPL_DELTA_UP          === true ? GREEN_BG : RED_BG },
+      { icon: "$", label: "Inversión publicitaria", sub: "Total Meta Ads + Google Ads",               val26: fmtMoneyCompact(DATA.INVERSION_TOTAL), val25: DATA.INVERSION_PREV   || "", delta: DATA.INVERSION_DELTA        || "", deltaColor: DATA.INVERSION_DELTA_UP        === true ? GREEN : RED, deltaBg: DATA.INVERSION_DELTA_UP        === true ? GREEN_BG : RED_BG },
+      { icon: "%", label: "Tasa de conversión",     sub: "Leads / Sesiones",                          val26: DATA.GA4_CONV_RATE    || "", val25: DATA.GA4_CONV_RATE_PREV    || "", delta: DATA.GA4_CONV_RATE_DELTA    || "", deltaColor: DATA.GA4_CONV_RATE_DELTA_UP    === true ? GREEN : RED, deltaBg: DATA.GA4_CONV_RATE_DELTA_UP    === true ? GREEN_BG : RED_BG },
+      { icon: "T", label: "Tiempo en sitio",         sub: "Duración media de sesión",                  val26: DATA.GA4_TIEMPO_SITIO || "", val25: DATA.GA4_TIEMPO_SITIO_PREV || "", delta: DATA.GA4_TIEMPO_SITIO_DELTA || "", deltaColor: DATA.GA4_TIEMPO_SITIO_DELTA_UP === true ? GREEN : RED, deltaBg: DATA.GA4_TIEMPO_SITIO_DELTA_UP === true ? GREEN_BG : RED_BG },
+    ];
+    ga4Metrics.forEach((m, i) => {
+      const col = i % 3, row = Math.floor(i / 3);
+      const x = 0.4 + col * 3.13, y = 1.2 + row * 1.85;
+      s7.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 1.7, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+      s7.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 0.06, fill: { color: ORANGE }, line: { color: ORANGE } });
+      s7.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.18, w: 0.36, h: 0.36, fill: { color: ORANGE }, line: { color: ORANGE } });
+      s7.addText(m.label, { x: x + 0.58, y: y + 0.18, w: 2.2, h: 0.22, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
+      s7.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.65, w: 2.62, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
+      s7.addText(labelCortoActual, { x: x + 0.14, y: y + 0.75, w: 1.3,  h: 0.18, fontSize: 9,  color: GRAY_TEXT, fontFace: "DM Sans" });
+      s7.addText(m.val26,  { x: x + 0.14, y: y + 0.92, w: 1.5,  h: 0.38, fontSize: 22, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+      s7.addShape(pres.shapes.RECTANGLE, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fill: { color: m.deltaBg }, line: { color: m.deltaBg } });
+      s7.addText(m.delta,  { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fontSize: 11, bold: true, color: m.deltaColor, fontFace: "DM Sans", align: "center" });
+      s7.addText(`${labelCortoAnterior}: ${m.val25}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    });
 
-  s7.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.95, w: 9.2, h: 0.55, fill: { color: "FFF0EB" }, line: { color: "FA5A1E", width: 0.5 } });
-  s7.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.95, w: 0.08, h: 0.55, fill: { color: ORANGE }, line: { color: ORANGE } });
-  s7.addText(DATA.GA4_INSIGHT || "", { x: 0.6, y: 4.97, w: 8.9, h: 0.5, fontSize: 10, color: DARK, fontFace: "DM Sans", valign: "middle" });
+    s7.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.95, w: 9.2, h: 0.55, fill: { color: "FFF0EB" }, line: { color: "FA5A1E", width: 0.5 } });
+    s7.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 4.95, w: 0.08, h: 0.55, fill: { color: ORANGE }, line: { color: ORANGE } });
+    s7.addText(DATA.GA4_INSIGHT || "", { x: 0.6, y: 4.97, w: 8.9, h: 0.5, fontSize: 10, color: DARK, fontFace: "DM Sans", valign: "middle" });
+  }
 
-  // ── SLIDE 5B – TOP CANALES (GA4) ─────────────────────────────────────────
+  // ── SLIDE 5B – TOP CANALES (GA4) – CONDICIONAL ───────────────────────────
   // fuenteMedio: array of { nombre, sesiones, txns, tc, tc_prev, tc_delta, tc_delta_up, revenue, revenue_prev, revenue_delta, revenue_delta_up }
   const fuenteMedio = DATA.FUENTE_MEDIO || [];
-  if (fuenteMedio.length > 0) {
+  if (DATA.GA4_TIENE_DATOS === true && fuenteMedio.length > 0) {
     let sFm = pres.addSlide();
     sFm.background = { color: WHITE };
     sFm.addText("Top 10 Canales", { x: 0.5, y: 0.18, w: 7, h: 0.52, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
