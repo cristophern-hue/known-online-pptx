@@ -136,6 +136,47 @@ async function generatePptx(DATA) {
     ], { x: bx, y: by + 0.2, w: 1.9, h: 0.28, fontSize: 12, fontFace: "DM Sans" });
   });
 
+  // ── SLIDE – FACTURACIÓN & ROAS (CONDICIONAL VTEX) ────────────────────────
+  if (DATA.ECOMMERCE_INGRESOS) {
+    const _inv  = parseNum(DATA.INVERSION_TOTAL);
+    const _invP = parseNum(DATA.INVERSION_PREV);
+    const _rev  = parseNum(DATA.ECOMMERCE_INGRESOS);
+    const _revP = parseNum(DATA.ECOMMERCE_INGRESOS_PREV);
+    const _roas  = _inv  > 0 ? _rev  / _inv  : 0;
+    const _roasP = _invP > 0 ? _revP / _invP : 0;
+    const _roasDelta = _roasP > 0 ? ((_roas - _roasP) / _roasP * 100) : 0;
+    const _roasDeltaStr = (_roasDelta >= 0 ? "+" : "") + _roasDelta.toFixed(1).replace(".", ",") + "%";
+    const _roasStr  = _roas.toFixed(2).replace(".", ",")  + "x";
+    const _roasPStr = _roasP.toFixed(2).replace(".", ",") + "x";
+
+    let sVtex = pres.addSlide();
+    sVtex.background = { color: WHITE };
+    sVtex.addText("Facturación & ROAS", { x: 0.5, y: 0.2, w: 8, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sVtex.addText(`Ecommerce  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 8, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    const vtexKPIs = [
+      { label: "Facturación",  val: fmtMoneyCompact(DATA.ECOMMERCE_INGRESOS), prev: DATA.ECOMMERCE_INGRESOS_PREV || "", delta: DATA.ECOMMERCE_INGRESOS_DELTA || "", up: DATA.ECOMMERCE_INGRESOS_DELTA_UP === true },
+      { label: "ROAS",         val: _roasStr,                                  prev: _roasPStr,                        delta: _roasDeltaStr,                      up: _roas >= _roasP                          },
+      { label: "Inversión",    val: fmtMoneyCompact(DATA.INVERSION_TOTAL),     prev: DATA.INVERSION_PREV           || "", delta: DATA.INVERSION_DELTA           || "", up: DATA.INVERSION_DELTA_UP           === true },
+    ];
+
+    vtexKPIs.forEach((k, i) => {
+      const x = 0.85 + i * 2.8, y = 1.3;
+      sVtex.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.6, h: 3.2, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+      sVtex.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.6, h: 0.06, fill: { color: ORANGE }, line: { color: ORANGE } });
+      sVtex.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.2, w: 0.45, h: 0.45, fill: { color: ORANGE }, line: { color: ORANGE } });
+      sVtex.addText(k.label, { x: x + 0.7, y: y + 0.22, w: 1.8, h: 0.28, fontSize: 12, bold: true, color: DARK, fontFace: "DM Sans" });
+      sVtex.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.82, w: 2.32, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
+      sVtex.addText(DATA.PERIODO_ACTUAL_LABEL || "", { x: x + 0.14, y: y + 0.92, w: 2.0, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      const fs = String(k.val).length > 12 ? 18 : String(k.val).length > 9 ? 22 : 28;
+      sVtex.addText(k.val, { x: x + 0.14, y: y + 1.12, w: 2.32, h: 0.65, fontSize: fs, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+      sVtex.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 1.82, w: 2.32, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
+      sVtex.addText(`${DATA.PERIODO_ANTERIOR_LABEL || "Período ant."}: ${k.prev}`, { x: x + 0.14, y: y + 1.92, w: 2.32, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      sVtex.addShape(pres.shapes.RECTANGLE, { x: x + 0.5, y: y + 2.25, w: 1.6, h: 0.38, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
+      sVtex.addText(k.delta, { x: x + 0.5, y: y + 2.25, w: 1.6, h: 0.38, fontSize: 16, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center", valign: "middle" });
+    });
+  }
+
   // ── SLIDE – CAMPAÑAS META ADS (tabla por campaña) ────────────────────────
   if (Array.isArray(DATA.META_CAMPANAS) && DATA.META_CAMPANAS.length > 0) {
     let smc = pres.addSlide();
