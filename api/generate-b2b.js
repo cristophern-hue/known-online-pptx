@@ -167,7 +167,7 @@ async function generatePptx(DATA) {
     { label: "Clicks",      val: DATA.META_CLICKS       || "", prev: DATA.META_CLICKS_PREV       || "", delta: DATA.META_CLICKS_DELTA       || "", up: DATA.META_CLICKS_DELTA_UP       === true, warn: false },
     { label: "Impresiones", val: DATA.META_IMPRESIONES  || "", prev: DATA.META_IMPRESIONES_PREV  || "", delta: DATA.META_IMPRESIONES_DELTA  || "", up: DATA.META_IMPRESIONES_DELTA_UP  === true, warn: false },
     { label: "CTR",         val: DATA.META_CTR          || "", prev: DATA.META_CTR_PREV          || "", delta: DATA.META_CTR_DELTA          || "", up: DATA.META_CTR_DELTA_UP          === true, warn: false },
-    { label: "CPC",         val: DATA.META_CPC          || "", prev: DATA.META_CPC_PREV          || "", delta: DATA.META_CPC_DELTA          || "", up: DATA.META_CPC_DELTA_UP          === true, warn: false },
+    { label: "Leads",       val: DATA.META_LEADS        || "", prev: DATA.META_LEADS_PREV        || "", delta: DATA.META_LEADS_DELTA        || "", up: DATA.META_LEADS_DELTA_UP        === true, warn: false },
     { label: "CPL",         val: DATA.META_CPL          || "", prev: DATA.META_CPL_PREV          || "", delta: DATA.META_CPL_DELTA          || "", up: DATA.META_CPL_DELTA_UP          === true, warn: false },
   ];
   metaKPIs.forEach((k, i) => {
@@ -199,7 +199,7 @@ async function generatePptx(DATA) {
     { label: "Clicks",      val: DATA.GOOGLE_CLICKS      || "", prev: DATA.GOOGLE_CLICKS_PREV      || "", delta: DATA.GOOGLE_CLICKS_DELTA      || "", good: DATA.GOOGLE_CLICKS_DELTA_UP      === true },
     { label: "Impresiones", val: DATA.GOOGLE_IMPRESIONES || "", prev: DATA.GOOGLE_IMPRESIONES_PREV || "", delta: DATA.GOOGLE_IMPRESIONES_DELTA || "", good: DATA.GOOGLE_IMPRESIONES_DELTA_UP === true },
     { label: "CTR",         val: DATA.GOOGLE_CTR         || "", prev: DATA.GOOGLE_CTR_PREV         || "", delta: DATA.GOOGLE_CTR_DELTA         || "", good: DATA.GOOGLE_CTR_DELTA_UP         === true },
-    { label: "CPC",         val: DATA.GOOGLE_CPC         || "", prev: DATA.GOOGLE_CPC_PREV         || "", delta: DATA.GOOGLE_CPC_DELTA         || "", good: DATA.GOOGLE_CPC_DELTA_UP         === true },
+    { label: "Leads",       val: DATA.GOOGLE_LEADS       || "", prev: DATA.GOOGLE_LEADS_PREV       || "", delta: DATA.GOOGLE_LEADS_DELTA       || "", good: DATA.GOOGLE_LEADS_DELTA_UP       === true },
     { label: "CPL",         val: DATA.GOOGLE_CPL         || "", prev: DATA.GOOGLE_CPL_PREV         || "", delta: DATA.GOOGLE_CPL_DELTA         || "", good: DATA.GOOGLE_CPL_DELTA_UP         === true },
   ];
   googleKPIs.forEach((k, i) => {
