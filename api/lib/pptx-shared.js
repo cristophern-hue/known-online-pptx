@@ -116,7 +116,10 @@ function buildSlide_Recommendations(pres, DATA) {
   s.addText("Recomendaciones", { x: 0.5, y: 0.22, w: 9, h: 0.55, fontSize: 28, bold: true, color: WHITE, fontFace: "Trebuchet MS" });
   s.addText("Acciones prioritarias para optimizar la performance", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: "FF912D", fontFace: "DM Sans" });
 
-  (DATA.RECOMENDACIONES || []).slice(0, 5).forEach((r, i) => {
+  const _recs = Array.isArray(DATA.RECOMENDACIONES)
+    ? DATA.RECOMENDACIONES
+    : (() => { try { return JSON.parse(DATA.RECOMENDACIONES || '[]'); } catch(e) { return []; } })();
+  _recs.slice(0, 5).forEach((r, i) => {
     const num = String(i + 1).padStart(2, "0");
     const y   = 1.22 + i * 0.82;
     s.addShape(pres.shapes.OVAL, { x: 0.4, y, w: 0.45, h: 0.45, fill: { color: ORANGE }, line: { color: ORANGE } });
