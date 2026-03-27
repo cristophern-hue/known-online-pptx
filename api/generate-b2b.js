@@ -72,8 +72,8 @@ async function generatePptx(DATA) {
   // ── SLIDE 1 – COVER ───────────────────────────────────────────────────────
   buildSlide_Cover(pres, DATA);
 
-  // ── SLIDE 2 – RESUMEN EJECUTIVO ───────────────────────────────────────────
-  let s2 = pres.addSlide();
+  // ── SLIDE 2 – RESUMEN EJECUTIVO (solo con 2 plataformas) ─────────────────
+  if (hasGoogle) { let s2 = pres.addSlide();
   s2.background = { color: WHITE };
   s2.addText("Resumen Ejecutivo", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
   s2.addText(`Inversión · Leads · CPL  ·  Meta Ads${hasGoogle ? " + Google Ads" : ""}`, { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
@@ -137,7 +137,7 @@ async function generatePptx(DATA) {
         { text: delta,      options: { color: isDown ? RED : GREEN, bold: true } },
       ], { x: bx, y: by + 0.2, w: 1.9, h: 0.28, fontSize: 12, fontFace: "DM Sans" });
     });
-  }
+  } } // end hasGoogle / Resumen Ejecutivo
 
   // ── SLIDE – FACTURACIÓN & ROAS (CONDICIONAL VTEX) ────────────────────────
   if (DATA.ECOMMERCE_INGRESOS) {
