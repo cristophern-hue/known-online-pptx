@@ -420,66 +420,87 @@ async function generatePptx(DATA) {
     sDist.addText(`Total: ${fmtN2(totalLeadsC)} leads  ·  ${DATA.META_ADSETS.length} conjuntos activos`, { x: 0.55, y: footerY + 0.06, w: 9, h: 0.28, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
   }
 
-  // ── SLIDE – CONJUNTOS DE ANUNCIOS (condicional) ───────────────────────────
+  // ── SLIDE(S) – CONJUNTOS DE ANUNCIOS (paginado, todos los registros) ────────
   if (Array.isArray(DATA.META_ADSETS) && DATA.META_ADSETS.length > 0) {
-    let sAs = pres.addSlide();
-    sAs.background = { color: WHITE };
-
-    sAs.addText([
-      { text: "Conjuntos de Anuncios ", options: { bold: true, color: DARK,   fontSize: 26, fontFace: "Trebuchet MS" } },
-      { text: `Facebook Ads – ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: ORANGE, fontSize: 26, fontFace: "Trebuchet MS" } },
-    ], { x: 1.0, y: 0.15, w: 8.8, h: 0.6 });
-    sAs.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: ORANGE }, line: { color: ORANGE } });
-    sAs.addText("f", { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fontSize: 18, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
-
     const asColW = [3.2, 0.85, 1.0, 1.25, 0.9, 0.88, 0.94];
     const asHdrs = ["Conjunto de anuncios", "Leads", "CPL", "Inversión", "Clicks", "CPC", "Alcance"];
-    const asY0   = 0.88;
     const asW    = asColW.reduce((s, w) => s + w, 0);
+    const asY0   = 0.88;
+    const rowH   = 0.33;
 
-    sAs.addShape(pres.shapes.RECTANGLE, { x: 0.18, y: asY0, w: asW, h: 0.34, fill: { color: "F5F5F5" }, line: { color: "E0E0E0", width: 0.5 } });
-    let asCx = 0.28;
-    asHdrs.forEach((h, i) => {
-      sAs.addText(h, { x: asCx, y: asY0 + 0.02, w: asColW[i], h: 0.3, fontSize: 8.5, bold: true, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", align: i === 0 ? "left" : "center" });
-      asCx += asColW[i];
-    });
+    // primera página: 9 filas (deja espacio para KPI cards)
+    // páginas siguientes: 13 filas
+    const ROWS_FIRST = 9;
+    const ROWS_REST  = 13;
+    const chunks = [DATA.META_ADSETS.slice(0, ROWS_FIRST)];
+    for (let i = ROWS_FIRST; i < DATA.META_ADSETS.length; i += ROWS_REST) {
+      chunks.push(DATA.META_ADSETS.slice(i, i + ROWS_REST));
+    }
+    const totalPages = chunks.length;
 
-    DATA.META_ADSETS.slice(0, 10).forEach((row, i) => {
-      const ry = asY0 + 0.34 + i * 0.33;
-      sAs.addShape(pres.shapes.RECTANGLE, { x: 0.18, y: ry, w: asW, h: 0.33, fill: { color: i % 2 === 0 ? WHITE : "FAFAFA" }, line: { color: "EEEEEE", width: 0.3 } });
-      let rx = 0.28;
-      const cells = [
-        { val: row.nombre   || "", align: "left",   color: ORANGE },
-        { val: row.leads    || "", align: "center",  color: DARK   },
-        { val: row.cpl      || "", align: "center",  color: DARK   },
-        { val: row.costo    || "", align: "center",  color: DARK   },
-        { val: row.clicks   || "", align: "center",  color: DARK   },
-        { val: row.cpc      || "", align: "center",  color: DARK   },
-        { val: row.alcance  || "", align: "center",  color: DARK   },
-      ];
-      cells.forEach((c, ci) => {
-        const txt = c.val.length > 42 ? c.val.substring(0, 40) + "…" : c.val;
-        sAs.addText(txt, { x: rx, y: ry + 0.05, w: asColW[ci], h: 0.24, fontSize: 8.5, color: c.color, fontFace: "DM Sans", align: c.align, valign: "middle" });
-        rx += asColW[ci];
+    const addAsHeader = (slide, pageNum) => {
+      slide.background = { color: WHITE };
+      slide.addText([
+        { text: "Conjuntos de Anuncios ", options: { bold: true, color: DARK,   fontSize: 26, fontFace: "Trebuchet MS" } },
+        { text: `Facebook Ads – ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: ORANGE, fontSize: 26, fontFace: "Trebuchet MS" } },
+      ], { x: 1.0, y: 0.15, w: 8.0, h: 0.6 });
+      slide.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: ORANGE }, line: { color: ORANGE } });
+      slide.addText("f", { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fontSize: 18, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+      if (totalPages > 1) {
+        slide.addText(`${pageNum + 1} / ${totalPages}`, { x: 8.8, y: 0.25, w: 0.9, h: 0.3, fontSize: 11, color: GRAY_TEXT, fontFace: "DM Sans", align: "right" });
+      }
+      slide.addShape(pres.shapes.RECTANGLE, { x: 0.18, y: asY0, w: asW, h: 0.34, fill: { color: "F5F5F5" }, line: { color: "E0E0E0", width: 0.5 } });
+      let asCx = 0.28;
+      asHdrs.forEach((h, i) => {
+        slide.addText(h, { x: asCx, y: asY0 + 0.02, w: asColW[i], h: 0.3, fontSize: 8.5, bold: true, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", align: i === 0 ? "left" : "center" });
+        asCx += asColW[i];
       });
-    });
+    };
 
-    const asKpiY = 4.42;
-    [
-      { label: "Conjuntos activos", val: String(DATA.META_ADSETS.length) },
-      { label: "Leads totales",     val: DATA.META_LEADS  || "" },
-      { label: "CPL promedio",      val: DATA.META_CPL    || "" },
-      { label: "Inversión total",   val: DATA.META_COSTO  || "" },
-    ].forEach((k, i) => {
-      const kx = 0.18 + i * 2.44;
-      sAs.addShape(pres.shapes.RECTANGLE, { x: kx, y: asKpiY, w: 2.3, h: 0.95, fill: { color: WHITE }, line: { color: "E8E8E8", width: 0.8 } });
-      sAs.addShape(pres.shapes.OVAL, { x: kx + 0.12, y: asKpiY + 0.18, w: 0.48, h: 0.48, fill: { color: ORANGE }, line: { color: ORANGE } });
-      sAs.addText(k.label, { x: kx + 0.7, y: asKpiY + 0.1,  w: 1.52, h: 0.28, fontSize: 9,  bold: true, color: DARK,   fontFace: "DM Sans" });
-      sAs.addText(k.val,   { x: kx + 0.7, y: asKpiY + 0.36, w: 1.52, h: 0.32, fontSize: 14, bold: true, color: ORANGE, fontFace: "DM Sans" });
-    });
+    chunks.forEach((pageRows, pageNum) => {
+      const sAs = pres.addSlide();
+      addAsHeader(sAs, pageNum);
 
-    sAs.addText(`Reporte ${DATA.CLIENTE_NOMBRE || ""} | ${DATA.AGENCIA_NOMBRE || "Known Online"}`,
-      { x: 0.18, y: 5.48, w: 6, h: 0.22, fontSize: 8.5, color: GRAY_TEXT, fontFace: "DM Sans" });
+      pageRows.forEach((row, i) => {
+        const ry = asY0 + 0.34 + i * rowH;
+        sAs.addShape(pres.shapes.RECTANGLE, { x: 0.18, y: ry, w: asW, h: rowH, fill: { color: i % 2 === 0 ? WHITE : "FAFAFA" }, line: { color: "EEEEEE", width: 0.3 } });
+        let rx = 0.28;
+        const cells = [
+          { val: row.nombre  || "", align: "left",   color: ORANGE },
+          { val: row.leads   || "", align: "center",  color: DARK   },
+          { val: row.cpl     || "", align: "center",  color: DARK   },
+          { val: row.costo   || "", align: "center",  color: DARK   },
+          { val: row.clicks  || "", align: "center",  color: DARK   },
+          { val: row.cpc     || "", align: "center",  color: DARK   },
+          { val: row.alcance || "", align: "center",  color: DARK   },
+        ];
+        cells.forEach((c, ci) => {
+          const txt = c.val.length > 42 ? c.val.substring(0, 40) + "…" : c.val;
+          sAs.addText(txt, { x: rx, y: ry + 0.05, w: asColW[ci], h: 0.24, fontSize: 8.5, color: c.color, fontFace: "DM Sans", align: c.align, valign: "middle" });
+          rx += asColW[ci];
+        });
+      });
+
+      // KPI cards solo en primera página
+      if (pageNum === 0) {
+        const asKpiY = 4.42;
+        [
+          { label: "Conjuntos activos", val: String(DATA.META_ADSETS.length) },
+          { label: "Leads totales",     val: DATA.META_LEADS || "" },
+          { label: "CPL promedio",      val: DATA.META_CPL   || "" },
+          { label: "Inversión total",   val: DATA.META_COSTO || "" },
+        ].forEach((k, i) => {
+          const kx = 0.18 + i * 2.44;
+          sAs.addShape(pres.shapes.RECTANGLE, { x: kx, y: asKpiY, w: 2.3, h: 0.95, fill: { color: WHITE }, line: { color: "E8E8E8", width: 0.8 } });
+          sAs.addShape(pres.shapes.OVAL, { x: kx + 0.12, y: asKpiY + 0.18, w: 0.48, h: 0.48, fill: { color: ORANGE }, line: { color: ORANGE } });
+          sAs.addText(k.label, { x: kx + 0.7, y: asKpiY + 0.1,  w: 1.52, h: 0.28, fontSize: 9,  bold: true, color: DARK,   fontFace: "DM Sans" });
+          sAs.addText(k.val,   { x: kx + 0.7, y: asKpiY + 0.36, w: 1.52, h: 0.32, fontSize: 14, bold: true, color: ORANGE, fontFace: "DM Sans" });
+        });
+      }
+
+      sAs.addText(`Reporte ${DATA.CLIENTE_NOMBRE || ""} | ${DATA.AGENCIA_NOMBRE || "Known Online"}`,
+        { x: 0.18, y: 7.1, w: 6, h: 0.22, fontSize: 8.5, color: GRAY_TEXT, fontFace: "DM Sans" });
+    });
   }
 
   // ── SLIDE 5C – TOP ANUNCIOS META POR LEADS ───────────────────────────────
