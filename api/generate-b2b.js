@@ -72,8 +72,8 @@ async function generatePptx(DATA) {
   // ── SLIDE 1 – COVER ───────────────────────────────────────────────────────
   buildSlide_Cover(pres, DATA);
 
-  // ── SLIDE 2 – RESUMEN EJECUTIVO ───────────────────────────────────────────
-  let s2 = pres.addSlide();
+  // ── SLIDE 2 – RESUMEN EJECUTIVO (solo con 2 plataformas) ─────────────────
+  if (hasGoogle) { let s2 = pres.addSlide();
   s2.background = { color: WHITE };
   s2.addText("Resumen Ejecutivo", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
   s2.addText(`Inversión · Leads · CPL  ·  Meta Ads${hasGoogle ? " + Google Ads" : ""}`, { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
@@ -137,7 +137,7 @@ async function generatePptx(DATA) {
         { text: delta,      options: { color: isDown ? RED : GREEN, bold: true } },
       ], { x: bx, y: by + 0.2, w: 1.9, h: 0.28, fontSize: 12, fontFace: "DM Sans" });
     });
-  }
+  } } // end hasGoogle / Resumen Ejecutivo
 
   // ── SLIDE – FACTURACIÓN & ROAS (CONDICIONAL VTEX) ────────────────────────
   if (DATA.ECOMMERCE_INGRESOS) {
@@ -380,101 +380,127 @@ async function generatePptx(DATA) {
     sDist.addText("Distribución por Conjunto", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
     sDist.addText(`Meta Ads  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  Top ${topConj.length} conjuntos por leads`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
-    const rowH  = 0.52;
-    const barMaxW = 4.8;
+    const rowH    = 0.48;
+    const barX    = 3.6;
+    const barMaxW = 4.6;
+    const leadsW  = 0.75;
     const startY  = 1.18;
 
     topConj.forEach((r, i) => {
-      const y       = startY + i * rowH;
-      const leads   = parseNum(r.leads);
-      const pct     = totalLeadsC > 0 ? (leads / totalLeadsC * 100).toFixed(1) : "0";
-      const barW    = maxLeads > 0 ? barMaxW * (leads / maxLeads) : 0;
-      const bg      = i % 2 === 0 ? LIGHT_BG : WHITE;
+      const y     = startY + i * rowH;
+      const leads = parseNum(r.leads);
+      const pct   = totalLeadsC > 0 ? (leads / totalLeadsC * 100).toFixed(1) : "0";
+      const barW  = maxLeads > 0 ? barMaxW * (leads / maxLeads) : 0;
+      const bg    = i % 2 === 0 ? LIGHT_BG : WHITE;
 
       sDist.addShape(pres.shapes.RECTANGLE, { x: 0.4, y, w: 9.2, h: rowH - 0.04, fill: { color: bg }, line: { color: "EEEEEE", width: 0.3 } });
 
-      // Nombre del conjunto (truncado)
-      const nombre = (r.nombre || "").length > 36 ? (r.nombre || "").substring(0, 34) + "…" : (r.nombre || "");
-      sDist.addText(nombre, { x: 0.55, y: y + 0.12, w: 3.6, h: 0.28, fontSize: 9.5, color: DARK, fontFace: "DM Sans", valign: "middle" });
+      // Nombre
+      const nombre = (r.nombre || "").length > 34 ? (r.nombre || "").substring(0, 32) + "…" : (r.nombre || "");
+      sDist.addText(nombre, { x: 0.55, y: y + 0.1, w: 3.0, h: 0.28, fontSize: 9, color: DARK, fontFace: "DM Sans", valign: "middle" });
 
-      // Barra de leads
+      // Barra
       if (barW > 0.05) {
-        sDist.addShape(pres.shapes.RECTANGLE, { x: 4.3, y: y + 0.13, w: barW, h: 0.26, fill: { color: ORANGE }, line: { color: ORANGE } });
+        sDist.addShape(pres.shapes.RECTANGLE, { x: barX, y: y + 0.11, w: barW, h: 0.26, fill: { color: ORANGE }, line: { color: ORANGE } });
+        // % dentro de la barra si hay espacio, sino a la derecha de la barra
+        if (barW >= 0.8) {
+          sDist.addText(`${pct}%`, { x: barX + barW - 0.75, y: y + 0.11, w: 0.72, h: 0.26, fontSize: 8.5, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+        } else {
+          sDist.addText(`${pct}%`, { x: barX + barW + 0.05, y: y + 0.11, w: 0.55, h: 0.26, fontSize: 8.5, bold: true, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle" });
+        }
       }
 
-      // Leads count
-      sDist.addText(fmtN2(leads), { x: 4.3 + barMaxW + 0.1, y: y + 0.12, w: 1.0, h: 0.28, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
-
-      // % badge
-      sDist.addShape(pres.shapes.RECTANGLE, { x: 4.3 + barMaxW + 1.2, y: y + 0.13, w: 0.72, h: 0.26, fill: { color: i === 0 ? ORANGE : LIGHT_BG }, line: { color: i === 0 ? ORANGE : "E0E0E0" } });
-      sDist.addText(`${pct}%`, { x: 4.3 + barMaxW + 1.2, y: y + 0.13, w: 0.72, h: 0.26, fontSize: 9, bold: true, color: i === 0 ? WHITE : GRAY_TEXT, fontFace: "DM Sans", align: "center", valign: "middle" });
+      // Leads count al extremo derecho
+      sDist.addText(fmtN2(leads), { x: 9.6 - leadsW, y: y + 0.1, w: leadsW, h: 0.28, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
     });
 
     // Totales al pie
-    sDist.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
-    sDist.addText(`Total: ${fmtN2(totalLeadsC)} leads  ·  ${DATA.META_ADSETS.length} conjuntos activos`, { x: 0.55, y: 5.15, w: 9, h: 0.28, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
+    const footerY = startY + topConj.length * rowH + 0.08;
+    sDist.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: footerY, w: 9.2, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
+    sDist.addText(`Total: ${fmtN2(totalLeadsC)} leads  ·  ${DATA.META_ADSETS.length} conjuntos activos`, { x: 0.55, y: footerY + 0.06, w: 9, h: 0.28, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
   }
 
-  // ── SLIDE – CONJUNTOS DE ANUNCIOS (condicional) ───────────────────────────
+  // ── SLIDE(S) – CONJUNTOS DE ANUNCIOS (paginado, todos los registros) ────────
   if (Array.isArray(DATA.META_ADSETS) && DATA.META_ADSETS.length > 0) {
-    let sAs = pres.addSlide();
-    sAs.background = { color: WHITE };
-
-    sAs.addText([
-      { text: "Conjuntos de Anuncios ", options: { bold: true, color: DARK,   fontSize: 26, fontFace: "Trebuchet MS" } },
-      { text: `Facebook Ads – ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: ORANGE, fontSize: 26, fontFace: "Trebuchet MS" } },
-    ], { x: 1.0, y: 0.15, w: 8.8, h: 0.6 });
-    sAs.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: ORANGE }, line: { color: ORANGE } });
-    sAs.addText("f", { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fontSize: 18, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
-
     const asColW = [3.2, 0.85, 1.0, 1.25, 0.9, 0.88, 0.94];
     const asHdrs = ["Conjunto de anuncios", "Leads", "CPL", "Inversión", "Clicks", "CPC", "Alcance"];
-    const asY0   = 0.88;
     const asW    = asColW.reduce((s, w) => s + w, 0);
+    const asY0   = 0.88;
+    const rowH   = 0.33;
 
-    sAs.addShape(pres.shapes.RECTANGLE, { x: 0.18, y: asY0, w: asW, h: 0.34, fill: { color: "F5F5F5" }, line: { color: "E0E0E0", width: 0.5 } });
-    let asCx = 0.28;
-    asHdrs.forEach((h, i) => {
-      sAs.addText(h, { x: asCx, y: asY0 + 0.02, w: asColW[i], h: 0.3, fontSize: 8.5, bold: true, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", align: i === 0 ? "left" : "center" });
-      asCx += asColW[i];
-    });
+    // primera página: 9 filas (deja espacio para KPI cards)
+    // páginas siguientes: 13 filas
+    const ROWS_FIRST = 9;
+    const ROWS_REST  = 13;
+    const chunks = [DATA.META_ADSETS.slice(0, ROWS_FIRST)];
+    for (let i = ROWS_FIRST; i < DATA.META_ADSETS.length; i += ROWS_REST) {
+      chunks.push(DATA.META_ADSETS.slice(i, i + ROWS_REST));
+    }
+    const totalPages = chunks.length;
 
-    DATA.META_ADSETS.slice(0, 10).forEach((row, i) => {
-      const ry = asY0 + 0.34 + i * 0.33;
-      sAs.addShape(pres.shapes.RECTANGLE, { x: 0.18, y: ry, w: asW, h: 0.33, fill: { color: i % 2 === 0 ? WHITE : "FAFAFA" }, line: { color: "EEEEEE", width: 0.3 } });
-      let rx = 0.28;
-      const cells = [
-        { val: row.nombre   || "", align: "left",   color: ORANGE },
-        { val: row.leads    || "", align: "center",  color: DARK   },
-        { val: row.cpl      || "", align: "center",  color: DARK   },
-        { val: row.costo    || "", align: "center",  color: DARK   },
-        { val: row.clicks   || "", align: "center",  color: DARK   },
-        { val: row.cpc      || "", align: "center",  color: DARK   },
-        { val: row.alcance  || "", align: "center",  color: DARK   },
-      ];
-      cells.forEach((c, ci) => {
-        const txt = c.val.length > 42 ? c.val.substring(0, 40) + "…" : c.val;
-        sAs.addText(txt, { x: rx, y: ry + 0.05, w: asColW[ci], h: 0.24, fontSize: 8.5, color: c.color, fontFace: "DM Sans", align: c.align, valign: "middle" });
-        rx += asColW[ci];
+    const addAsHeader = (slide, pageNum) => {
+      slide.background = { color: WHITE };
+      slide.addText([
+        { text: "Conjuntos de Anuncios ", options: { bold: true, color: DARK,   fontSize: 26, fontFace: "Trebuchet MS" } },
+        { text: `Facebook Ads – ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: ORANGE, fontSize: 26, fontFace: "Trebuchet MS" } },
+      ], { x: 1.0, y: 0.15, w: 8.0, h: 0.6 });
+      slide.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: ORANGE }, line: { color: ORANGE } });
+      slide.addText("f", { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fontSize: 18, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+      if (totalPages > 1) {
+        slide.addText(`${pageNum + 1} / ${totalPages}`, { x: 8.8, y: 0.25, w: 0.9, h: 0.3, fontSize: 11, color: GRAY_TEXT, fontFace: "DM Sans", align: "right" });
+      }
+      slide.addShape(pres.shapes.RECTANGLE, { x: 0.18, y: asY0, w: asW, h: 0.34, fill: { color: "F5F5F5" }, line: { color: "E0E0E0", width: 0.5 } });
+      let asCx = 0.28;
+      asHdrs.forEach((h, i) => {
+        slide.addText(h, { x: asCx, y: asY0 + 0.02, w: asColW[i], h: 0.3, fontSize: 8.5, bold: true, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", align: i === 0 ? "left" : "center" });
+        asCx += asColW[i];
       });
-    });
+    };
 
-    const asKpiY = 4.42;
-    [
-      { label: "Conjuntos activos", val: String(DATA.META_ADSETS.length) },
-      { label: "Leads totales",     val: DATA.META_LEADS  || "" },
-      { label: "CPL promedio",      val: DATA.META_CPL    || "" },
-      { label: "Inversión total",   val: DATA.META_COSTO  || "" },
-    ].forEach((k, i) => {
-      const kx = 0.18 + i * 2.44;
-      sAs.addShape(pres.shapes.RECTANGLE, { x: kx, y: asKpiY, w: 2.3, h: 0.95, fill: { color: WHITE }, line: { color: "E8E8E8", width: 0.8 } });
-      sAs.addShape(pres.shapes.OVAL, { x: kx + 0.12, y: asKpiY + 0.18, w: 0.48, h: 0.48, fill: { color: ORANGE }, line: { color: ORANGE } });
-      sAs.addText(k.label, { x: kx + 0.7, y: asKpiY + 0.1,  w: 1.52, h: 0.28, fontSize: 9,  bold: true, color: DARK,   fontFace: "DM Sans" });
-      sAs.addText(k.val,   { x: kx + 0.7, y: asKpiY + 0.36, w: 1.52, h: 0.32, fontSize: 14, bold: true, color: ORANGE, fontFace: "DM Sans" });
-    });
+    chunks.forEach((pageRows, pageNum) => {
+      const sAs = pres.addSlide();
+      addAsHeader(sAs, pageNum);
 
-    sAs.addText(`Reporte ${DATA.CLIENTE_NOMBRE || ""} | ${DATA.AGENCIA_NOMBRE || "Known Online"}`,
-      { x: 0.18, y: 5.48, w: 6, h: 0.22, fontSize: 8.5, color: GRAY_TEXT, fontFace: "DM Sans" });
+      pageRows.forEach((row, i) => {
+        const ry = asY0 + 0.34 + i * rowH;
+        sAs.addShape(pres.shapes.RECTANGLE, { x: 0.18, y: ry, w: asW, h: rowH, fill: { color: i % 2 === 0 ? WHITE : "FAFAFA" }, line: { color: "EEEEEE", width: 0.3 } });
+        let rx = 0.28;
+        const cells = [
+          { val: row.nombre  || "", align: "left",   color: ORANGE },
+          { val: row.leads   || "", align: "center",  color: DARK   },
+          { val: row.cpl     || "", align: "center",  color: DARK   },
+          { val: row.costo   || "", align: "center",  color: DARK   },
+          { val: row.clicks  || "", align: "center",  color: DARK   },
+          { val: row.cpc     || "", align: "center",  color: DARK   },
+          { val: row.alcance || "", align: "center",  color: DARK   },
+        ];
+        cells.forEach((c, ci) => {
+          const txt = c.val.length > 42 ? c.val.substring(0, 40) + "…" : c.val;
+          sAs.addText(txt, { x: rx, y: ry + 0.05, w: asColW[ci], h: 0.24, fontSize: 8.5, color: c.color, fontFace: "DM Sans", align: c.align, valign: "middle" });
+          rx += asColW[ci];
+        });
+      });
+
+      // KPI cards solo en primera página
+      if (pageNum === 0) {
+        const asKpiY = 4.42;
+        [
+          { label: "Conjuntos activos", val: String(DATA.META_ADSETS.length) },
+          { label: "Leads totales",     val: DATA.META_LEADS || "" },
+          { label: "CPL promedio",      val: DATA.META_CPL   || "" },
+          { label: "Inversión total",   val: DATA.META_COSTO || "" },
+        ].forEach((k, i) => {
+          const kx = 0.18 + i * 2.44;
+          sAs.addShape(pres.shapes.RECTANGLE, { x: kx, y: asKpiY, w: 2.3, h: 0.95, fill: { color: WHITE }, line: { color: "E8E8E8", width: 0.8 } });
+          sAs.addShape(pres.shapes.OVAL, { x: kx + 0.12, y: asKpiY + 0.18, w: 0.48, h: 0.48, fill: { color: ORANGE }, line: { color: ORANGE } });
+          sAs.addText(k.label, { x: kx + 0.7, y: asKpiY + 0.1,  w: 1.52, h: 0.28, fontSize: 9,  bold: true, color: DARK,   fontFace: "DM Sans" });
+          sAs.addText(k.val,   { x: kx + 0.7, y: asKpiY + 0.36, w: 1.52, h: 0.32, fontSize: 14, bold: true, color: ORANGE, fontFace: "DM Sans" });
+        });
+      }
+
+      sAs.addText(`Reporte ${DATA.CLIENTE_NOMBRE || ""} | ${DATA.AGENCIA_NOMBRE || "Known Online"}`,
+        { x: 0.18, y: 7.1, w: 6, h: 0.22, fontSize: 8.5, color: GRAY_TEXT, fontFace: "DM Sans" });
+    });
   }
 
   // ── SLIDE 5C – TOP ANUNCIOS META POR LEADS ───────────────────────────────
