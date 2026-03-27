@@ -61,6 +61,7 @@ async function generatePptx(DATA) {
     const c = (str || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "");
     return parseFloat(c) || 0;
   };
+  const hasGoogle = parseNum(DATA.GOOGLE_COSTO) > 0;
   const fmtMoneyCompact = val => {
     const n = parseNum(val);
     if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2).replace(".", ",")} M`;
@@ -75,7 +76,7 @@ async function generatePptx(DATA) {
   let s2 = pres.addSlide();
   s2.background = { color: WHITE };
   s2.addText("Resumen Ejecutivo", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-  s2.addText(`Inversión · Leads · CPL  ·  Meta Ads${DATA.GOOGLE_COSTO ? " + Google Ads" : ""}`, { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+  s2.addText(`Inversión · Leads · CPL  ·  Meta Ads${hasGoogle ? " + Google Ads" : ""}`, { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
   const kpis = [
     { label: "Inversión total", val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: DATA.INVERSION_DELTA   || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.INVERSION_PREV   || ""}`, up: DATA.INVERSION_DELTA_UP   === true },
@@ -117,7 +118,7 @@ async function generatePptx(DATA) {
   });
 
   // Google block (condicional)
-  if (DATA.GOOGLE_COSTO) {
+  if (hasGoogle) {
     s2.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: 3.35, w: 4.4, h: 1.85, fill: { color: LIGHT_BLUE }, line: { color: "D0E4F5", width: 0.5 } });
     s2.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: 3.35, w: 4.4, h: 0.38, fill: { color: BLUE }, line: { color: BLUE } });
     s2.addText("Google Ads", { x: 5.35, y: 3.38, w: 3, h: 0.32, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
@@ -291,7 +292,7 @@ async function generatePptx(DATA) {
 
 
   // ── SLIDE 4 – GOOGLE ADS DETALLE (condicional) ───────────────────────────
-  if (DATA.GOOGLE_COSTO) {
+  if (hasGoogle) {
     let s4 = pres.addSlide();
     s4.background = { color: WHITE };
     s4.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 1.08, fill: { color: BLUE }, line: { color: BLUE } });
@@ -325,7 +326,7 @@ async function generatePptx(DATA) {
   let s5 = pres.addSlide();
   s5.background = { color: WHITE };
   s5.addText("Top Campañas por CPL", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-  s5.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  ${DATA.GOOGLE_COSTO ? "Google Ads + Meta Ads" : "Meta Ads"}`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+  s5.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  ${hasGoogle ? "Google Ads + Meta Ads" : "Meta Ads"}`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
   // campaigns: array of { nombre, plataforma, costo, leads, cpl, nivel }
   // nivel: "low" (CPL bajo = bueno) | "mid" | "high" (CPL alto = revisar)
