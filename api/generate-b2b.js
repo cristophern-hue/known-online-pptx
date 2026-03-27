@@ -428,13 +428,17 @@ async function generatePptx(DATA) {
     const asY0   = 0.88;
     const rowH   = 0.33;
 
-    // primera página: 9 filas (deja espacio para KPI cards)
-    // páginas siguientes: 13 filas
-    const ROWS_FIRST = 9;
-    const ROWS_REST  = 13;
-    const chunks = [DATA.META_ADSETS.slice(0, ROWS_FIRST)];
-    for (let i = ROWS_FIRST; i < DATA.META_ADSETS.length; i += ROWS_REST) {
-      chunks.push(DATA.META_ADSETS.slice(i, i + ROWS_REST));
+    // páginas normales: 13 filas; última página: 9 filas (deja espacio para KPI cards)
+    const ROWS_PER_PAGE = 13;
+    const chunks = [];
+    for (let i = 0; i < DATA.META_ADSETS.length; i += ROWS_PER_PAGE) {
+      chunks.push(DATA.META_ADSETS.slice(i, i + ROWS_PER_PAGE));
+    }
+    // si la última página tiene más de 9 filas, achicarla para que entren los KPI
+    const lastChunk = chunks[chunks.length - 1];
+    if (lastChunk.length > 9) {
+      const overflow = lastChunk.splice(9);
+      chunks.push(overflow);
     }
     const totalPages = chunks.length;
 
@@ -481,8 +485,8 @@ async function generatePptx(DATA) {
         });
       });
 
-      // KPI cards solo en primera página
-      if (pageNum === 0) {
+      // KPI cards solo en última página
+      if (pageNum === totalPages - 1) {
         const asKpiY = 4.42;
         [
           { label: "Conjuntos activos", val: String(DATA.META_ADSETS.length) },
