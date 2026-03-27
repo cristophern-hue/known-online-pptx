@@ -380,39 +380,44 @@ async function generatePptx(DATA) {
     sDist.addText("Distribución por Conjunto", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
     sDist.addText(`Meta Ads  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  Top ${topConj.length} conjuntos por leads`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
-    const rowH  = 0.52;
-    const barMaxW = 4.8;
+    const rowH    = 0.48;
+    const barX    = 3.6;
+    const barMaxW = 4.6;
+    const leadsW  = 0.75;
     const startY  = 1.18;
 
     topConj.forEach((r, i) => {
-      const y       = startY + i * rowH;
-      const leads   = parseNum(r.leads);
-      const pct     = totalLeadsC > 0 ? (leads / totalLeadsC * 100).toFixed(1) : "0";
-      const barW    = maxLeads > 0 ? barMaxW * (leads / maxLeads) : 0;
-      const bg      = i % 2 === 0 ? LIGHT_BG : WHITE;
+      const y     = startY + i * rowH;
+      const leads = parseNum(r.leads);
+      const pct   = totalLeadsC > 0 ? (leads / totalLeadsC * 100).toFixed(1) : "0";
+      const barW  = maxLeads > 0 ? barMaxW * (leads / maxLeads) : 0;
+      const bg    = i % 2 === 0 ? LIGHT_BG : WHITE;
 
       sDist.addShape(pres.shapes.RECTANGLE, { x: 0.4, y, w: 9.2, h: rowH - 0.04, fill: { color: bg }, line: { color: "EEEEEE", width: 0.3 } });
 
-      // Nombre del conjunto (truncado)
-      const nombre = (r.nombre || "").length > 36 ? (r.nombre || "").substring(0, 34) + "…" : (r.nombre || "");
-      sDist.addText(nombre, { x: 0.55, y: y + 0.12, w: 3.6, h: 0.28, fontSize: 9.5, color: DARK, fontFace: "DM Sans", valign: "middle" });
+      // Nombre
+      const nombre = (r.nombre || "").length > 34 ? (r.nombre || "").substring(0, 32) + "…" : (r.nombre || "");
+      sDist.addText(nombre, { x: 0.55, y: y + 0.1, w: 3.0, h: 0.28, fontSize: 9, color: DARK, fontFace: "DM Sans", valign: "middle" });
 
-      // Barra de leads
+      // Barra
       if (barW > 0.05) {
-        sDist.addShape(pres.shapes.RECTANGLE, { x: 4.3, y: y + 0.13, w: barW, h: 0.26, fill: { color: ORANGE }, line: { color: ORANGE } });
+        sDist.addShape(pres.shapes.RECTANGLE, { x: barX, y: y + 0.11, w: barW, h: 0.26, fill: { color: ORANGE }, line: { color: ORANGE } });
+        // % dentro de la barra si hay espacio, sino a la derecha de la barra
+        if (barW >= 0.8) {
+          sDist.addText(`${pct}%`, { x: barX + barW - 0.75, y: y + 0.11, w: 0.72, h: 0.26, fontSize: 8.5, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+        } else {
+          sDist.addText(`${pct}%`, { x: barX + barW + 0.05, y: y + 0.11, w: 0.55, h: 0.26, fontSize: 8.5, bold: true, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle" });
+        }
       }
 
-      // Leads count
-      sDist.addText(fmtN2(leads), { x: 4.3 + barMaxW + 0.1, y: y + 0.12, w: 1.0, h: 0.28, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
-
-      // % badge
-      sDist.addShape(pres.shapes.RECTANGLE, { x: 4.3 + barMaxW + 1.2, y: y + 0.13, w: 0.72, h: 0.26, fill: { color: i === 0 ? ORANGE : LIGHT_BG }, line: { color: i === 0 ? ORANGE : "E0E0E0" } });
-      sDist.addText(`${pct}%`, { x: 4.3 + barMaxW + 1.2, y: y + 0.13, w: 0.72, h: 0.26, fontSize: 9, bold: true, color: i === 0 ? WHITE : GRAY_TEXT, fontFace: "DM Sans", align: "center", valign: "middle" });
+      // Leads count al extremo derecho
+      sDist.addText(fmtN2(leads), { x: 9.6 - leadsW, y: y + 0.1, w: leadsW, h: 0.28, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
     });
 
     // Totales al pie
-    sDist.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
-    sDist.addText(`Total: ${fmtN2(totalLeadsC)} leads  ·  ${DATA.META_ADSETS.length} conjuntos activos`, { x: 0.55, y: 5.15, w: 9, h: 0.28, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
+    const footerY = startY + topConj.length * rowH + 0.08;
+    sDist.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: footerY, w: 9.2, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
+    sDist.addText(`Total: ${fmtN2(totalLeadsC)} leads  ·  ${DATA.META_ADSETS.length} conjuntos activos`, { x: 0.55, y: footerY + 0.06, w: 9, h: 0.28, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
   }
 
   // ── SLIDE – CONJUNTOS DE ANUNCIOS (condicional) ───────────────────────────
