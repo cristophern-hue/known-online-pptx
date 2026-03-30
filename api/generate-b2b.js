@@ -524,8 +524,10 @@ async function generatePptx(DATA) {
     });
   }
 
-  // ── SLIDE – RESULTADOS COMERCIALES (condicional, evolutivo) ─────────────
-  if (Array.isArray(DATA.FUNNEL_ROWS) && DATA.FUNNEL_ROWS.length > 0) {
+  // ── SLIDE – RESULTADOS COMERCIALES (solo MANAR, evolutivo) ──────────────
+  const isManar = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("manar");
+  if (isManar) {
+    const funnelRows = Array.isArray(DATA.FUNNEL_ROWS) ? DATA.FUNNEL_ROWS : [];
     let sFunnel = pres.addSlide();
     sFunnel.background = { color: WHITE };
     sFunnel.addText("Resultados Comerciales", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
@@ -548,17 +550,17 @@ async function generatePptx(DATA) {
     });
 
     // Filas
-    DATA.FUNNEL_ROWS.forEach((row, i) => {
-      const ry  = fnY0 + 0.4 + i * fnRowH;
-      const bg  = i % 2 === 0 ? WHITE : LIGHT_BG;
-      const isLast = i === DATA.FUNNEL_ROWS.length - 1;
+    funnelRows.forEach((row, i) => {
+      const ry     = fnY0 + 0.4 + i * fnRowH;
+      const bg     = i % 2 === 0 ? WHITE : LIGHT_BG;
+      const isLast = i === funnelRows.length - 1;
 
       sFunnel.addShape(pres.shapes.RECTANGLE, { x: fnX0, y: ry, w: 9.3, h: fnRowH - 0.03,
         fill: { color: isLast ? "FFF4EE" : bg },
         line: { color: isLast ? ORANGE : "EEEEEE", width: isLast ? 1 : 0.3 }
       });
 
-      const vals   = [row.mes, row.leads, row.calificados, row.cierres, row.venta, row.inversion, row.roas];
+      const vals = [row.mes, row.leads, row.calificados, row.cierres, row.venta, row.inversion, row.roas];
       let rx = fnX0 + 0.12;
       vals.forEach((v, j) => {
         const isMes  = j === 0;
