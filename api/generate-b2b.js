@@ -372,58 +372,6 @@ async function generatePptx(DATA) {
   });
 
 
-  // ── SLIDE – DISTRIBUCIÓN POR CONJUNTO (condicional, usa META_ADSETS) ────────
-  if (Array.isArray(DATA.META_ADSETS) && DATA.META_ADSETS.length >= 2) {
-    const topConj     = DATA.META_ADSETS.slice(0, 8);
-    const totalLeadsC = topConj.reduce((s, r) => s + parseNum(r.leads), 0);
-    const maxLeads    = Math.max(...topConj.map(r => parseNum(r.leads)));
-    const fmtN2       = n => new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 }).format(n);
-
-    let sDist = pres.addSlide();
-    sDist.background = { color: WHITE };
-    sDist.addText("Distribución por Conjunto", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-    sDist.addText(`Meta Ads  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  Top ${topConj.length} conjuntos por leads`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
-
-    const rowH    = 0.48;
-    const barX    = 3.6;
-    const barMaxW = 4.6;
-    const leadsW  = 0.75;
-    const startY  = 1.18;
-
-    topConj.forEach((r, i) => {
-      const y     = startY + i * rowH;
-      const leads = parseNum(r.leads);
-      const pct   = totalLeadsC > 0 ? (leads / totalLeadsC * 100).toFixed(1) : "0";
-      const barW  = maxLeads > 0 ? barMaxW * (leads / maxLeads) : 0;
-      const bg    = i % 2 === 0 ? LIGHT_BG : WHITE;
-
-      sDist.addShape(pres.shapes.RECTANGLE, { x: 0.4, y, w: 9.2, h: rowH - 0.04, fill: { color: bg }, line: { color: "EEEEEE", width: 0.3 } });
-
-      // Nombre
-      const nombre = (r.nombre || "").length > 34 ? (r.nombre || "").substring(0, 32) + "…" : (r.nombre || "");
-      sDist.addText(nombre, { x: 0.55, y: y + 0.1, w: 3.0, h: 0.28, fontSize: 9, color: DARK, fontFace: "DM Sans", valign: "middle" });
-
-      // Barra
-      if (barW > 0.05) {
-        sDist.addShape(pres.shapes.RECTANGLE, { x: barX, y: y + 0.11, w: barW, h: 0.26, fill: { color: ORANGE }, line: { color: ORANGE } });
-        // % dentro de la barra si hay espacio, sino a la derecha de la barra
-        if (barW >= 0.8) {
-          sDist.addText(`${pct}%`, { x: barX + barW - 0.75, y: y + 0.11, w: 0.72, h: 0.26, fontSize: 8.5, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
-        } else {
-          sDist.addText(`${pct}%`, { x: barX + barW + 0.05, y: y + 0.11, w: 0.55, h: 0.26, fontSize: 8.5, bold: true, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle" });
-        }
-      }
-
-      // Leads count al extremo derecho
-      sDist.addText(fmtN2(leads), { x: 9.6 - leadsW, y: y + 0.1, w: leadsW, h: 0.28, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
-    });
-
-    // Totales al pie
-    const footerY = startY + topConj.length * rowH + 0.08;
-    sDist.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: footerY, w: 9.2, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
-    sDist.addText(`Total: ${fmtN2(totalLeadsC)} leads  ·  ${DATA.META_ADSETS.length} conjuntos activos`, { x: 0.55, y: footerY + 0.06, w: 9, h: 0.28, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
-  }
-
   // ── SLIDE(S) – CONJUNTOS DE ANUNCIOS (paginado, todos los registros) ────────
   if (Array.isArray(DATA.META_ADSETS) && DATA.META_ADSETS.length > 0) {
     const asColW = [3.2, 0.85, 1.0, 1.25, 0.9, 0.88, 0.94];
@@ -573,6 +521,73 @@ async function generatePptx(DATA) {
       // Rank badge
       s5b.addShape(pres.shapes.OVAL, { x: cx + 0.1, y: cy + 0.12, w: 0.32, h: 0.32, fill: { color: ORANGE }, line: { color: ORANGE } });
       s5b.addText(`#${i + 1}`, { x: cx + 0.1, y: cy + 0.12, w: 0.32, h: 0.32, fontSize: 10, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+    });
+  }
+
+  // ── SLIDE – RESULTADOS COMERCIALES (solo MANAR, evolutivo) ──────────────
+  const isManar = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("manar");
+  if (isManar) {
+    // Filas históricas opcionales + fila del mes actual auto-completada
+    const funnelRows = [
+      ...(Array.isArray(DATA.FUNNEL_ROWS) ? DATA.FUNNEL_ROWS : []),
+      {
+        mes:         DATA.PERIODO_ACTUAL_LABEL || "",
+        leads:       DATA.META_LEADS           || "—",
+        inversion:   DATA.META_COSTO           || "—",
+        calificados: "—",
+        cierres:     "—",
+        venta:       "—",
+        roas:        "—",
+      },
+    ];
+    let sFunnel = pres.addSlide();
+    sFunnel.background = { color: WHITE };
+    sFunnel.addText("Resultados Comerciales", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sFunnel.addText("Evolución mensual  ·  Leads · Calificados · Cierres · Venta · Inversión · ROAS", { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    // columnas: Mes | Leads | Calificados | Cierres | Venta | Inversión | ROAS
+    const fnColW = [1.55, 1.1, 1.25, 1.0, 1.5, 1.5, 0.9];
+    const fnHdrs = ["Mes", "Leads", "Calificados", "Cierres", "Venta", "Inversión", "ROAS"];
+    const fnAlgn = ["left", "right", "right", "right", "right", "right", "right"];
+    const fnRowH = 0.42;
+    const fnY0   = 1.15;
+    const fnX0   = 0.35;
+
+    // Header
+    sFunnel.addShape(pres.shapes.RECTANGLE, { x: fnX0, y: fnY0, w: 9.3, h: 0.4, fill: { color: DARK }, line: { color: DARK } });
+    let hx = fnX0 + 0.12;
+    fnHdrs.forEach((h, i) => {
+      sFunnel.addText(h, { x: hx, y: fnY0 + 0.02, w: fnColW[i], h: 0.36, fontSize: 10, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle", align: fnAlgn[i] });
+      hx += fnColW[i];
+    });
+
+    // Filas
+    funnelRows.forEach((row, i) => {
+      const ry     = fnY0 + 0.4 + i * fnRowH;
+      const bg     = i % 2 === 0 ? WHITE : LIGHT_BG;
+      const isLast = i === funnelRows.length - 1;
+
+      sFunnel.addShape(pres.shapes.RECTANGLE, { x: fnX0, y: ry, w: 9.3, h: fnRowH - 0.03,
+        fill: { color: isLast ? "FFF4EE" : bg },
+        line: { color: isLast ? ORANGE : "EEEEEE", width: isLast ? 1 : 0.3 }
+      });
+
+      const vals = [row.mes, row.leads, row.calificados, row.cierres, row.venta, row.inversion, row.roas];
+      let rx = fnX0 + 0.12;
+      vals.forEach((v, j) => {
+        const isMes  = j === 0;
+        const isRoas = j === 6;
+        sFunnel.addText(v || "—", {
+          x: rx, y: ry + 0.08, w: fnColW[j], h: fnRowH - 0.15,
+          fontSize: isMes ? 10 : 11,
+          bold: isLast || isRoas,
+          color: isRoas ? (parseFloat((v || "0").replace(",", ".")) >= 1 ? GREEN : RED) : (isLast ? ORANGE : DARK),
+          fontFace: isMes ? "DM Sans" : "Trebuchet MS",
+          align: fnAlgn[j],
+          valign: "middle",
+        });
+        rx += fnColW[j];
+      });
     });
   }
 
