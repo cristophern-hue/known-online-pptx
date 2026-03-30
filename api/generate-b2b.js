@@ -524,6 +524,59 @@ async function generatePptx(DATA) {
     });
   }
 
+  // ── SLIDE – RESULTADOS COMERCIALES (condicional, evolutivo) ─────────────
+  if (Array.isArray(DATA.FUNNEL_ROWS) && DATA.FUNNEL_ROWS.length > 0) {
+    let sFunnel = pres.addSlide();
+    sFunnel.background = { color: WHITE };
+    sFunnel.addText("Resultados Comerciales", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sFunnel.addText("Evolución mensual  ·  Leads · Calificados · Cierres · Venta · Inversión · ROAS", { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    // columnas: Mes | Leads | Calificados | Cierres | Venta | Inversión | ROAS
+    const fnColW = [1.55, 1.1, 1.25, 1.0, 1.5, 1.5, 0.9];
+    const fnHdrs = ["Mes", "Leads", "Calificados", "Cierres", "Venta", "Inversión", "ROAS"];
+    const fnAlgn = ["left", "right", "right", "right", "right", "right", "right"];
+    const fnRowH = 0.42;
+    const fnY0   = 1.15;
+    const fnX0   = 0.35;
+
+    // Header
+    sFunnel.addShape(pres.shapes.RECTANGLE, { x: fnX0, y: fnY0, w: 9.3, h: 0.4, fill: { color: DARK }, line: { color: DARK } });
+    let hx = fnX0 + 0.12;
+    fnHdrs.forEach((h, i) => {
+      sFunnel.addText(h, { x: hx, y: fnY0 + 0.02, w: fnColW[i], h: 0.36, fontSize: 10, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle", align: fnAlgn[i] });
+      hx += fnColW[i];
+    });
+
+    // Filas
+    DATA.FUNNEL_ROWS.forEach((row, i) => {
+      const ry  = fnY0 + 0.4 + i * fnRowH;
+      const bg  = i % 2 === 0 ? WHITE : LIGHT_BG;
+      const isLast = i === DATA.FUNNEL_ROWS.length - 1;
+
+      sFunnel.addShape(pres.shapes.RECTANGLE, { x: fnX0, y: ry, w: 9.3, h: fnRowH - 0.03,
+        fill: { color: isLast ? "FFF4EE" : bg },
+        line: { color: isLast ? ORANGE : "EEEEEE", width: isLast ? 1 : 0.3 }
+      });
+
+      const vals   = [row.mes, row.leads, row.calificados, row.cierres, row.venta, row.inversion, row.roas];
+      let rx = fnX0 + 0.12;
+      vals.forEach((v, j) => {
+        const isMes  = j === 0;
+        const isRoas = j === 6;
+        sFunnel.addText(v || "—", {
+          x: rx, y: ry + 0.08, w: fnColW[j], h: fnRowH - 0.15,
+          fontSize: isMes ? 10 : 11,
+          bold: isLast || isRoas,
+          color: isRoas ? (parseFloat((v || "0").replace(",", ".")) >= 1 ? GREEN : RED) : (isLast ? ORANGE : DARK),
+          fontFace: isMes ? "DM Sans" : "Trebuchet MS",
+          align: fnAlgn[j],
+          valign: "middle",
+        });
+        rx += fnColW[j];
+      });
+    });
+  }
+
   // ── SLIDE 6 – RECOMENDACIONES ─────────────────────────────────────────────
   buildSlide_Recommendations(pres, DATA);
 
