@@ -306,8 +306,12 @@ async function generatePptx(DATA) {
       { label: "Clicks",      val: DATA.GOOGLE_CLICKS      || "", prev: DATA.GOOGLE_CLICKS_PREV      || "", delta: DATA.GOOGLE_CLICKS_DELTA      || "", good: DATA.GOOGLE_CLICKS_DELTA_UP      === true },
       { label: "Impresiones", val: DATA.GOOGLE_IMPRESIONES || "", prev: DATA.GOOGLE_IMPRESIONES_PREV || "", delta: DATA.GOOGLE_IMPRESIONES_DELTA || "", good: DATA.GOOGLE_IMPRESIONES_DELTA_UP === true },
       { label: "CTR",         val: DATA.GOOGLE_CTR         || "", prev: DATA.GOOGLE_CTR_PREV         || "", delta: DATA.GOOGLE_CTR_DELTA         || "", good: DATA.GOOGLE_CTR_DELTA_UP         === true },
-      { label: "Leads",       val: DATA.GOOGLE_LEADS       || "", prev: DATA.GOOGLE_LEADS_PREV       || "", delta: DATA.GOOGLE_LEADS_DELTA       || "", good: DATA.GOOGLE_LEADS_DELTA_UP       === true },
-      { label: "CPL",         val: DATA.GOOGLE_CPL         || "", prev: DATA.GOOGLE_CPL_PREV         || "", delta: DATA.GOOGLE_CPL_DELTA         || "", good: DATA.GOOGLE_CPL_DELTA_UP         === true },
+      DATA.GOOGLE_ES_TRAFICO
+        ? { label: "CPC", val: DATA.GOOGLE_CPC || "", prev: DATA.GOOGLE_CPC_PREV || "", delta: DATA.GOOGLE_CPC_DELTA || "", good: DATA.GOOGLE_CPC_DELTA_UP === true }
+        : { label: "Leads", val: DATA.GOOGLE_LEADS || "", prev: DATA.GOOGLE_LEADS_PREV || "", delta: DATA.GOOGLE_LEADS_DELTA || "", good: DATA.GOOGLE_LEADS_DELTA_UP === true },
+      DATA.GOOGLE_ES_TRAFICO
+        ? { label: "CPM", val: DATA.GOOGLE_CPM || "", prev: DATA.GOOGLE_CPM_PREV || "", delta: DATA.GOOGLE_CPM_DELTA || "", good: DATA.GOOGLE_CPM_DELTA_UP === true }
+        : { label: "CPL", val: DATA.GOOGLE_CPL || "", prev: DATA.GOOGLE_CPL_PREV || "", delta: DATA.GOOGLE_CPL_DELTA || "", good: DATA.GOOGLE_CPL_DELTA_UP === true },
     ];
     googleKPIs.forEach((k, i) => {
       const col = i % 3, row = Math.floor(i / 3);
@@ -569,57 +573,6 @@ async function generatePptx(DATA) {
       // Rank badge
       s5b.addShape(pres.shapes.OVAL, { x: cx + 0.1, y: cy + 0.12, w: 0.32, h: 0.32, fill: { color: ORANGE }, line: { color: ORANGE } });
       s5b.addText(`#${i + 1}`, { x: cx + 0.1, y: cy + 0.12, w: 0.32, h: 0.32, fontSize: 10, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
-    });
-  }
-
-  // ── SLIDE – ANÁLISIS DE CREATIVIDADES (condicional) ─────────────────────
-  if (Array.isArray(DATA.META_ADS_TOP) && DATA.META_ADS_TOP.length > 0) {
-    let sCreat = pres.addSlide();
-    sCreat.background = { color: WHITE };
-    sCreat.addText("Análisis de Creatividades", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-    sCreat.addText(`Meta Ads  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  CTR · Inversión · Frecuencia`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
-
-    const crPanels = [
-      { x: 0.4, w: 4.4, title: "Top Creatividades", sub: "Mayor CTR", hColor: GREEN, hBg: GREEN_BG, rows: (DATA.META_ADS_TOP || []).slice(0, 5) },
-      { x: 5.2, w: 4.4, title: "Para Optimizar",    sub: "CTR bajo · Costo alto · Frecuencia alta", hColor: RED, hBg: RED_BG, rows: (DATA.META_ADS_OPT || []).slice(0, 5) },
-    ];
-
-    crPanels.forEach(p => {
-      const rowH   = 0.68;
-      const hH     = 0.58;
-      const panelY = 1.1;
-      const totalH = hH + p.rows.length * rowH;
-
-      sCreat.addShape(pres.shapes.RECTANGLE, { x: p.x, y: panelY, w: p.w, h: totalH, fill: { color: LIGHT_BG }, line: { color: "E8E0D8", width: 0.5 } });
-      sCreat.addShape(pres.shapes.RECTANGLE, { x: p.x, y: panelY, w: p.w, h: 0.05, fill: { color: p.hColor }, line: { color: p.hColor } });
-      sCreat.addText(p.title, { x: p.x + 0.15, y: panelY + 0.07, w: p.w - 0.3, h: 0.26, fontSize: 13, bold: true, color: p.hColor, fontFace: "DM Sans" });
-      sCreat.addText(p.sub,   { x: p.x + 0.15, y: panelY + 0.33, w: p.w - 0.3, h: 0.2,  fontSize: 9,  color: p.hColor, fontFace: "DM Sans", italic: true });
-
-      p.rows.forEach((row, i) => {
-        const ry    = panelY + hH + i * rowH;
-        const bg    = i % 2 === 0 ? WHITE : "F7F4F1";
-        const frec  = parseFloat(row.frecuencia) || 0;
-        const frecC = frec > 3 ? RED : frec > 2.5 ? AMBER : GRAY_TEXT;
-
-        sCreat.addShape(pres.shapes.RECTANGLE, { x: p.x, y: ry, w: p.w, h: rowH, fill: { color: bg }, line: { color: "EEEEEE", width: 0.3 } });
-
-        // Nombre
-        const nombre = (row.nombre || "").length > 30 ? row.nombre.substring(0, 28) + "…" : (row.nombre || "");
-        sCreat.addText(nombre, { x: p.x + 0.15, y: ry + 0.08, w: p.w - 1.1, h: 0.24, fontSize: 9, bold: true, color: DARK, fontFace: "DM Sans", valign: "middle" });
-
-        // CTR badge
-        sCreat.addShape(pres.shapes.RECTANGLE, { x: p.x + p.w - 0.88, y: ry + 0.1, w: 0.76, h: 0.24, fill: { color: p.hBg }, line: { color: p.hColor } });
-        sCreat.addText(row.ctr || "", { x: p.x + p.w - 0.88, y: ry + 0.1, w: 0.76, h: 0.24, fontSize: 9, bold: true, color: p.hColor, fontFace: "DM Sans", align: "center", valign: "middle" });
-
-        // Costo + Frecuencia
-        sCreat.addText(row.costo || "", { x: p.x + 0.15, y: ry + 0.38, w: 1.4, h: 0.2, fontSize: 8, color: GRAY_TEXT, fontFace: "DM Sans" });
-        sCreat.addText(`Frec: ${row.frecuencia || ""}`, { x: p.x + 1.6, y: ry + 0.38, w: 1.0, h: 0.2, fontSize: 8, bold: frec > 2.5, color: frecC, fontFace: "DM Sans" });
-
-        // Razón (solo panel OPT)
-        if (row.razon) {
-          sCreat.addText(row.razon, { x: p.x + p.w - 1.7, y: ry + 0.38, w: 1.58, h: 0.2, fontSize: 7.5, bold: true, color: frecC, fontFace: "DM Sans", align: "right" });
-        }
-      });
     });
   }
 
