@@ -157,6 +157,80 @@ async function generatePptx(DATA) {
     });
   }
 
+  // ── SLIDE 2 – RESUMEN EJECUTIVO ───────────────────────────────────────────
+  let s2 = pres.addSlide();
+  s2.background = { color: WHITE };
+  s2.addText("Resumen Ejecutivo", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+  s2.addText("Inversión · Revenue · ROAS  ·  Meta Ads + Google Ads", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+  const _invA  = parseNum(DATA.INVERSION_TOTAL), _invP = parseNum(DATA.INVERSION_PREV);
+  const _revA  = parseNum(DATA.GA4_INGRESOS),    _revP = parseNum(DATA.GA4_INGRESOS_PREV);
+  const _roasA = _invA > 0 ? _revA / _invA : 0;
+  const _roasP = _invP > 0 ? _revP / _invP : 0;
+  const _roasStr   = _roasA > 0 ? _roasA.toFixed(2).replace(".", ",") + "x" : "";
+  const _roasPrev  = _roasP > 0 ? _roasP.toFixed(2).replace(".", ",") + "x" : "";
+  const _roasDelta = _roasP > 0 ? (((_roasA - _roasP) / _roasP) * 100) : null;
+  const _roasDeltaStr = _roasDelta !== null ? (_roasDelta >= 0 ? "+" : "") + _roasDelta.toFixed(1).replace(".", ",") + "%" : "";
+
+  const kpis = [
+    { label: "Inversión total", val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: DATA.INVERSION_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.INVERSION_PREV || ""}`, up: DATA.INVERSION_DELTA_UP === true },
+    { label: "Revenue GA4",     val: fmtMoneyCompact(DATA.GA4_INGRESOS),    delta: DATA.GA4_INGRESOS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.GA4_INGRESOS_PREV || ""}`, up: DATA.GA4_INGRESOS_DELTA_UP === true },
+    { label: "ROAS total",      val: _roasStr, delta: _roasDeltaStr, note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${_roasPrev}`, up: _roasA >= _roasP },
+    { label: "Clicks totales",  val: DATA.CLICKS_TOTAL || "", delta: DATA.CLICKS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CLICKS_PREV || ""}`, up: DATA.CLICKS_DELTA_UP === true },
+  ];
+  kpis.forEach((k, i) => {
+    const x = 0.4 + i * 2.32;
+    s2.addShape(pres.shapes.RECTANGLE, { x, y: 1.2, w: 2.1, h: 1.55, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+    s2.addShape(pres.shapes.RECTANGLE, { x, y: 1.2, w: 2.1, h: 0.07, fill: { color: ORANGE }, line: { color: ORANGE } });
+    s2.addText(k.label, { x, y: 1.32, w: 2.1, h: 0.3, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
+    s2.addText(k.val,   { x, y: 1.62, w: 2.1, h: 0.52, fontSize: 26, bold: true, color: DARK, fontFace: "Trebuchet MS", align: "center" });
+    s2.addShape(pres.shapes.RECTANGLE, { x: x + 0.6, y: 2.17, w: 0.9, h: 0.27, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
+    s2.addText(k.delta, { x: x + 0.6, y: 2.17, w: 0.9, h: 0.27, fontSize: 11, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
+    s2.addText(k.note,  { x, y: 2.5, w: 2.1, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
+  });
+
+  s2.addText("Comparativa por plataforma", { x: 0.5, y: 2.95, w: 9, h: 0.35, fontSize: 13, bold: true, color: DARK, fontFace: "DM Sans" });
+
+  // Meta block
+  s2.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 3.35, w: 4.4, h: 1.85, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+  s2.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 3.35, w: 4.4, h: 0.38, fill: { color: ORANGE }, line: { color: ORANGE } });
+  s2.addText("Meta Ads", { x: 0.55, y: 3.38, w: 3, h: 0.32, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
+  const metaStats = [
+    ["Costo",  DATA.META_COSTO  || "", DATA.META_COSTO_DELTA  || "", DATA.META_COSTO_DELTA_UP  === true],
+    ["Clicks", DATA.META_CLICKS || "", DATA.META_CLICKS_DELTA || "", DATA.META_CLICKS_DELTA_UP !== true],
+    ["ROAS",   DATA.META_ROAS   || "", DATA.META_ROAS_DELTA   || "", DATA.META_ROAS_DELTA_UP   !== true],
+    ["CPC",    DATA.META_CPC    || "", DATA.META_CPC_DELTA    || "", DATA.META_CPC_DELTA_UP    !== true],
+  ];
+  metaStats.forEach(([lbl, val, delta, isDown], i) => {
+    const col = i % 2, row = Math.floor(i / 2);
+    const bx = 0.55 + col * 2.1, by = 3.85 + row * 0.6;
+    s2.addText(lbl, { x: bx, y: by, w: 1.8, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    s2.addText([
+      { text: val + "  ", options: { bold: true, color: DARK } },
+      { text: delta,      options: { color: isDown ? RED : GREEN, bold: true } },
+    ], { x: bx, y: by + 0.2, w: 1.9, h: 0.28, fontSize: 12, fontFace: "DM Sans" });
+  });
+
+  // Google block
+  s2.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: 3.35, w: 4.4, h: 1.85, fill: { color: LIGHT_BLUE }, line: { color: "D0E4F5", width: 0.5 } });
+  s2.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: 3.35, w: 4.4, h: 0.38, fill: { color: BLUE }, line: { color: BLUE } });
+  s2.addText("Google Ads", { x: 5.35, y: 3.38, w: 3, h: 0.32, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
+  const googleStats = [
+    ["Costo",  DATA.GOOGLE_COSTO  || "", DATA.GOOGLE_COSTO_DELTA  || "", DATA.GOOGLE_COSTO_DELTA_UP  === true],
+    ["Clicks", DATA.GOOGLE_CLICKS || "", DATA.GOOGLE_CLICKS_DELTA || "", DATA.GOOGLE_CLICKS_DELTA_UP !== true],
+    ["ROAS",   DATA.GOOGLE_ROAS   || "", DATA.GOOGLE_ROAS_DELTA   || "", DATA.GOOGLE_ROAS_DELTA_UP   !== true],
+    ["CPC",    DATA.GOOGLE_CPC    || "", DATA.GOOGLE_CPC_DELTA    || "", DATA.GOOGLE_CPC_DELTA_UP    !== true],
+  ];
+  googleStats.forEach(([lbl, val, delta, isDown], i) => {
+    const col = i % 2, row = Math.floor(i / 2);
+    const bx = 5.35 + col * 2.1, by = 3.85 + row * 0.6;
+    s2.addText(lbl, { x: bx, y: by, w: 1.8, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    s2.addText([
+      { text: val + "  ", options: { bold: true, color: DARK } },
+      { text: delta,      options: { color: isDown ? RED : GREEN, bold: true } },
+    ], { x: bx, y: by + 0.2, w: 1.9, h: 0.28, fontSize: 12, fontFace: "DM Sans" });
+  });
+
   // ── SLIDE 3 – GA4 ─────────────────────────────────────────────────────────
   let s7 = pres.addSlide();
   s7.background = { color: WHITE };
@@ -471,81 +545,6 @@ async function generatePptx(DATA) {
 
   if (campGoogle.length > 0) buildCampSlide(pres, campGoogle, "Google");
   if (campMeta.length   > 0) buildCampSlide(pres, campMeta,   "Meta");
-
-  // ── SLIDE 2 – RESUMEN EJECUTIVO ───────────────────────────────────────────
-  let s2 = pres.addSlide();
-  s2.background = { color: WHITE };
-  s2.addText("Resumen Ejecutivo", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-  s2.addText("Inversión · Revenue · ROAS  ·  Meta Ads + Google Ads", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
-
-  const _invA  = parseNum(DATA.INVERSION_TOTAL), _invP = parseNum(DATA.INVERSION_PREV);
-  const _revA  = parseNum(DATA.GA4_INGRESOS),    _revP = parseNum(DATA.GA4_INGRESOS_PREV);
-  const _roasA = _invA > 0 ? _revA / _invA : 0;
-  const _roasP = _invP > 0 ? _revP / _invP : 0;
-  const _roasStr   = _roasA > 0 ? _roasA.toFixed(2).replace(".", ",") + "x" : "";
-  const _roasPrev  = _roasP > 0 ? _roasP.toFixed(2).replace(".", ",") + "x" : "";
-  const _roasDelta = _roasP > 0 ? (((_roasA - _roasP) / _roasP) * 100) : null;
-  const _roasDeltaStr = _roasDelta !== null ? (_roasDelta >= 0 ? "+" : "") + _roasDelta.toFixed(1).replace(".", ",") + "%" : "";
-
-  const kpis = [
-    { label: "Inversión total", val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: DATA.INVERSION_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.INVERSION_PREV || ""}`, up: DATA.INVERSION_DELTA_UP === true },
-    { label: "Revenue GA4",     val: fmtMoneyCompact(DATA.GA4_INGRESOS),    delta: DATA.GA4_INGRESOS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.GA4_INGRESOS_PREV || ""}`, up: DATA.GA4_INGRESOS_DELTA_UP === true },
-    { label: "ROAS total",      val: _roasStr, delta: _roasDeltaStr, note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${_roasPrev}`, up: _roasA >= _roasP },
-    { label: "Clicks totales",  val: DATA.CLICKS_TOTAL || "", delta: DATA.CLICKS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CLICKS_PREV || ""}`, up: DATA.CLICKS_DELTA_UP === true },
-  ];
-  kpis.forEach((k, i) => {
-    const x = 0.4 + i * 2.32;
-    s2.addShape(pres.shapes.RECTANGLE, { x, y: 1.2, w: 2.1, h: 1.55, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
-    s2.addShape(pres.shapes.RECTANGLE, { x, y: 1.2, w: 2.1, h: 0.07, fill: { color: ORANGE }, line: { color: ORANGE } });
-    s2.addText(k.label, { x, y: 1.32, w: 2.1, h: 0.3, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
-    s2.addText(k.val,   { x, y: 1.62, w: 2.1, h: 0.52, fontSize: 26, bold: true, color: DARK, fontFace: "Trebuchet MS", align: "center" });
-    s2.addShape(pres.shapes.RECTANGLE, { x: x + 0.6, y: 2.17, w: 0.9, h: 0.27, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
-    s2.addText(k.delta, { x: x + 0.6, y: 2.17, w: 0.9, h: 0.27, fontSize: 11, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
-    s2.addText(k.note,  { x, y: 2.5, w: 2.1, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
-  });
-
-  s2.addText("Comparativa por plataforma", { x: 0.5, y: 2.95, w: 9, h: 0.35, fontSize: 13, bold: true, color: DARK, fontFace: "DM Sans" });
-
-  // Meta block
-  s2.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 3.35, w: 4.4, h: 1.85, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
-  s2.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 3.35, w: 4.4, h: 0.38, fill: { color: ORANGE }, line: { color: ORANGE } });
-  s2.addText("Meta Ads", { x: 0.55, y: 3.38, w: 3, h: 0.32, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
-  const metaStats = [
-    ["Costo",  DATA.META_COSTO  || "", DATA.META_COSTO_DELTA  || "", DATA.META_COSTO_DELTA_UP  === true],
-    ["Clicks", DATA.META_CLICKS || "", DATA.META_CLICKS_DELTA || "", DATA.META_CLICKS_DELTA_UP !== true],
-    ["ROAS",   DATA.META_ROAS   || "", DATA.META_ROAS_DELTA   || "", DATA.META_ROAS_DELTA_UP   !== true],
-    ["CPC",    DATA.META_CPC    || "", DATA.META_CPC_DELTA    || "", DATA.META_CPC_DELTA_UP    !== true],
-  ];
-  metaStats.forEach(([lbl, val, delta, isDown], i) => {
-    const col = i % 2, row = Math.floor(i / 2);
-    const bx = 0.55 + col * 2.1, by = 3.85 + row * 0.6;
-    s2.addText(lbl, { x: bx, y: by, w: 1.8, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-    s2.addText([
-      { text: val + "  ", options: { bold: true, color: DARK } },
-      { text: delta,      options: { color: isDown ? RED : GREEN, bold: true } },
-    ], { x: bx, y: by + 0.2, w: 1.9, h: 0.28, fontSize: 12, fontFace: "DM Sans" });
-  });
-
-  // Google block
-  s2.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: 3.35, w: 4.4, h: 1.85, fill: { color: LIGHT_BLUE }, line: { color: "D0E4F5", width: 0.5 } });
-  s2.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: 3.35, w: 4.4, h: 0.38, fill: { color: BLUE }, line: { color: BLUE } });
-  s2.addText("Google Ads", { x: 5.35, y: 3.38, w: 3, h: 0.32, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
-  const googleStats = [
-    ["Costo",  DATA.GOOGLE_COSTO  || "", DATA.GOOGLE_COSTO_DELTA  || "", DATA.GOOGLE_COSTO_DELTA_UP  === true],
-    ["Clicks", DATA.GOOGLE_CLICKS || "", DATA.GOOGLE_CLICKS_DELTA || "", DATA.GOOGLE_CLICKS_DELTA_UP !== true],
-    ["ROAS",   DATA.GOOGLE_ROAS   || "", DATA.GOOGLE_ROAS_DELTA   || "", DATA.GOOGLE_ROAS_DELTA_UP   !== true],
-    ["CPC",    DATA.GOOGLE_CPC    || "", DATA.GOOGLE_CPC_DELTA    || "", DATA.GOOGLE_CPC_DELTA_UP    !== true],
-  ];
-  googleStats.forEach(([lbl, val, delta, isDown], i) => {
-    const col = i % 2, row = Math.floor(i / 2);
-    const bx = 5.35 + col * 2.1, by = 3.85 + row * 0.6;
-    s2.addText(lbl, { x: bx, y: by, w: 1.8, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-    s2.addText([
-      { text: val + "  ", options: { bold: true, color: DARK } },
-      { text: delta,      options: { color: isDown ? RED : GREEN, bold: true } },
-    ], { x: bx, y: by + 0.2, w: 1.9, h: 0.28, fontSize: 12, fontFace: "DM Sans" });
-  });
-
 
   // ── SLIDE 5C – TOP ANUNCIOS META POR COMPRAS ─────────────────────────────
   if (DATA.TOP_ANUNCIOS_META_TIENE_DATOS && Array.isArray(DATA.TOP_ANUNCIOS_META) && DATA.TOP_ANUNCIOS_META.length > 0) {
