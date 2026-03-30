@@ -105,7 +105,7 @@ async function generatePptx(DATA) {
     ["Costo",  DATA.META_COSTO  || "", DATA.META_COSTO_DELTA  || "", DATA.META_COSTO_DELTA_UP  === true],
     ["Clicks", DATA.META_CLICKS || "", DATA.META_CLICKS_DELTA || "", DATA.META_CLICKS_DELTA_UP !== true],
     ["CPL",    DATA.META_CPL    || "", DATA.META_CPL_DELTA    || "", DATA.META_CPL_DELTA_UP    === true],
-    ["CPC",    DATA.META_CPC    || "", DATA.META_CPC_DELTA    || "", DATA.META_CPC_DELTA_UP    !== true],
+    ["Leads",  DATA.META_LEADS  || "", DATA.META_LEADS_DELTA  || "", DATA.META_LEADS_DELTA_UP  !== true],
   ];
   metaStats.forEach(([lbl, val, delta, isDown], i) => {
     const col = i % 2, row = Math.floor(i / 2);
