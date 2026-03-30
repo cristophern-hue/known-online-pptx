@@ -527,7 +527,19 @@ async function generatePptx(DATA) {
   // ── SLIDE – RESULTADOS COMERCIALES (solo MANAR, evolutivo) ──────────────
   const isManar = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("manar");
   if (isManar) {
-    const funnelRows = Array.isArray(DATA.FUNNEL_ROWS) ? DATA.FUNNEL_ROWS : [];
+    // Filas históricas opcionales + fila del mes actual auto-completada
+    const funnelRows = [
+      ...(Array.isArray(DATA.FUNNEL_ROWS) ? DATA.FUNNEL_ROWS : []),
+      {
+        mes:         DATA.PERIODO_ACTUAL_LABEL || "",
+        leads:       DATA.META_LEADS           || "—",
+        inversion:   DATA.META_COSTO           || "—",
+        calificados: "—",
+        cierres:     "—",
+        venta:       "—",
+        roas:        "—",
+      },
+    ];
     let sFunnel = pres.addSlide();
     sFunnel.background = { color: WHITE };
     sFunnel.addText("Resultados Comerciales", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
