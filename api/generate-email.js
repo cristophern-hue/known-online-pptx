@@ -229,11 +229,10 @@ async function generatePptx(DATA) {
 
   // ── SLIDES CAMPAÑAS — estructura según plataforma ────────────────────────
   if (isWoowup) {
-    // WOOWUP: separar en Newsletter y Automatizadas
     buildSlideTabla(campañasNewsletter,   "Newsletter",    ORANGE, LIGHT_BG);
     buildSlideTop3 (top3Newsletter,       "Newsletter",    ORANGE);
-    buildSlideTabla(campañasAutomatizada, "Automatizadas", BLUE,   LIGHT_BLUE);
-    buildSlideTop3 (top3Automatizada,     "Automatizadas", BLUE);
+    buildSlideTabla(campañasAutomatizada, "Automatizadas", ORANGE, LIGHT_BG);
+    buildSlideTop3 (top3Automatizada,     "Automatizadas", ORANGE);
   } else {
     // MAIUP / ICOMM / otras: tabla única
     const label = plataforma === "MAIUP" ? "Mailup" : plataforma === "ICOMM" ? "Icomm" : (DATA.PLATAFORMA_EMAIL || "Email");
