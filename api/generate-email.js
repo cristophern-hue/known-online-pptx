@@ -60,12 +60,39 @@ async function generatePptx(DATA) {
   function buildSlideTabla(campanas, tipo, accentColor, accentBg) {
     if (campanas.length === 0) return;
 
+    // ── Calcular fila de totales/promedios del array completo ────────────
+    const pN = str => parseNum((str || "0").replace("%", ""));
+    let totalEnvios = 0, totalTrans = 0, totalIngresos = 0;
+    let sumAp = 0, sumCtor = 0, sumBajas = 0;
+    campanas.forEach(c => {
+      const e = pN(c.envios);
+      totalEnvios   += e;
+      totalTrans    += pN(c.transacciones);
+      totalIngresos += pN(c.ingresos);
+      sumAp         += pN(c.apertura) * e;
+      sumCtor       += pN(c.ctor)     * e;
+      sumBajas      += pN(c.bajas)    * e;
+    });
+    const fN  = n => Math.round(n).toLocaleString("es-AR");
+    const fP  = n => n.toFixed(1).replace(".", ",") + "%";
+    const fM  = n => "$" + Math.round(n).toLocaleString("es-AR");
+    const totalsRow = {
+      nombre:        "TOTAL / PROMEDIO",
+      envios:        fN(totalEnvios),
+      apertura:      totalEnvios > 0 ? fP(sumAp   / totalEnvios) : "—",
+      ctor:          totalEnvios > 0 ? fP(sumCtor  / totalEnvios) : "—",
+      bajas:         totalEnvios > 0 ? fP(sumBajas / totalEnvios) : "—",
+      transacciones: totalTrans    > 0 ? fN(totalTrans)    : undefined,
+      ingresos:      totalIngresos > 0 ? fM(totalIngresos) : undefined,
+    };
+
     const ROWS_PER_SLIDE = 12;
     const totalPages = Math.ceil(campanas.length / ROWS_PER_SLIDE);
 
     for (let page = 0; page < totalPages; page++) {
-      const slice   = campanas.slice(page * ROWS_PER_SLIDE, (page + 1) * ROWS_PER_SLIDE);
-      const pageLabel = totalPages > 1 ? ` (${page + 1}/${totalPages})` : "";
+      const isLastPage = page === totalPages - 1;
+      const slice      = campanas.slice(page * ROWS_PER_SLIDE, (page + 1) * ROWS_PER_SLIDE);
+      const pageLabel  = totalPages > 1 ? ` (${page + 1}/${totalPages})` : "";
 
       const s = pres.addSlide();
       s.background = { color: WHITE };
@@ -121,6 +148,18 @@ async function generatePptx(DATA) {
           rx += c.w;
         });
       });
+
+      // Fila de totales — solo en la última página
+      if (isLastPage) {
+        const ry = tY + 0.34 + slice.length * 0.33;
+        s.addShape(pres.shapes.RECTANGLE, { x: marginX, y: ry, w: totalW, h: 0.33, fill: { color: "FFF0E8" }, line: { color: accentColor, width: 0.5 } });
+        let rx = marginX + 0.1;
+        cols.forEach(c => {
+          const val = totalsRow[c.key] !== undefined ? (totalsRow[c.key] || "—") : "—";
+          s.addText(val, { x: rx, y: ry + 0.05, w: c.w - 0.1, h: 0.24, fontSize: 8.5, bold: true, color: accentColor, fontFace: "DM Sans", align: c.align, valign: "middle" });
+          rx += c.w;
+        });
+      }
     }
   }
 
@@ -229,11 +268,10 @@ async function generatePptx(DATA) {
 
   // ── SLIDES CAMPAÑAS — estructura según plataforma ────────────────────────
   if (isWoowup) {
-    // WOOWUP: separar en Newsletter y Automatizadas
     buildSlideTabla(campañasNewsletter,   "Newsletter",    ORANGE, LIGHT_BG);
     buildSlideTop3 (top3Newsletter,       "Newsletter",    ORANGE);
-    buildSlideTabla(campañasAutomatizada, "Automatizadas", BLUE,   LIGHT_BLUE);
-    buildSlideTop3 (top3Automatizada,     "Automatizadas", BLUE);
+    buildSlideTabla(campañasAutomatizada, "Automatizadas", ORANGE, LIGHT_BG);
+    buildSlideTop3 (top3Automatizada,     "Automatizadas", ORANGE);
   } else {
     // MAIUP / ICOMM / otras: tabla única
     const label = plataforma === "MAIUP" ? "Mailup" : plataforma === "ICOMM" ? "Icomm" : (DATA.PLATAFORMA_EMAIL || "Email");
@@ -276,6 +314,69 @@ async function generatePptx(DATA) {
       s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 3.55, w: 9.2, h: 0.7, fill: { color: "F0F7FF" }, line: { color: "D0E4F5", width: 0.5 } });
       s.addText(DATA.GA4_NOTA, { x: 0.55, y: 3.6, w: 9.0, h: 0.6, fontSize: 10, color: BLUE, fontFace: "DM Sans", wrap: true });
     }
+  }
+
+  // ── SLIDE – EVOLUTIVO (condicional — si DATA.EVOLUTIVO_ROWS existe) ─────
+  if (Array.isArray(DATA.EVOLUTIVO_ROWS) && DATA.EVOLUTIVO_ROWS.length > 0) {
+    const rows = DATA.EVOLUTIVO_ROWS;
+
+    // Pivot: extraer meses únicos (en orden de aparición) y KPIs únicos
+    const meses = [...new Set(rows.map(r => r.Mes || r.mes || ""))].filter(Boolean);
+    const kpis  = [...new Set(rows.map(r => r.KPI || r.kpi || ""))].filter(Boolean);
+
+    // Mapa [kpi][mes] = valor
+    const map = {};
+    rows.forEach(r => {
+      const k = r.KPI || r.kpi || "";
+      const m = r.Mes || r.mes || "";
+      const v = r.Valor || r.valor || "—";
+      if (!map[k]) map[k] = {};
+      map[k][m] = v;
+    });
+
+    const s = pres.addSlide();
+    s.background = { color: WHITE };
+
+    s.addText("Evolución de Resultados", { x: 0.5, y: 0.18, w: 9, h: 0.52, fontSize: 26, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s.addText(`${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PLATAFORMA_EMAIL || "Email Marketing"}`, {
+      x: 0.5, y: 0.7, w: 9, h: 0.28, fontSize: 12, color: GRAY_TEXT, fontFace: "DM Sans",
+    });
+
+    // Layout dinámico: columna KPI + una columna por mes
+    const kpiColW  = 2.2;
+    const mesColW  = Math.min(1.6, (9.2 - kpiColW) / meses.length);
+    const totalW   = kpiColW + mesColW * meses.length;
+    const marginX  = (10 - totalW) / 2;
+    const tY       = 1.1;
+    const rowH     = 0.38;
+    const lastMes  = meses[meses.length - 1]; // mes más reciente → destacado
+
+    // Header: KPI + meses
+    s.addShape(pres.shapes.RECTANGLE, { x: marginX, y: tY, w: totalW, h: 0.34, fill: { color: ORANGE }, line: { color: ORANGE } });
+    s.addText("KPI", { x: marginX + 0.1, y: tY + 0.04, w: kpiColW - 0.1, h: 0.26, fontSize: 9, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle" });
+    meses.forEach((mes, mi) => {
+      const cx = marginX + kpiColW + mi * mesColW;
+      const isLast = mes === lastMes;
+      if (isLast) s.addShape(pres.shapes.RECTANGLE, { x: cx, y: tY, w: mesColW, h: 0.34, fill: { color: "D94E10" }, line: { color: "D94E10" } });
+      s.addText(mes, { x: cx, y: tY + 0.04, w: mesColW, h: 0.26, fontSize: 9, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+    });
+
+    // Filas por KPI
+    kpis.forEach((kpi, ki) => {
+      const ry = tY + 0.34 + ki * rowH;
+      const bg = ki % 2 === 0 ? WHITE : "FAFAFA";
+      s.addShape(pres.shapes.RECTANGLE, { x: marginX, y: ry, w: totalW, h: rowH, fill: { color: bg }, line: { color: "EEEEEE", width: 0.3 } });
+
+      s.addText(kpi, { x: marginX + 0.1, y: ry + 0.08, w: kpiColW - 0.15, h: rowH - 0.1, fontSize: 9, bold: true, color: DARK, fontFace: "DM Sans", valign: "middle" });
+
+      meses.forEach((mes, mi) => {
+        const cx  = marginX + kpiColW + mi * mesColW;
+        const val = (map[kpi] && map[kpi][mes]) ? map[kpi][mes] : "—";
+        const isLast = mes === lastMes;
+        if (isLast) s.addShape(pres.shapes.RECTANGLE, { x: cx, y: ry, w: mesColW, h: rowH, fill: { color: "FFF0E8" }, line: { color: "EEEEEE", width: 0.3 } });
+        s.addText(val, { x: cx, y: ry + 0.08, w: mesColW, h: rowH - 0.1, fontSize: 9, bold: isLast, color: isLast ? ORANGE : DARK, fontFace: "DM Sans", align: "center", valign: "middle" });
+      });
+    });
   }
 
   // ── SLIDE – RECOMENDACIONES ───────────────────────────────────────────────
