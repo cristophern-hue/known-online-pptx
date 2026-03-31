@@ -41,7 +41,10 @@ async function generatePptx(DATA) {
   const hasEcommerce = !!(DATA.EMAIL_INGRESOS || DATA.EMAIL_TRANSACCIONES);
   const hasGA4       = DATA.GA4_TIENE_DATOS === true;
   const plataforma   = (DATA.PLATAFORMA_EMAIL || "").toUpperCase();
-  const isWoowup     = plataforma === "WOOWUP";
+  // Detectar Woowup también por presencia de los arrays separados por tipo
+  const isWoowup     = plataforma === "WOOWUP"
+                    || Array.isArray(DATA.EMAIL_CAMPANAS_NEWSLETTER)
+                    || Array.isArray(DATA.EMAIL_CAMPANAS_AUTOMATIZADA);
 
   const campañasNewsletter    = Array.isArray(DATA.EMAIL_CAMPANAS_NEWSLETTER)    ? DATA.EMAIL_CAMPANAS_NEWSLETTER    : [];
   const campañasAutomatizada  = Array.isArray(DATA.EMAIL_CAMPANAS_AUTOMATIZADA)  ? DATA.EMAIL_CAMPANAS_AUTOMATIZADA  : [];
@@ -194,8 +197,9 @@ async function generatePptx(DATA) {
     if (DATA.EMAIL_TRANSACCIONES) kpis.push({ label: "Transacciones",  val: DATA.EMAIL_TRANSACCIONES || "", delta: DATA.EMAIL_TRANSACCIONES_DELTA || "", up: DATA.EMAIL_TRANSACCIONES_DELTA_UP === true, prev: DATA.EMAIL_TRANSACCIONES_PREV || "" });
     if (DATA.EMAIL_INGRESOS)      kpis.push({ label: "Ingresos online", val: DATA.EMAIL_INGRESOS      || "", delta: DATA.EMAIL_INGRESOS_DELTA      || "", up: DATA.EMAIL_INGRESOS_DELTA_UP      === true, prev: DATA.EMAIL_INGRESOS_PREV      || "" });
 
-    const cardW  = 2.1;
-    const startX = (10 - kpis.length * cardW - (kpis.length - 1) * 0.22) / 2;
+    const cardW      = 2.1;
+    const itemsPerRow = Math.min(kpis.length, 4);
+    const startX     = (10 - itemsPerRow * cardW - (itemsPerRow - 1) * 0.22) / 2;
 
     kpis.forEach((k, i) => {
       const row = Math.floor(i / 4);
