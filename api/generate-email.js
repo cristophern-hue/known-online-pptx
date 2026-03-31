@@ -316,6 +316,69 @@ async function generatePptx(DATA) {
     }
   }
 
+  // ── SLIDE – EVOLUTIVO (condicional — si DATA.EVOLUTIVO_ROWS existe) ─────
+  if (Array.isArray(DATA.EVOLUTIVO_ROWS) && DATA.EVOLUTIVO_ROWS.length > 0) {
+    const rows = DATA.EVOLUTIVO_ROWS;
+
+    // Pivot: extraer meses únicos (en orden de aparición) y KPIs únicos
+    const meses = [...new Set(rows.map(r => r.Mes || r.mes || ""))].filter(Boolean);
+    const kpis  = [...new Set(rows.map(r => r.KPI || r.kpi || ""))].filter(Boolean);
+
+    // Mapa [kpi][mes] = valor
+    const map = {};
+    rows.forEach(r => {
+      const k = r.KPI || r.kpi || "";
+      const m = r.Mes || r.mes || "";
+      const v = r.Valor || r.valor || "—";
+      if (!map[k]) map[k] = {};
+      map[k][m] = v;
+    });
+
+    const s = pres.addSlide();
+    s.background = { color: WHITE };
+
+    s.addText("Evolución de Resultados", { x: 0.5, y: 0.18, w: 9, h: 0.52, fontSize: 26, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s.addText(`${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PLATAFORMA_EMAIL || "Email Marketing"}`, {
+      x: 0.5, y: 0.7, w: 9, h: 0.28, fontSize: 12, color: GRAY_TEXT, fontFace: "DM Sans",
+    });
+
+    // Layout dinámico: columna KPI + una columna por mes
+    const kpiColW  = 2.2;
+    const mesColW  = Math.min(1.6, (9.2 - kpiColW) / meses.length);
+    const totalW   = kpiColW + mesColW * meses.length;
+    const marginX  = (10 - totalW) / 2;
+    const tY       = 1.1;
+    const rowH     = 0.38;
+    const lastMes  = meses[meses.length - 1]; // mes más reciente → destacado
+
+    // Header: KPI + meses
+    s.addShape(pres.shapes.RECTANGLE, { x: marginX, y: tY, w: totalW, h: 0.34, fill: { color: ORANGE }, line: { color: ORANGE } });
+    s.addText("KPI", { x: marginX + 0.1, y: tY + 0.04, w: kpiColW - 0.1, h: 0.26, fontSize: 9, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle" });
+    meses.forEach((mes, mi) => {
+      const cx = marginX + kpiColW + mi * mesColW;
+      const isLast = mes === lastMes;
+      if (isLast) s.addShape(pres.shapes.RECTANGLE, { x: cx, y: tY, w: mesColW, h: 0.34, fill: { color: "D94E10" }, line: { color: "D94E10" } });
+      s.addText(mes, { x: cx, y: tY + 0.04, w: mesColW, h: 0.26, fontSize: 9, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+    });
+
+    // Filas por KPI
+    kpis.forEach((kpi, ki) => {
+      const ry = tY + 0.34 + ki * rowH;
+      const bg = ki % 2 === 0 ? WHITE : "FAFAFA";
+      s.addShape(pres.shapes.RECTANGLE, { x: marginX, y: ry, w: totalW, h: rowH, fill: { color: bg }, line: { color: "EEEEEE", width: 0.3 } });
+
+      s.addText(kpi, { x: marginX + 0.1, y: ry + 0.08, w: kpiColW - 0.15, h: rowH - 0.1, fontSize: 9, bold: true, color: DARK, fontFace: "DM Sans", valign: "middle" });
+
+      meses.forEach((mes, mi) => {
+        const cx  = marginX + kpiColW + mi * mesColW;
+        const val = (map[kpi] && map[kpi][mes]) ? map[kpi][mes] : "—";
+        const isLast = mes === lastMes;
+        if (isLast) s.addShape(pres.shapes.RECTANGLE, { x: cx, y: ry, w: mesColW, h: rowH, fill: { color: "FFF0E8" }, line: { color: "EEEEEE", width: 0.3 } });
+        s.addText(val, { x: cx, y: ry + 0.08, w: mesColW, h: rowH - 0.1, fontSize: 9, bold: isLast, color: isLast ? ORANGE : DARK, fontFace: "DM Sans", align: "center", valign: "middle" });
+      });
+    });
+  }
+
   // ── SLIDE – RECOMENDACIONES ───────────────────────────────────────────────
   buildSlide_Recommendations(pres, DATA);
 
