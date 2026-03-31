@@ -19,8 +19,6 @@
             { "id": "4", "name": "PERIODO_ANTERIOR_LABEL",  "value": "Febrero 2026",             "type": "string" },
             { "id": "5", "name": "SPREADSHEET_ID_ACTUAL",   "value": "ID_SHEET_PERIODO_ACTUAL",   "type": "string" },
             { "id": "6", "name": "SPREADSHEET_ID_ANTERIOR", "value": "ID_SHEET_PERIODO_ANTERIOR", "type": "string" },
-            { "id": "7", "name": "ACTUAL_TAB",              "value": "Hoja 1",                   "type": "string" },
-            { "id": "8", "name": "ANTERIOR_TAB",            "value": "Hoja 1",                   "type": "string" },
             { "id": "8", "name": "WEB",                     "value": "www.knownonline.com",       "type": "string" },
             { "id": "9", "name": "CONTACTO",                "value": "ariel@knownonline.com",    "type": "string" }
           ]
@@ -37,7 +35,7 @@
       "parameters": {
         "operation": "readAllRows",
         "documentId": { "mode": "id", "value": "={{ $json.SPREADSHEET_ID_ACTUAL }}" },
-        "sheetName":  { "mode": "name", "value": "={{ $json.ACTUAL_TAB }}" },
+        "sheetName":  { "mode": "name", "value": "Hoja 1" },
         "options": {}
       },
       "id": "sheet-actual-1",
@@ -50,7 +48,7 @@
       "parameters": {
         "operation": "readAllRows",
         "documentId": { "mode": "id", "value": "={{ $('Config Cliente').first().json.SPREADSHEET_ID_ANTERIOR }}" },
-        "sheetName":  { "mode": "name", "value": "={{ $('Config Cliente').first().json.ANTERIOR_TAB }}" },
+        "sheetName":  { "mode": "name", "value": "Hoja 1" },
         "options": {}
       },
       "id": "sheet-anterior-1",
