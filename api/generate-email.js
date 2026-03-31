@@ -56,64 +56,72 @@ async function generatePptx(DATA) {
   const top3Automatizada = [...campañasAutomatizada].sort((a, b) => parseRate(b.apertura) - parseRate(a.apertura)).slice(0, 3);
   const top3Unicas       = [...campañasUnicas].sort((a, b) => parseRate(b.apertura) - parseRate(a.apertura)).slice(0, 3);
 
-  // ── Helper: tabla de campañas ─────────────────────────────────────────────
+  // ── Helper: tabla de campañas (paginada) ─────────────────────────────────
   function buildSlideTabla(campanas, tipo, accentColor, accentBg) {
     if (campanas.length === 0) return;
-    const s = pres.addSlide();
-    s.background = { color: WHITE };
 
-    s.addText([
-      { text: tipo + " ", options: { bold: true, color: accentColor, fontSize: 26, fontFace: "Trebuchet MS" } },
-      { text: `– ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: DARK, fontSize: 26, fontFace: "Trebuchet MS" } },
-    ], { x: 1.0, y: 0.15, w: 8.8, h: 0.6 });
+    const ROWS_PER_SLIDE = 12;
+    const totalPages = Math.ceil(campanas.length / ROWS_PER_SLIDE);
 
-    s.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: accentColor }, line: { color: accentColor } });
-    s.addText("@", { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fontSize: 16, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+    for (let page = 0; page < totalPages; page++) {
+      const slice   = campanas.slice(page * ROWS_PER_SLIDE, (page + 1) * ROWS_PER_SLIDE);
+      const pageLabel = totalPages > 1 ? ` (${page + 1}/${totalPages})` : "";
 
-    const cols = hasEcommerce
-      ? [
-          { hdr: "Campaña",   key: "nombre",       w: 2.55, align: "left",   color: accentColor },
-          { hdr: "Envíos",    key: "envios",        w: 0.9,  align: "center", color: DARK },
-          { hdr: "Apertura",  key: "apertura",      w: 0.9,  align: "center", color: DARK },
-          { hdr: "CTOR",      key: "ctor",          w: 0.75, align: "center", color: DARK },
-          { hdr: "Bajas",     key: "bajas",         w: 0.75, align: "center", color: DARK },
-          { hdr: "Transacc.", key: "transacciones", w: 0.85, align: "center", color: DARK },
-          { hdr: "Ingresos",  key: "ingresos",      w: 1.15, align: "center", color: DARK },
-        ]
-      : [
-          { hdr: "Campaña",  key: "nombre",   w: 3.5,  align: "left",   color: accentColor },
-          { hdr: "Envíos",   key: "envios",   w: 1.2,  align: "center", color: DARK },
-          { hdr: "Apertura", key: "apertura", w: 1.2,  align: "center", color: DARK },
-          { hdr: "CTOR",     key: "ctor",     w: 1.0,  align: "center", color: DARK },
-          { hdr: "Bajas",    key: "bajas",    w: 1.0,  align: "center", color: DARK },
-        ];
+      const s = pres.addSlide();
+      s.background = { color: WHITE };
 
-    const totalW  = cols.reduce((acc, c) => acc + c.w, 0);
-    const marginX = (10 - totalW) / 2;
-    const tY      = 0.88;
+      s.addText([
+        { text: tipo + pageLabel + " ", options: { bold: true, color: accentColor, fontSize: 26, fontFace: "Trebuchet MS" } },
+        { text: `– ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: DARK, fontSize: 26, fontFace: "Trebuchet MS" } },
+      ], { x: 1.0, y: 0.15, w: 8.8, h: 0.6 });
 
-    // Header
-    s.addShape(pres.shapes.RECTANGLE, { x: marginX, y: tY, w: totalW, h: 0.34, fill: { color: accentColor }, line: { color: accentColor } });
-    let cx = marginX + 0.1;
-    cols.forEach(c => {
-      s.addText(c.hdr, { x: cx, y: tY + 0.04, w: c.w - 0.1, h: 0.26, fontSize: 9, bold: true, color: WHITE, fontFace: "DM Sans", align: c.align, valign: "middle" });
-      cx += c.w;
-    });
+      s.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: accentColor }, line: { color: accentColor } });
+      s.addText("@", { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fontSize: 16, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
 
-    // Rows
-    const maxRows = Math.min(campanas.length, 10);
-    campanas.slice(0, maxRows).forEach((row, i) => {
-      const ry = tY + 0.34 + i * 0.33;
-      const bg = i % 2 === 0 ? WHITE : "FAFAFA";
-      s.addShape(pres.shapes.RECTANGLE, { x: marginX, y: ry, w: totalW, h: 0.33, fill: { color: bg }, line: { color: "EEEEEE", width: 0.3 } });
-      let rx = marginX + 0.1;
+      const cols = hasEcommerce
+        ? [
+            { hdr: "Campaña",   key: "nombre",       w: 2.55, align: "left",   color: accentColor },
+            { hdr: "Envíos",    key: "envios",        w: 0.9,  align: "center", color: DARK },
+            { hdr: "Apertura",  key: "apertura",      w: 0.9,  align: "center", color: DARK },
+            { hdr: "CTOR",      key: "ctor",          w: 0.75, align: "center", color: DARK },
+            { hdr: "Bajas",     key: "bajas",         w: 0.75, align: "center", color: DARK },
+            { hdr: "Transacc.", key: "transacciones", w: 0.85, align: "center", color: DARK },
+            { hdr: "Ingresos",  key: "ingresos",      w: 1.15, align: "center", color: DARK },
+          ]
+        : [
+            { hdr: "Campaña",  key: "nombre",   w: 3.5,  align: "left",   color: accentColor },
+            { hdr: "Envíos",   key: "envios",   w: 1.2,  align: "center", color: DARK },
+            { hdr: "Apertura", key: "apertura", w: 1.2,  align: "center", color: DARK },
+            { hdr: "CTOR",     key: "ctor",     w: 1.0,  align: "center", color: DARK },
+            { hdr: "Bajas",    key: "bajas",    w: 1.0,  align: "center", color: DARK },
+          ];
+
+      const totalW  = cols.reduce((acc, c) => acc + c.w, 0);
+      const marginX = (10 - totalW) / 2;
+      const tY      = 0.88;
+
+      // Header
+      s.addShape(pres.shapes.RECTANGLE, { x: marginX, y: tY, w: totalW, h: 0.34, fill: { color: accentColor }, line: { color: accentColor } });
+      let cx = marginX + 0.1;
       cols.forEach(c => {
-        let val = row[c.key] || "";
-        if (c.key === "nombre" && val.length > 40) val = val.substring(0, 38) + "…";
-        s.addText(val, { x: rx, y: ry + 0.05, w: c.w - 0.1, h: 0.24, fontSize: 8.5, color: c.color, fontFace: "DM Sans", align: c.align, valign: "middle" });
-        rx += c.w;
+        s.addText(c.hdr, { x: cx, y: tY + 0.04, w: c.w - 0.1, h: 0.26, fontSize: 9, bold: true, color: WHITE, fontFace: "DM Sans", align: c.align, valign: "middle" });
+        cx += c.w;
       });
-    });
+
+      // Rows
+      slice.forEach((row, i) => {
+        const ry = tY + 0.34 + i * 0.33;
+        const bg = i % 2 === 0 ? WHITE : "FAFAFA";
+        s.addShape(pres.shapes.RECTANGLE, { x: marginX, y: ry, w: totalW, h: 0.33, fill: { color: bg }, line: { color: "EEEEEE", width: 0.3 } });
+        let rx = marginX + 0.1;
+        cols.forEach(c => {
+          let val = row[c.key] || "";
+          if (c.key === "nombre" && val.length > 40) val = val.substring(0, 38) + "…";
+          s.addText(val, { x: rx, y: ry + 0.05, w: c.w - 0.1, h: 0.24, fontSize: 8.5, color: c.color, fontFace: "DM Sans", align: c.align, valign: "middle" });
+          rx += c.w;
+        });
+      });
+    }
   }
 
   // ── Helper: top 3 por apertura ────────────────────────────────────────────
