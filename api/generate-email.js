@@ -49,7 +49,7 @@ async function generatePptx(DATA) {
   const todasCampanas         = Array.isArray(DATA.EMAIL_CAMPANAS) ? DATA.EMAIL_CAMPANAS : [];
   const getTipo               = c => (c.tipo || c.Tipo || "").trim().toLowerCase();
   const campañasNewsletter    = todasCampanas.filter(c => getTipo(c) === "newsletter");
-  const campañasAutomatizada  = todasCampanas.filter(c => getTipo(c) === "automatizada");
+  const campañasAutomatizada  = todasCampanas.filter(c => getTipo(c) === "automatizada" || getTipo(c) === "automtizada");
   const campañasUnicas        = todasCampanas;
 
   const top3Newsletter   = [...campañasNewsletter].sort((a, b) => parseRate(b.apertura) - parseRate(a.apertura)).slice(0, 3);
