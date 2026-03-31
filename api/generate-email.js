@@ -60,12 +60,39 @@ async function generatePptx(DATA) {
   function buildSlideTabla(campanas, tipo, accentColor, accentBg) {
     if (campanas.length === 0) return;
 
+    // ── Calcular fila de totales/promedios del array completo ────────────
+    const pN = str => parseNum((str || "0").replace("%", ""));
+    let totalEnvios = 0, totalTrans = 0, totalIngresos = 0;
+    let sumAp = 0, sumCtor = 0, sumBajas = 0;
+    campanas.forEach(c => {
+      const e = pN(c.envios);
+      totalEnvios   += e;
+      totalTrans    += pN(c.transacciones);
+      totalIngresos += pN(c.ingresos);
+      sumAp         += pN(c.apertura) * e;
+      sumCtor       += pN(c.ctor)     * e;
+      sumBajas      += pN(c.bajas)    * e;
+    });
+    const fN  = n => Math.round(n).toLocaleString("es-AR");
+    const fP  = n => n.toFixed(1).replace(".", ",") + "%";
+    const fM  = n => "$" + Math.round(n).toLocaleString("es-AR");
+    const totalsRow = {
+      nombre:        "TOTAL / PROMEDIO",
+      envios:        fN(totalEnvios),
+      apertura:      totalEnvios > 0 ? fP(sumAp   / totalEnvios) : "—",
+      ctor:          totalEnvios > 0 ? fP(sumCtor  / totalEnvios) : "—",
+      bajas:         totalEnvios > 0 ? fP(sumBajas / totalEnvios) : "—",
+      transacciones: totalTrans    > 0 ? fN(totalTrans)    : undefined,
+      ingresos:      totalIngresos > 0 ? fM(totalIngresos) : undefined,
+    };
+
     const ROWS_PER_SLIDE = 12;
     const totalPages = Math.ceil(campanas.length / ROWS_PER_SLIDE);
 
     for (let page = 0; page < totalPages; page++) {
-      const slice   = campanas.slice(page * ROWS_PER_SLIDE, (page + 1) * ROWS_PER_SLIDE);
-      const pageLabel = totalPages > 1 ? ` (${page + 1}/${totalPages})` : "";
+      const isLastPage = page === totalPages - 1;
+      const slice      = campanas.slice(page * ROWS_PER_SLIDE, (page + 1) * ROWS_PER_SLIDE);
+      const pageLabel  = totalPages > 1 ? ` (${page + 1}/${totalPages})` : "";
 
       const s = pres.addSlide();
       s.background = { color: WHITE };
@@ -121,6 +148,18 @@ async function generatePptx(DATA) {
           rx += c.w;
         });
       });
+
+      // Fila de totales — solo en la última página
+      if (isLastPage) {
+        const ry = tY + 0.34 + slice.length * 0.33;
+        s.addShape(pres.shapes.RECTANGLE, { x: marginX, y: ry, w: totalW, h: 0.33, fill: { color: "FFF0E8" }, line: { color: accentColor, width: 0.5 } });
+        let rx = marginX + 0.1;
+        cols.forEach(c => {
+          const val = totalsRow[c.key] !== undefined ? (totalsRow[c.key] || "—") : "—";
+          s.addText(val, { x: rx, y: ry + 0.05, w: c.w - 0.1, h: 0.24, fontSize: 8.5, bold: true, color: accentColor, fontFace: "DM Sans", align: c.align, valign: "middle" });
+          rx += c.w;
+        });
+      }
     }
   }
 
