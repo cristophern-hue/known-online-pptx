@@ -1,0 +1,116 @@
+{
+  "name": "Reporte Email Marketing - Woowup",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "1", "name": "CLIENTE_NOMBRE",         "value": "Nombre del Cliente",      "type": "string" },
+            { "id": "2", "name": "CLIENTE_LOGO_URL",        "value": "",                         "type": "string" },
+            { "id": "3", "name": "PERIODO_ACTUAL_LABEL",    "value": "Marzo 2026",               "type": "string" },
+            { "id": "4", "name": "PERIODO_ANTERIOR_LABEL",  "value": "Febrero 2026",             "type": "string" },
+            { "id": "5", "name": "SPREADSHEET_ID",          "value": "TU_SHEET_ID_AQUI",         "type": "string" },
+            { "id": "6", "name": "ACTUAL_TAB",              "value": "Marzo 2026",               "type": "string" },
+            { "id": "7", "name": "ANTERIOR_TAB",            "value": "Febrero 2026",             "type": "string" },
+            { "id": "8", "name": "WEB",                     "value": "www.knownonline.com",       "type": "string" },
+            { "id": "9", "name": "CONTACTO",                "value": "ariel@knownonline.com",    "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "config-1",
+      "name": "Config Cliente",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "operation": "readAllRows",
+        "documentId": { "mode": "id", "value": "={{ $json.SPREADSHEET_ID }}" },
+        "sheetName":  { "mode": "name", "value": "={{ $json.ACTUAL_TAB }}" },
+        "options": {}
+      },
+      "id": "sheet-actual-1",
+      "name": "Sheet Actual",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [440, 200]
+    },
+    {
+      "parameters": {
+        "operation": "readAllRows",
+        "documentId": { "mode": "id", "value": "={{ $('Config Cliente').first().json.SPREADSHEET_ID }}" },
+        "sheetName":  { "mode": "name", "value": "={{ $('Config Cliente').first().json.ANTERIOR_TAB }}" },
+        "options": {}
+      },
+      "id": "sheet-anterior-1",
+      "name": "Sheet Anterior",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [440, 400]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ── Obtener filas de ambos tabs ──────────────────────────────────────────\nconst cfg      = $('Config Cliente').first().json;\nconst actual   = $('Sheet Actual').all().map(i => i.json);\nconst anterior = $('Sheet Anterior').all().map(i => i.json);\n\n// ── Helpers ───────────────────────────────────────────────────────────────\nconst parseNum = str => {\n  if (!str && str !== 0) return 0;\n  const s = String(str).replace(/[$%\\s]/g, '').replace(/\\./g, '').replace(',', '.');\n  return parseFloat(s) || 0;\n};\n\n// Woowup puede enviar porcentajes como 0.245 (decimal) o 24.5 (directo)\nconst parseRate = str => {\n  const s = String(str || '0').replace('%', '').trim();\n  const n = parseFloat(s.replace(',', '.')) || 0;\n  return (n > 0 && n < 1) ? n * 100 : n;\n};\n\nconst fmtNum   = n => Math.round(n).toLocaleString('es-AR');\nconst fmtPct   = n => n.toFixed(1).replace('.', ',') + '%';\nconst fmtMoney = n => '$' + Math.round(n).toLocaleString('es-AR');\n\nconst getField = (row, ...keys) => {\n  for (const k of keys) {\n    if (row[k] !== undefined && row[k] !== null && row[k] !== '') return row[k];\n  }\n  return undefined;\n};\n\n// ── Calcular totales de un conjunto de filas ──────────────────────────────\nconst calcTotals = rows => {\n  let totalEnvios = 0, totalTrans = 0, totalIngresos = 0;\n  let sumAperturaW = 0, sumCtorW = 0, sumBajasW = 0;\n\n  rows.forEach(r => {\n    const envios   = parseNum(getField(r, 'Delivered', 'Enviados', 'delivered'));\n    const apertura = parseRate(getField(r, 'Open Rate', 'Tasa de apertura', 'open_rate'));\n    const ctor     = parseRate(getField(r, 'CTOR', 'ctor'));\n    const bajas    = parseRate(getField(r, 'Unsubscribe Rate', 'Tasa de bajas', 'unsubscribe_rate'));\n    const trans    = parseNum(getField(r, 'Transacciones online', 'Transacciones', 'transacciones') || 0);\n    const ingresos = parseNum(getField(r, 'Ingresos online', 'Ingresos', 'ingresos') || 0);\n\n    totalEnvios   += envios;\n    totalTrans    += trans;\n    totalIngresos += ingresos;\n    sumAperturaW  += apertura * envios;\n    sumCtorW      += ctor     * envios;\n    sumBajasW     += bajas    * envios;\n  });\n\n  return {\n    envios:        totalEnvios,\n    apertura:      totalEnvios > 0 ? sumAperturaW / totalEnvios : 0,\n    ctor:          totalEnvios > 0 ? sumCtorW     / totalEnvios : 0,\n    bajas:         totalEnvios > 0 ? sumBajasW    / totalEnvios : 0,\n    transacciones: totalTrans,\n    ingresos:      totalIngresos,\n  };\n};\n\n// ── Calcular delta ────────────────────────────────────────────────────────\nconst delta = (curr, prev, isRate = false) => {\n  if (!prev || prev === 0) return { str: '—', up: true };\n  if (isRate) {\n    const diff = curr - prev;\n    return { str: (diff >= 0 ? '+' : '') + diff.toFixed(1).replace('.', ',') + 'pp', up: diff >= 0 };\n  }\n  const pct = (curr - prev) / prev * 100;\n  return { str: (pct >= 0 ? '+' : '') + pct.toFixed(0) + '%', up: pct >= 0 };\n};\n\n// ── Procesar períodos ─────────────────────────────────────────────────────\nconst a = calcTotals(actual);\nconst p = calcTotals(anterior);\n\nconst dEnvios   = delta(a.envios,        p.envios);\nconst dApertura = delta(a.apertura,      p.apertura,      true);\nconst dCtor     = delta(a.ctor,          p.ctor,          true);\nconst dBajas    = delta(a.bajas,         p.bajas,         true);\nconst dTrans    = delta(a.transacciones, p.transacciones);\nconst dIngresos = delta(a.ingresos,      p.ingresos);\n\n// ── Array de campañas (max 10, orden por envíos desc) ─────────────────────\nconst hasTrans    = actual.some(r => parseNum(getField(r, 'Transacciones online', 'transacciones') || 0) > 0);\nconst hasIngresos = actual.some(r => parseNum(getField(r, 'Ingresos online', 'ingresos') || 0) > 0);\n\nconst campanas = actual\n  .map(r => {\n    const enviosRaw = parseNum(getField(r, 'Delivered', 'Enviados', 'delivered'));\n    const obj = {\n      nombre:   String(getField(r, 'Campaña', 'Campaign', 'campaña', 'campaign') || ''),\n      envios:   fmtNum(enviosRaw),\n      apertura: fmtPct(parseRate(getField(r, 'Open Rate', 'open_rate'))),\n      ctor:     fmtPct(parseRate(getField(r, 'CTOR', 'ctor'))),\n      bajas:    fmtPct(parseRate(getField(r, 'Unsubscribe Rate', 'unsubscribe_rate'))),\n      _raw:     enviosRaw,\n    };\n    if (hasTrans)    obj.transacciones = fmtNum(parseNum(getField(r, 'Transacciones online', 'transacciones') || 0));\n    if (hasIngresos) obj.ingresos      = fmtMoney(parseNum(getField(r, 'Ingresos online', 'ingresos') || 0));\n    return obj;\n  })\n  .sort((x, y) => y._raw - x._raw)\n  .slice(0, 10)\n  .map(({ _raw, ...rest }) => rest);\n\n// ── Armar DATA ────────────────────────────────────────────────────────────\nconst DATA = {\n  CLIENTE_NOMBRE:         cfg.CLIENTE_NOMBRE         || '',\n  CLIENTE_LOGO_URL:       cfg.CLIENTE_LOGO_URL        || '',\n  PERIODO_ACTUAL_LABEL:   cfg.PERIODO_ACTUAL_LABEL    || '',\n  PERIODO_ANTERIOR_LABEL: cfg.PERIODO_ANTERIOR_LABEL  || '',\n  WEB:                    cfg.WEB                     || '',\n  CONTACTO:               cfg.CONTACTO                || '',\n  PLATAFORMA_EMAIL:       'Woowup',\n\n  EMAIL_ENVIOS:          fmtNum(a.envios),\n  EMAIL_ENVIOS_PREV:     fmtNum(p.envios),\n  EMAIL_ENVIOS_DELTA:    dEnvios.str,\n  EMAIL_ENVIOS_DELTA_UP: dEnvios.up,\n\n  EMAIL_APERTURA:          fmtPct(a.apertura),\n  EMAIL_APERTURA_PREV:     fmtPct(p.apertura),\n  EMAIL_APERTURA_DELTA:    dApertura.str,\n  EMAIL_APERTURA_DELTA_UP: dApertura.up,\n\n  EMAIL_CTOR:          fmtPct(a.ctor),\n  EMAIL_CTOR_PREV:     fmtPct(p.ctor),\n  EMAIL_CTOR_DELTA:    dCtor.str,\n  EMAIL_CTOR_DELTA_UP: dCtor.up,\n\n  EMAIL_BAJAS:          fmtPct(a.bajas),\n  EMAIL_BAJAS_PREV:     fmtPct(p.bajas),\n  EMAIL_BAJAS_DELTA:    dBajas.str,\n  EMAIL_BAJAS_DELTA_UP: dBajas.up,\n\n  ...(a.transacciones > 0 ? {\n    EMAIL_TRANSACCIONES:          fmtNum(a.transacciones),\n    EMAIL_TRANSACCIONES_PREV:     fmtNum(p.transacciones),\n    EMAIL_TRANSACCIONES_DELTA:    dTrans.str,\n    EMAIL_TRANSACCIONES_DELTA_UP: dTrans.up,\n  } : {}),\n\n  ...(a.ingresos > 0 ? {\n    EMAIL_INGRESOS:          fmtMoney(a.ingresos),\n    EMAIL_INGRESOS_PREV:     fmtMoney(p.ingresos),\n    EMAIL_INGRESOS_DELTA:    dIngresos.str,\n    EMAIL_INGRESOS_DELTA_UP: dIngresos.up,\n  } : {}),\n\n  EMAIL_CAMPANAS:  campanas,\n  GA4_TIENE_DATOS: false,\n\n  RECOMENDACIONES: [],\n};\n\nreturn [{ json: { DATA } }];\n"
+      },
+      "id": "code-1",
+      "name": "Calcular Totales Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://known-online-pptx.vercel.app/api/generate-email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ JSON.stringify({ DATA: $json.DATA }) }}",
+        "options": { "timeout": 30000 }
+      },
+      "id": "http-1",
+      "name": "Generar PPTX Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[ { "node": "Config Cliente", "type": "main", "index": 0 } ]]
+    },
+    "Config Cliente": {
+      "main": [
+        [ { "node": "Sheet Actual",   "type": "main", "index": 0 } ],
+        [ { "node": "Sheet Anterior", "type": "main", "index": 0 } ]
+      ]
+    },
+    "Sheet Actual": {
+      "main": [[ { "node": "Calcular Totales Email", "type": "main", "index": 0 } ]]
+    },
+    "Sheet Anterior": {
+      "main": [[ { "node": "Calcular Totales Email", "type": "main", "index": 1 } ]]
+    },
+    "Calcular Totales Email": {
+      "main": [[ { "node": "Generar PPTX Email", "type": "main", "index": 0 } ]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}
