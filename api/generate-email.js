@@ -40,7 +40,7 @@ async function generatePptx(DATA) {
   const parseRate = str => parseNum((str || "0").replace("%", "").replace("pp", ""));
   const hasEcommerce = !!(DATA.EMAIL_INGRESOS || DATA.EMAIL_TRANSACCIONES);
   const hasGA4       = DATA.GA4_TIENE_DATOS === true;
-  const plataforma   = (DATA.PLATAFORMA_EMAIL || "").toUpperCase();
+  const plataforma   = (DATA.PLATAFORMA_EMAIL || DATA.Plataforma || "").toUpperCase();
   // Detectar Woowup también por presencia de los arrays separados por tipo
   const isWoowup     = plataforma === "WOOWUP"
                     || Array.isArray(DATA.EMAIL_CAMPANAS_NEWSLETTER)
