@@ -40,12 +40,16 @@ async function generatePptx(DATA) {
   const parseRate = str => parseNum((str || "0").replace("%", "").replace("pp", ""));
   const hasEcommerce = !!(DATA.EMAIL_INGRESOS || DATA.EMAIL_TRANSACCIONES);
   const hasGA4       = DATA.GA4_TIENE_DATOS === true;
+  const plataforma   = (DATA.PLATAFORMA_EMAIL || "").toUpperCase();
+  const isWoowup     = plataforma === "WOOWUP";
 
   const campañasNewsletter    = Array.isArray(DATA.EMAIL_CAMPANAS_NEWSLETTER)    ? DATA.EMAIL_CAMPANAS_NEWSLETTER    : [];
   const campañasAutomatizada  = Array.isArray(DATA.EMAIL_CAMPANAS_AUTOMATIZADA)  ? DATA.EMAIL_CAMPANAS_AUTOMATIZADA  : [];
+  const campañasUnicas        = Array.isArray(DATA.EMAIL_CAMPANAS)               ? DATA.EMAIL_CAMPANAS               : [];
 
   const top3Newsletter   = [...campañasNewsletter].sort((a, b) => parseRate(b.apertura) - parseRate(a.apertura)).slice(0, 3);
   const top3Automatizada = [...campañasAutomatizada].sort((a, b) => parseRate(b.apertura) - parseRate(a.apertura)).slice(0, 3);
+  const top3Unicas       = [...campañasUnicas].sort((a, b) => parseRate(b.apertura) - parseRate(a.apertura)).slice(0, 3);
 
   // ── Helper: tabla de campañas ─────────────────────────────────────────────
   function buildSlideTabla(campanas, tipo, accentColor, accentBg) {
@@ -209,13 +213,19 @@ async function generatePptx(DATA) {
     });
   }
 
-  // ── SLIDES 3-4 – NEWSLETTER ───────────────────────────────────────────────
-  buildSlideTabla(campañasNewsletter,   "Newsletter",    ORANGE, LIGHT_BG);
-  buildSlideTop3 (top3Newsletter,       "Newsletter",    ORANGE);
-
-  // ── SLIDES 5-6 – AUTOMATIZADAS ────────────────────────────────────────────
-  buildSlideTabla(campañasAutomatizada, "Automatizadas", BLUE,   LIGHT_BLUE);
-  buildSlideTop3 (top3Automatizada,     "Automatizadas", BLUE);
+  // ── SLIDES CAMPAÑAS — estructura según plataforma ────────────────────────
+  if (isWoowup) {
+    // WOOWUP: separar en Newsletter y Automatizadas
+    buildSlideTabla(campañasNewsletter,   "Newsletter",    ORANGE, LIGHT_BG);
+    buildSlideTop3 (top3Newsletter,       "Newsletter",    ORANGE);
+    buildSlideTabla(campañasAutomatizada, "Automatizadas", BLUE,   LIGHT_BLUE);
+    buildSlideTop3 (top3Automatizada,     "Automatizadas", BLUE);
+  } else {
+    // MAIUP / ICOMM / otras: tabla única
+    const label = plataforma === "MAIUP" ? "Mailup" : plataforma === "ICOMM" ? "Icomm" : (DATA.PLATAFORMA_EMAIL || "Email");
+    buildSlideTabla(campañasUnicas, label, ORANGE, LIGHT_BG);
+    buildSlideTop3 (top3Unicas,    label, ORANGE);
+  }
 
   // ── SLIDE – GA4 CANAL EMAIL (condicional) ─────────────────────────────────
   if (hasGA4) {
