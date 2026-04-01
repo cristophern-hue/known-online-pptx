@@ -188,7 +188,7 @@ async function generatePptx(DATA) {
       const x = cardX[i];
       const y = 1.25;
 
-      s.addShape(pres.shapes.RECTANGLE, { x, y, w: cardW, h: 3.8, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+      s.addShape(pres.shapes.RECTANGLE, { x, y, w: cardW, h: 4.2, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
       s.addShape(pres.shapes.RECTANGLE, { x, y, w: cardW, h: 0.08, fill: { color: accentColor }, line: { color: accentColor } });
 
       s.addText(`${medals[i]}  #${i + 1}`, { x, y: y + 0.15, w: cardW, h: 0.3, fontSize: 11, bold: true, color: accentColor, fontFace: "DM Sans", align: "center" });
@@ -197,14 +197,14 @@ async function generatePptx(DATA) {
       s.addText(nombre, { x: x + 0.1, y: y + 0.48, w: cardW - 0.2, h: 0.6, fontSize: 10.5, bold: true, color: DARK, fontFace: "DM Sans", align: "center", wrap: true });
 
       // Placeholder para captura de pantalla
-      s.addShape(pres.shapes.RECTANGLE, { x: x + 0.12, y: y + 1.1, w: cardW - 0.24, h: 1.55,
+      s.addShape(pres.shapes.RECTANGLE, { x: x + 0.12, y: y + 1.1, w: cardW - 0.24, h: 2.0,
         fill: { color: "F5F5F5" }, line: { color: "CCCCCC", width: 0.5, dashType: "dash" } });
-      s.addText("📷  Insertar captura", { x: x + 0.12, y: y + 1.1, w: cardW - 0.24, h: 1.55,
+      s.addText("📷  Insertar captura", { x: x + 0.12, y: y + 1.1, w: cardW - 0.24, h: 2.0,
         fontSize: 9, color: "AAAAAA", fontFace: "DM Sans", align: "center", valign: "middle" });
 
       [{ lbl: "Ingresos", val: c.ingresos || "—" }, { lbl: "Apertura", val: c.apertura || "—" }, { lbl: "Envíos", val: c.envios || "—" }]
         .forEach((d, di) => {
-          const dy = y + 2.72 + di * 0.35;
+          const dy = y + 3.15 + di * 0.30;
           s.addShape(pres.shapes.RECTANGLE, { x: x + 0.15, y: dy, w: cardW - 0.3, h: 0.33, fill: { color: "F8F4F0" }, line: { color: "EEE8E0", width: 0.3 } });
           s.addText(d.lbl, { x: x + 0.22, y: dy + 0.05, w: 1.0,         h: 0.24, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
           s.addText(d.val, { x: x + 1.2,  y: dy + 0.05, w: cardW - 1.4, h: 0.24, fontSize: 9, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
@@ -296,8 +296,8 @@ async function generatePptx(DATA) {
     s.addText("Rendimiento en Sitio Web", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
     s.addText(`Canal Email  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
-    s.addShape(pres.shapes.RECTANGLE, { x: 8.8, y: 0.2, w: 1.0, h: 0.35, fill: { color: "F0F7FF" }, line: { color: "D0E4F5", width: 0.5 } });
-    s.addText("GA4", { x: 8.8, y: 0.2, w: 1.0, h: 0.35, fontSize: 10, bold: true, color: BLUE, fontFace: "DM Sans", align: "center", valign: "middle" });
+    s.addShape(pres.shapes.RECTANGLE, { x: 8.8, y: 0.2, w: 1.0, h: 0.35, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+    s.addText("GA4", { x: 8.8, y: 0.2, w: 1.0, h: 0.35, fontSize: 10, bold: true, color: ORANGE, fontFace: "DM Sans", align: "center", valign: "middle" });
 
     const ga4Kpis = [
       { label: "Sesiones",          val: DATA.GA4_SESIONES      || "", delta: DATA.GA4_SESIONES_DELTA      || "", up: DATA.GA4_SESIONES_DELTA_UP      === true, prev: DATA.GA4_SESIONES_PREV      || "" },
@@ -310,8 +310,8 @@ async function generatePptx(DATA) {
     ga4Kpis.forEach((k, i) => {
       const x = 0.4 + i * (ga4CardW + 0.22);
       const y = 1.2;
-      s.addShape(pres.shapes.RECTANGLE, { x, y, w: ga4CardW, h: 2.0, fill: { color: "E6F1FB" }, line: { color: "D0E4F5", width: 0.5 } });
-      s.addShape(pres.shapes.RECTANGLE, { x, y, w: ga4CardW, h: 0.07, fill: { color: BLUE }, line: { color: BLUE } });
+      s.addShape(pres.shapes.RECTANGLE, { x, y, w: ga4CardW, h: 2.0, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+      s.addShape(pres.shapes.RECTANGLE, { x, y, w: ga4CardW, h: 0.07, fill: { color: ORANGE }, line: { color: ORANGE } });
       s.addText(k.label, { x, y: y + 0.15, w: ga4CardW, h: 0.3,  fontSize: 9.5, color: GRAY_TEXT, fontFace: "DM Sans",       align: "center" });
       s.addText(k.val,   { x, y: y + 0.48, w: ga4CardW, h: 0.65, fontSize: 26,  bold: true, color: DARK, fontFace: "Trebuchet MS", align: "center" });
       s.addShape(pres.shapes.RECTANGLE, { x: x + 0.35, y: y + 1.18, w: ga4CardW - 0.7, h: 0.27, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
@@ -320,8 +320,8 @@ async function generatePptx(DATA) {
     });
 
     if (DATA.GA4_NOTA) {
-      s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 3.55, w: 9.2, h: 0.7, fill: { color: "F0F7FF" }, line: { color: "D0E4F5", width: 0.5 } });
-      s.addText(DATA.GA4_NOTA, { x: 0.55, y: 3.6, w: 9.0, h: 0.6, fontSize: 10, color: BLUE, fontFace: "DM Sans", wrap: true });
+      s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 3.55, w: 9.2, h: 0.7, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+      s.addText(DATA.GA4_NOTA, { x: 0.55, y: 3.6, w: 9.0, h: 0.6, fontSize: 10, color: ORANGE, fontFace: "DM Sans", wrap: true });
     }
   }
 
