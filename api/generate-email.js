@@ -46,11 +46,16 @@ async function generatePptx(DATA) {
                     || Array.isArray(DATA.EMAIL_CAMPANAS_NEWSLETTER)
                     || Array.isArray(DATA.EMAIL_CAMPANAS_AUTOMATIZADA);
 
-  const todasCampanas         = Array.isArray(DATA.EMAIL_CAMPANAS) ? DATA.EMAIL_CAMPANAS : [];
-  const getTipo               = c => (c.tipo || c.Tipo || "").trim().toLowerCase();
-  const campañasNewsletter    = todasCampanas.filter(c => getTipo(c) === "newsletter");
-  const campañasAutomatizada  = todasCampanas.filter(c => getTipo(c) === "automatizada" || getTipo(c) === "automtizada");
-  const campañasUnicas        = todasCampanas;
+  const todasCampanas        = Array.isArray(DATA.EMAIL_CAMPANAS) ? DATA.EMAIL_CAMPANAS : [];
+  const getTipo              = c => (c.tipo || c.Tipo || "").trim().toLowerCase();
+  // Acepta arrays pre-spliteados desde n8n o splitea internamente desde EMAIL_CAMPANAS
+  const campañasNewsletter   = Array.isArray(DATA.EMAIL_CAMPANAS_NEWSLETTER)
+                             ? DATA.EMAIL_CAMPANAS_NEWSLETTER
+                             : todasCampanas.filter(c => getTipo(c) === "newsletter");
+  const campañasAutomatizada = Array.isArray(DATA.EMAIL_CAMPANAS_AUTOMATIZADA)
+                             ? DATA.EMAIL_CAMPANAS_AUTOMATIZADA
+                             : todasCampanas.filter(c => getTipo(c) === "automatizada" || getTipo(c) === "automtizada");
+  const campañasUnicas       = todasCampanas;
 
   const top3Newsletter   = [...campañasNewsletter].sort((a, b) => parseRate(b.apertura) - parseRate(a.apertura)).slice(0, 3);
   const top3Automatizada = [...campañasAutomatizada].sort((a, b) => parseRate(b.apertura) - parseRate(a.apertura)).slice(0, 3);
