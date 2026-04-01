@@ -232,6 +232,86 @@ async function generatePptx(DATA) {
     ], { x: bx, y: by + 0.2, w: 1.9, h: 0.28, fontSize: 12, fontFace: "DM Sans" });
   });
 
+  // ── SLIDE 3C – CANAL AGENTES (CHAIDE – OPCIONAL) ─────────────────────────
+  if (DATA.CHAIDE_VENTAS_AGENTES_ACTUAL) {
+    // Parsea string ARS ("$12.500.000") a número
+    const parseARS = str => parseFloat((str || "0").replace(/[^0-9,]/g, "").replace(",", ".")) || 0;
+    const fmtARS   = n   => "$" + Math.round(n).toLocaleString("es-AR");
+    const fmtDelta = n   => (n >= 0 ? "+" : "") + n.toFixed(1).replace(".", ",") + "%";
+
+    const agActual = parseARS(DATA.CHAIDE_VENTAS_AGENTES_ACTUAL);
+    const agPrev   = parseARS(DATA.CHAIDE_VENTAS_AGENTES_PREV);
+    const agDelta  = agPrev !== 0 ? ((agActual - agPrev) / agPrev) * 100 : 0;
+
+    if (!DATA.CHAIDE_VENTAS_AGENTES_DELTA) DATA.CHAIDE_VENTAS_AGENTES_DELTA = fmtDelta(agDelta);
+    if (DATA.CHAIDE_VENTAS_AGENTES_UP == null) DATA.CHAIDE_VENTAS_AGENTES_UP = agActual >= agPrev;
+
+    const ga4Actual  = parseARS(DATA.VTEX_INGRESOS_ACTUAL || DATA.ECOMMERCE_INGRESOS);
+    const ga4Prev    = parseARS(DATA.VTEX_INGRESOS_ANTERIOR || DATA.ECOMMERCE_INGRESOS_PREV);
+    const consActual = ga4Actual + agActual;
+    const consPrev   = ga4Prev + agPrev;
+    const consDelta  = consPrev !== 0 ? ((consActual - consPrev) / consPrev) * 100 : 0;
+
+    if (!DATA.CHAIDE_CONSOLIDADO_ACTUAL)   DATA.CHAIDE_CONSOLIDADO_ACTUAL   = fmtARS(consActual);
+    if (!DATA.CHAIDE_CONSOLIDADO_PREV)     DATA.CHAIDE_CONSOLIDADO_PREV     = fmtARS(consPrev);
+    if (!DATA.CHAIDE_CONSOLIDADO_DELTA)    DATA.CHAIDE_CONSOLIDADO_DELTA    = fmtDelta(consDelta);
+    if (DATA.CHAIDE_CONSOLIDADO_DELTA_UP == null) DATA.CHAIDE_CONSOLIDADO_DELTA_UP = consActual >= consPrev;
+
+    let sAg = pres.addSlide();
+    sAg.background = { color: WHITE };
+    sAg.addText("Canal Agentes", { x: 0.5, y: 0.18, w: 7, h: 0.52, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sAg.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.71, w: 7, h: 0.28, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    // ── Sección 1: 3 KPI cards ────────────────────────────────────────────
+    sAg.addText("Ventas Canal Agentes", { x: 0.5, y: 1.1, w: 9, h: 0.28, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
+
+    const agKPIs = [
+      { icon: "$", label: "Ventas Agentes",  sub: DATA.PERIODO_ACTUAL_LABEL   || "Actual",   val: DATA.CHAIDE_VENTAS_AGENTES_ACTUAL || "", isDelta: false },
+      { icon: "$", label: "Ventas Agentes",  sub: DATA.PERIODO_ANTERIOR_LABEL || "Anterior", val: DATA.CHAIDE_VENTAS_AGENTES_PREV   || "", isDelta: false },
+      { icon: "Δ", label: "Variación",       sub: "vs período anterior",                     val: DATA.CHAIDE_VENTAS_AGENTES_DELTA  || "", isDelta: true, up: DATA.CHAIDE_VENTAS_AGENTES_UP === true },
+    ];
+    agKPIs.forEach((k, i) => {
+      const x = 0.4 + i * 3.1, y = 1.42;
+      const cardBg  = k.isDelta ? (k.up ? GREEN_BG : RED_BG) : LIGHT_BG;
+      const cardBdr = k.isDelta ? (k.up ? GREEN_BG : RED_BG) : "F0E8E0";
+      const valColor = k.isDelta ? (k.up ? GREEN : RED) : DARK;
+      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 1.1, fill: { color: cardBg }, line: { color: cardBdr, width: 0.5 } });
+      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 0.06, fill: { color: ORANGE }, line: { color: ORANGE } });
+      sAg.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.14, w: 0.3, h: 0.3, fill: { color: ORANGE }, line: { color: ORANGE } });
+      sAg.addText(k.label, { x: x + 0.52, y: y + 0.14, w: 2.2,  h: 0.18, fontSize: 9,  bold: true, color: DARK,     fontFace: "DM Sans" });
+      sAg.addText(k.val,   { x: x + 0.14, y: y + 0.52, w: 2.62, h: 0.48, fontSize: 22, bold: true, color: valColor,  fontFace: "Trebuchet MS", align: "center" });
+    });
+
+    // ── Sección 2: Consolidado Ecommerce + Agentes ────────────────────────
+    sAg.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 2.68, w: 9.2, h: 0.04, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
+    sAg.addText("Consolidado Total · Ecommerce + Agentes", { x: 0.5, y: 2.76, w: 9, h: 0.28, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
+
+    const consolidadoCols = [
+      { label: DATA.PERIODO_ACTUAL_LABEL   || "Actual",   ga4: DATA.VTEX_INGRESOS_ACTUAL   || DATA.ECOMMERCE_INGRESOS      || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_ACTUAL || "", total: DATA.CHAIDE_CONSOLIDADO_ACTUAL || "" },
+      { label: DATA.PERIODO_ANTERIOR_LABEL || "Anterior", ga4: DATA.VTEX_INGRESOS_ANTERIOR || DATA.ECOMMERCE_INGRESOS_PREV  || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_PREV   || "", total: DATA.CHAIDE_CONSOLIDADO_PREV   || "" },
+    ];
+    consolidadoCols.forEach((col, i) => {
+      const x = 0.4 + i * 4.7, y = 3.08;
+      const isActual = i === 0;
+      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 4.5, h: 1.95, fill: { color: isActual ? LIGHT_BG : "F5F5F5" }, line: { color: isActual ? "F0E8E0" : "E0E0E0", width: 0.5 } });
+      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 4.5, h: 0.06, fill: { color: isActual ? ORANGE : GRAY_TEXT }, line: { color: isActual ? ORANGE : GRAY_TEXT } });
+      sAg.addText(col.label,  { x: x + 0.2, y: y + 0.12, w: 4.1, h: 0.26, fontSize: 12, bold: true, color: DARK,      fontFace: "DM Sans" });
+      sAg.addText("Ecommerce (VTEX)",  { x: x + 0.2, y: y + 0.46, w: 2.2, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      sAg.addText(col.ga4,          { x: x + 2.4, y: y + 0.46, w: 1.9, h: 0.22, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
+      sAg.addText("Canal Agentes",  { x: x + 0.2, y: y + 0.7,  w: 2.2, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      sAg.addText(col.agentes,      { x: x + 2.4, y: y + 0.7,  w: 1.9, h: 0.22, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
+      sAg.addShape(pres.shapes.RECTANGLE, { x: x + 0.2, y: y + 0.98, w: 4.1, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
+      sAg.addText("Total",   { x: x + 0.2, y: y + 1.04, w: 2.0, h: 0.3, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans" });
+      sAg.addText(col.total, { x: x + 2.4, y: y + 1.04, w: 1.9, h: 0.3, fontSize: 14, bold: true, color: DARK, fontFace: "Trebuchet MS", align: "right" });
+      if (isActual && DATA.CHAIDE_CONSOLIDADO_DELTA) {
+        const revUp = DATA.CHAIDE_CONSOLIDADO_DELTA_UP === true;
+        sAg.addShape(pres.shapes.RECTANGLE, { x: x + 0.2, y: y + 1.48, w: 1.5, h: 0.26, fill: { color: revUp ? GREEN_BG : RED_BG }, line: { color: revUp ? GREEN_BG : RED_BG } });
+        sAg.addText(DATA.CHAIDE_CONSOLIDADO_DELTA, { x: x + 0.2, y: y + 1.48, w: 1.5, h: 0.26, fontSize: 11, bold: true, color: revUp ? GREEN : RED, fontFace: "DM Sans", align: "center", valign: "middle" });
+        sAg.addText(`vs ${DATA.PERIODO_ANTERIOR_LABEL || "período anterior"}`, { x: x + 1.8, y: y + 1.5, w: 2.5, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      }
+    });
+  }
+
   // ── SLIDE 3 – GA4 ─────────────────────────────────────────────────────────
   let s7 = pres.addSlide();
   s7.background = { color: WHITE };
@@ -355,88 +435,6 @@ async function generatePptx(DATA) {
 
     // (insight box removed)
   }
-
-  // ── SLIDE 3C – CANAL AGENTES (CHAIDE – OPCIONAL) ─────────────────────────
-  if (DATA.CHAIDE_VENTAS_AGENTES_ACTUAL) {
-    // Parsea string ARS ("$12.500.000") a número
-    const parseARS = str => parseFloat((str || "0").replace(/[^0-9,]/g, "").replace(",", ".")) || 0;
-    const fmtARS   = n   => "$" + Math.round(n).toLocaleString("es-AR");
-    const fmtDelta = n   => (n >= 0 ? "+" : "") + n.toFixed(1).replace(".", ",") + "%";
-
-    const agActual = parseARS(DATA.CHAIDE_VENTAS_AGENTES_ACTUAL);
-    const agPrev   = parseARS(DATA.CHAIDE_VENTAS_AGENTES_PREV);
-    const agDelta  = agPrev !== 0 ? ((agActual - agPrev) / agPrev) * 100 : 0;
-
-    if (!DATA.CHAIDE_VENTAS_AGENTES_DELTA) DATA.CHAIDE_VENTAS_AGENTES_DELTA = fmtDelta(agDelta);
-    if (DATA.CHAIDE_VENTAS_AGENTES_UP == null) DATA.CHAIDE_VENTAS_AGENTES_UP = agActual >= agPrev;
-
-    const ga4Actual  = parseARS(DATA.VTEX_INGRESOS_ACTUAL || DATA.ECOMMERCE_INGRESOS);
-    const ga4Prev    = parseARS(DATA.VTEX_INGRESOS_ANTERIOR || DATA.ECOMMERCE_INGRESOS_PREV);
-    const consActual = ga4Actual + agActual;
-    const consPrev   = ga4Prev + agPrev;
-    const consDelta  = consPrev !== 0 ? ((consActual - consPrev) / consPrev) * 100 : 0;
-
-    if (!DATA.CHAIDE_CONSOLIDADO_ACTUAL)   DATA.CHAIDE_CONSOLIDADO_ACTUAL   = fmtARS(consActual);
-    if (!DATA.CHAIDE_CONSOLIDADO_PREV)     DATA.CHAIDE_CONSOLIDADO_PREV     = fmtARS(consPrev);
-    if (!DATA.CHAIDE_CONSOLIDADO_DELTA)    DATA.CHAIDE_CONSOLIDADO_DELTA    = fmtDelta(consDelta);
-    if (DATA.CHAIDE_CONSOLIDADO_DELTA_UP == null) DATA.CHAIDE_CONSOLIDADO_DELTA_UP = consActual >= consPrev;
-
-    let sAg = pres.addSlide();
-    sAg.background = { color: WHITE };
-    sAg.addText("Canal Agentes", { x: 0.5, y: 0.18, w: 7, h: 0.52, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-    sAg.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.71, w: 7, h: 0.28, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
-
-    // ── Sección 1: 3 KPI cards ────────────────────────────────────────────
-    sAg.addText("Ventas Canal Agentes", { x: 0.5, y: 1.1, w: 9, h: 0.28, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
-
-    const agKPIs = [
-      { icon: "$", label: "Ventas Agentes",  sub: DATA.PERIODO_ACTUAL_LABEL   || "Actual",   val: DATA.CHAIDE_VENTAS_AGENTES_ACTUAL || "", isDelta: false },
-      { icon: "$", label: "Ventas Agentes",  sub: DATA.PERIODO_ANTERIOR_LABEL || "Anterior", val: DATA.CHAIDE_VENTAS_AGENTES_PREV   || "", isDelta: false },
-      { icon: "Δ", label: "Variación",       sub: "vs período anterior",                     val: DATA.CHAIDE_VENTAS_AGENTES_DELTA  || "", isDelta: true, up: DATA.CHAIDE_VENTAS_AGENTES_UP === true },
-    ];
-    agKPIs.forEach((k, i) => {
-      const x = 0.4 + i * 3.1, y = 1.42;
-      const cardBg  = k.isDelta ? (k.up ? GREEN_BG : RED_BG) : LIGHT_BG;
-      const cardBdr = k.isDelta ? (k.up ? GREEN_BG : RED_BG) : "F0E8E0";
-      const valColor = k.isDelta ? (k.up ? GREEN : RED) : DARK;
-      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 1.1, fill: { color: cardBg }, line: { color: cardBdr, width: 0.5 } });
-      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 0.06, fill: { color: ORANGE }, line: { color: ORANGE } });
-      sAg.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.14, w: 0.3, h: 0.3, fill: { color: ORANGE }, line: { color: ORANGE } });
-      sAg.addText(k.label, { x: x + 0.52, y: y + 0.14, w: 2.2,  h: 0.18, fontSize: 9,  bold: true, color: DARK,     fontFace: "DM Sans" });
-      sAg.addText(k.val,   { x: x + 0.14, y: y + 0.52, w: 2.62, h: 0.48, fontSize: 22, bold: true, color: valColor,  fontFace: "Trebuchet MS", align: "center" });
-    });
-
-    // ── Sección 2: Consolidado Ecommerce + Agentes ────────────────────────
-    sAg.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 2.68, w: 9.2, h: 0.04, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
-    sAg.addText("Consolidado Total · Ecommerce + Agentes", { x: 0.5, y: 2.76, w: 9, h: 0.28, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
-
-    const consolidadoCols = [
-      { label: DATA.PERIODO_ACTUAL_LABEL   || "Actual",   ga4: DATA.VTEX_INGRESOS_ACTUAL   || DATA.ECOMMERCE_INGRESOS      || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_ACTUAL || "", total: DATA.CHAIDE_CONSOLIDADO_ACTUAL || "" },
-      { label: DATA.PERIODO_ANTERIOR_LABEL || "Anterior", ga4: DATA.VTEX_INGRESOS_ANTERIOR || DATA.ECOMMERCE_INGRESOS_PREV  || "N/D", agentes: DATA.CHAIDE_VENTAS_AGENTES_PREV   || "", total: DATA.CHAIDE_CONSOLIDADO_PREV   || "" },
-    ];
-    consolidadoCols.forEach((col, i) => {
-      const x = 0.4 + i * 4.7, y = 3.08;
-      const isActual = i === 0;
-      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 4.5, h: 1.95, fill: { color: isActual ? LIGHT_BG : "F5F5F5" }, line: { color: isActual ? "F0E8E0" : "E0E0E0", width: 0.5 } });
-      sAg.addShape(pres.shapes.RECTANGLE, { x, y, w: 4.5, h: 0.06, fill: { color: isActual ? ORANGE : GRAY_TEXT }, line: { color: isActual ? ORANGE : GRAY_TEXT } });
-      sAg.addText(col.label,  { x: x + 0.2, y: y + 0.12, w: 4.1, h: 0.26, fontSize: 12, bold: true, color: DARK,      fontFace: "DM Sans" });
-      sAg.addText("Ecommerce (VTEX)",  { x: x + 0.2, y: y + 0.46, w: 2.2, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-      sAg.addText(col.ga4,          { x: x + 2.4, y: y + 0.46, w: 1.9, h: 0.22, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
-      sAg.addText("Canal Agentes",  { x: x + 0.2, y: y + 0.7,  w: 2.2, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-      sAg.addText(col.agentes,      { x: x + 2.4, y: y + 0.7,  w: 1.9, h: 0.22, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
-      sAg.addShape(pres.shapes.RECTANGLE, { x: x + 0.2, y: y + 0.98, w: 4.1, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
-      sAg.addText("Total",   { x: x + 0.2, y: y + 1.04, w: 2.0, h: 0.3, fontSize: 10, bold: true, color: DARK, fontFace: "DM Sans" });
-      sAg.addText(col.total, { x: x + 2.4, y: y + 1.04, w: 1.9, h: 0.3, fontSize: 14, bold: true, color: DARK, fontFace: "Trebuchet MS", align: "right" });
-      if (isActual && DATA.CHAIDE_CONSOLIDADO_DELTA) {
-        const revUp = DATA.CHAIDE_CONSOLIDADO_DELTA_UP === true;
-        sAg.addShape(pres.shapes.RECTANGLE, { x: x + 0.2, y: y + 1.48, w: 1.5, h: 0.26, fill: { color: revUp ? GREEN_BG : RED_BG }, line: { color: revUp ? GREEN_BG : RED_BG } });
-        sAg.addText(DATA.CHAIDE_CONSOLIDADO_DELTA, { x: x + 0.2, y: y + 1.48, w: 1.5, h: 0.26, fontSize: 11, bold: true, color: revUp ? GREEN : RED, fontFace: "DM Sans", align: "center", valign: "middle" });
-        sAg.addText(`vs ${DATA.PERIODO_ANTERIOR_LABEL || "período anterior"}`, { x: x + 1.8, y: y + 1.5, w: 2.5, h: 0.22, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
-      }
-    });
-  }
-
-
 
   // ── SLIDE 4 – META ADS DETALLE ────────────────────────────────────────────
   let s3 = pres.addSlide();
