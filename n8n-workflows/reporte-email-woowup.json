@@ -24,8 +24,8 @@
             { "id": "9",  "name": "FECHA_FIN_ACTUAL",         "value": "2026-03-31",                "type": "string" },
             { "id": "10", "name": "FECHA_INICIO_ANTERIOR",    "value": "2026-02-01",                "type": "string" },
             { "id": "11", "name": "FECHA_FIN_ANTERIOR",       "value": "2026-02-28",                "type": "string" },
-            { "id": "12", "name": "CUSTOM_TAB",               "value": "",                          "type": "string" },
-            { "id": "13", "name": "CUSTOM_SPREADSHEET_ID",    "value": "",                          "type": "string" }
+            { "id": "12", "name": "CUSTOM_TAB",           "value": "",                        "type": "string" },
+            { "id": "13", "name": "PANEL_SPREADSHEET_ID", "value": "ID_PANEL_SHEET_CLIENTE",   "type": "string" }
           ]
         },
         "options": {}
@@ -124,7 +124,7 @@
         "operation": "readAllRows",
         "documentId": {
           "mode": "id",
-          "value": "={{ $('Config Cliente').first().json.CUSTOM_SPREADSHEET_ID }}"
+          "value": "={{ $('Config Cliente').first().json.PANEL_SPREADSHEET_ID }}"
         },
         "sheetName": { "mode": "name", "value": "={{ $('Config Cliente').first().json.CUSTOM_TAB }}" },
         "options": {}
