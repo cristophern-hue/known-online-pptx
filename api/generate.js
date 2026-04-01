@@ -494,6 +494,11 @@ async function generatePptx(DATA) {
     { label: "CPC",         val: DATA.GOOGLE_CPC         || "", prev: DATA.GOOGLE_CPC_PREV         || "", delta: DATA.GOOGLE_CPC_DELTA         || "", good: DATA.GOOGLE_CPC_DELTA_UP         === true },
     { label: "ROAS",        val: DATA.GOOGLE_ROAS        || "", prev: DATA.GOOGLE_ROAS_PREV        || "", delta: DATA.GOOGLE_ROAS_DELTA        || "", good: DATA.GOOGLE_ROAS_DELTA_UP        === true },
   ];
+  const isChaide = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("chaide");
+  if (isChaide) {
+    const roasKpi = googleKPIs.find(k => k.label === "ROAS");
+    if (roasKpi) { roasKpi.prev = "N/D"; roasKpi.delta = ""; }
+  }
   googleKPIs.forEach((k, i) => {
     const col = i % 3, row = Math.floor(i / 3);
     const x = 0.4 + col * 3.1, y = 1.3 + row * 1.6;
@@ -505,6 +510,10 @@ async function generatePptx(DATA) {
     s4.addText(k.delta, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fontSize: 10, bold: true, color: k.good ? GREEN : RED, fontFace: "DM Sans", align: "center" });
   });
 
+  if (isChaide) {
+    s4.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
+    s4.addText("* El valor de conversión no estaba configurado correctamente en el período anterior, por lo que el ROAS no es comparable.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
+  }
 
   // ── SLIDES 5A & 5B – TOP CAMPAÑAS POR ROAS (Google / Meta separados) ────
   const campaigns = DATA.CAMPANAS || [];
