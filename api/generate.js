@@ -342,6 +342,11 @@ async function generatePptx(DATA) {
     s7.addText(`${labelCortoAnterior}: ${m.val25}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
   });
 
+  if (!DATA.GA4_INGRESOS_PREV) {
+    s7.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
+    s7.addText("* Comparado con la data disponible del año pasado en GA4.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
+  }
+
   // ── SLIDE 3B – ECOMMERCE PLATFORM (OPCIONAL) ─────────────────────────────
   if (DATA.ECOMMERCE_INGRESOS) {
     let sEc = pres.addSlide();
