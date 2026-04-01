@@ -9,32 +9,48 @@
       "typeVersion": 1,
       "position": [0, 340]
     },
+
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "1",  "name": "CLIENTE_NOMBRE",          "value": "Nombre del Cliente",       "type": "string" },
-            { "id": "2",  "name": "dashbo_client_id",         "value": "TU_DASHBO_CLIENT_ID",      "type": "string" },
-            { "id": "3",  "name": "CLIENTE_LOGO_URL",         "value": "",                          "type": "string" },
-            { "id": "4",  "name": "PERIODO_ACTUAL_LABEL",     "value": "Marzo 2026",                "type": "string" },
-            { "id": "5",  "name": "PERIODO_ANTERIOR_LABEL",   "value": "Febrero 2026",              "type": "string" },
-            { "id": "6",  "name": "SPREADSHEET_ID_ACTUAL",    "value": "ID_SHEET_PERIODO_ACTUAL",   "type": "string" },
-            { "id": "7",  "name": "SPREADSHEET_ID_ANTERIOR",  "value": "ID_SHEET_PERIODO_ANTERIOR", "type": "string" },
-            { "id": "8",  "name": "FECHA_INICIO_ACTUAL",      "value": "2026-03-01",                "type": "string" },
-            { "id": "9",  "name": "FECHA_FIN_ACTUAL",         "value": "2026-03-31",                "type": "string" },
-            { "id": "10", "name": "FECHA_INICIO_ANTERIOR",    "value": "2026-02-01",                "type": "string" },
-            { "id": "11", "name": "FECHA_FIN_ANTERIOR",       "value": "2026-02-28",                "type": "string" },
-            { "id": "12", "name": "CUSTOM_TAB",               "value": "",                          "type": "string" },
-            { "id": "13", "name": "CUSTOM_SPREADSHEET_ID",    "value": "",                          "type": "string" }
+            { "id": "1", "name": "PANEL_SPREADSHEET_ID", "value": "ID_DEL_PANEL_SHEET", "type": "string" },
+            { "id": "2", "name": "CLIENTE_NOMBRE",       "value": "Carters",            "type": "string" }
           ]
         },
         "options": {}
       },
       "id": "node-config",
-      "name": "Config Cliente",
+      "name": "Config",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [220, 340]
+      "position": [200, 340]
+    },
+
+    {
+      "parameters": {
+        "operation": "readAllRows",
+        "documentId": { "mode": "id", "value": "={{ $json.PANEL_SPREADSHEET_ID }}" },
+        "sheetName":  { "mode": "name", "value": "Hoja 1" },
+        "options": {}
+      },
+      "id": "node-leer-panel",
+      "name": "Leer Panel",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [400, 340]
+    },
+
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const panelId     = $('Config').first().json.PANEL_SPREADSHEET_ID;\nconst clienteNombre = $('Config').first().json.CLIENTE_NOMBRE;\n\nconst rows = $input.all().map(i => i.json);\nconst row  = rows.find(r => (r.CLIENTE_NOMBRE || '').toLowerCase().trim() === clienteNombre.toLowerCase().trim());\nif (!row) throw new Error(`Cliente \"${clienteNombre}\" no encontrado en el Panel sheet`);\n\nconst mes  = parseInt(row.mes_actual);\nconst anio = parseInt(row.anio_actual);\nconst comparacion = (row.comparacion || 'mes anterior').toLowerCase();\n\nconst meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];\n\n// Período actual\nconst lastDay = new Date(anio, mes, 0).getDate();\nconst fechaInicioActual  = `${anio}-${String(mes).padStart(2,'0')}-01`;\nconst fechaFinActual     = `${anio}-${String(mes).padStart(2,'0')}-${lastDay}`;\nconst periodoActualLabel = `${meses[mes-1]} ${anio}`;\n\n// Período anterior según comparacion\nlet mP, aP;\nif (comparacion.includes('año')) {\n  mP = mes; aP = anio - 1;\n} else {\n  mP = mes === 1 ? 12 : mes - 1;\n  aP = mes === 1 ? anio - 1 : anio;\n}\nconst lastDayP = new Date(aP, mP, 0).getDate();\nconst fechaInicioAnterior  = `${aP}-${String(mP).padStart(2,'0')}-01`;\nconst fechaFinAnterior     = `${aP}-${String(mP).padStart(2,'0')}-${lastDayP}`;\nconst periodoAnteriorLabel = `${meses[mP-1]} ${aP}`;\n\nreturn [{ json: {\n  PANEL_SPREADSHEET_ID:  panelId,\n  CLIENTE_NOMBRE:        row.CLIENTE_NOMBRE,\n  CLIENTE_LOGO_URL:      row.CLIENTE_LOGO_URL || '',\n  Plataforma:            row.Plataforma || 'WOOWUP',\n  dashbo_client_id:      String(row.dashbo_client_id || ''),\n  SPREADSHEET_ID_ACTUAL:   row.SPREADSHEET_ID_ACTUAL,\n  SPREADSHEET_ID_ANTERIOR: row.SPREADSHEET_ID_ANTERIOR,\n  CUSTOM_TAB:            row['Custom Tab'] || '',\n  PERIODO_ACTUAL_LABEL:  periodoActualLabel,\n  PERIODO_ANTERIOR_LABEL: periodoAnteriorLabel,\n  FECHA_INICIO_ACTUAL:   fechaInicioActual,\n  FECHA_FIN_ACTUAL:      fechaFinActual,\n  FECHA_INICIO_ANTERIOR: fechaInicioAnterior,\n  FECHA_FIN_ANTERIOR:    fechaFinAnterior,\n}}];\n"
+      },
+      "id": "node-preparar-config",
+      "name": "Preparar Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [620, 340]
     },
 
     {
@@ -48,12 +64,12 @@
       "name": "Sheet Actual",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [460, 100]
+      "position": [840, 100]
     },
     {
       "parameters": {
         "operation": "readAllRows",
-        "documentId": { "mode": "id", "value": "={{ $('Config Cliente').first().json.SPREADSHEET_ID_ANTERIOR }}" },
+        "documentId": { "mode": "id", "value": "={{ $('Preparar Config').first().json.SPREADSHEET_ID_ANTERIOR }}" },
         "sheetName":  { "mode": "name", "value": "Hoja 1" },
         "options": {}
       },
@@ -61,42 +77,42 @@
       "name": "Sheet Anterior",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [460, 260]
+      "position": [840, 260]
     },
 
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $('Config Cliente').first().json.DASHBO_API_URL || 'https://api.dashbo.io/query' }}",
+        "url": "https://api.dashbo.io/query",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBearerAuth",
         "sendBody": true,
         "contentType": "json",
-        "body": "={{ JSON.stringify({\n  client_id: $('Config Cliente').first().json.dashbo_client_id,\n  data_source_type: 'ANALYTICS',\n  date_range: {\n    startDate: $('Config Cliente').first().json.FECHA_INICIO_ACTUAL,\n    endDate:   $('Config Cliente').first().json.FECHA_FIN_ACTUAL\n  },\n  fields: [\n    'GA4__Sesiones',\n    'GA4__Ingresos_totales',\n    'GA4__Transacciones_de_comercio_electrónico',\n    'GA4__Tasa_de_conversión_de_sesiones'\n  ],\n  filters: [{\n    field: 'GA4__Agrupación_canal_predeterminada',\n    operator: 'CONTAINS',\n    value: 'mail'\n  }]\n}) }}",
+        "body": "={{ JSON.stringify({\n  client_id: $('Preparar Config').first().json.dashbo_client_id,\n  data_source_type: 'ANALYTICS',\n  date_range: {\n    startDate: $('Preparar Config').first().json.FECHA_INICIO_ACTUAL,\n    endDate:   $('Preparar Config').first().json.FECHA_FIN_ACTUAL\n  },\n  fields: [\n    'GA4__Sesiones',\n    'GA4__Ingresos_totales',\n    'GA4__Transacciones_de_comercio_electrónico',\n    'GA4__Tasa_de_conversión_de_sesiones'\n  ],\n  filters: [{\n    field: 'GA4__Agrupación_canal_predeterminada',\n    operator: 'CONTAINS',\n    value: 'mail'\n  }]\n}) }}",
         "options": { "timeout": 20000 }
       },
       "id": "node-dashbo-actual",
       "name": "Dashbo GA4 Actual",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [460, 420]
+      "position": [840, 420]
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $('Config Cliente').first().json.DASHBO_API_URL || 'https://api.dashbo.io/query' }}",
+        "url": "https://api.dashbo.io/query",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBearerAuth",
         "sendBody": true,
         "contentType": "json",
-        "body": "={{ JSON.stringify({\n  client_id: $('Config Cliente').first().json.dashbo_client_id,\n  data_source_type: 'ANALYTICS',\n  date_range: {\n    startDate: $('Config Cliente').first().json.FECHA_INICIO_ANTERIOR,\n    endDate:   $('Config Cliente').first().json.FECHA_FIN_ANTERIOR\n  },\n  fields: [\n    'GA4__Sesiones',\n    'GA4__Ingresos_totales',\n    'GA4__Transacciones_de_comercio_electrónico',\n    'GA4__Tasa_de_conversión_de_sesiones'\n  ],\n  filters: [{\n    field: 'GA4__Agrupación_canal_predeterminada',\n    operator: 'CONTAINS',\n    value: 'mail'\n  }]\n}) }}",
+        "body": "={{ JSON.stringify({\n  client_id: $('Preparar Config').first().json.dashbo_client_id,\n  data_source_type: 'ANALYTICS',\n  date_range: {\n    startDate: $('Preparar Config').first().json.FECHA_INICIO_ANTERIOR,\n    endDate:   $('Preparar Config').first().json.FECHA_FIN_ANTERIOR\n  },\n  fields: [\n    'GA4__Sesiones',\n    'GA4__Ingresos_totales',\n    'GA4__Transacciones_de_comercio_electrónico',\n    'GA4__Tasa_de_conversión_de_sesiones'\n  ],\n  filters: [{\n    field: 'GA4__Agrupación_canal_predeterminada',\n    operator: 'CONTAINS',\n    value: 'mail'\n  }]\n}) }}",
         "options": { "timeout": 20000 }
       },
       "id": "node-dashbo-anterior",
       "name": "Dashbo GA4 Anterior",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [460, 580]
+      "position": [840, 580]
     },
 
     {
@@ -106,7 +122,7 @@
           "conditions": [
             {
               "id": "cond-1",
-              "leftValue": "={{ $('Config Cliente').first().json.CUSTOM_TAB }}",
+              "leftValue": "={{ $('Preparar Config').first().json.CUSTOM_TAB }}",
               "rightValue": "",
               "operator": { "type": "string", "operation": "notEmpty" }
             }
@@ -117,23 +133,26 @@
       "name": "Tiene Custom Tab?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [460, 740]
+      "position": [840, 740]
     },
     {
       "parameters": {
         "operation": "readAllRows",
         "documentId": {
           "mode": "id",
-          "value": "={{ $('Config Cliente').first().json.CUSTOM_SPREADSHEET_ID }}"
+          "value": "={{ $('Preparar Config').first().json.PANEL_SPREADSHEET_ID }}"
         },
-        "sheetName": { "mode": "name", "value": "={{ $('Config Cliente').first().json.CUSTOM_TAB }}" },
+        "sheetName": {
+          "mode": "name",
+          "value": "={{ $('Preparar Config').first().json.CUSTOM_TAB }}"
+        },
         "options": {}
       },
       "id": "node-custom-tab",
       "name": "Sheet Custom Tab",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [680, 700]
+      "position": [1060, 700]
     },
     {
       "parameters": {
@@ -148,7 +167,7 @@
       "name": "Sin Evolutivo",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [680, 820]
+      "position": [1060, 820]
     },
 
     {
@@ -161,7 +180,7 @@
       "name": "Merge Sheets",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
-      "position": [680, 180]
+      "position": [1060, 180]
     },
     {
       "parameters": {
@@ -173,19 +192,19 @@
       "name": "Merge GA4",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
-      "position": [680, 500]
+      "position": [1060, 500]
     },
 
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// ── Fuentes de datos ─────────────────────────────────────────────────────\nconst cfg           = $('Config Cliente').first().json;\nconst actual        = $('Sheet Actual').all().map(i => i.json);\nconst anterior      = $('Sheet Anterior').all().map(i => i.json);\nconst customTabRows = (() => { try { return $('Sheet Custom Tab').all().map(i => i.json).filter(r => !r._sin_evolutivo); } catch(e) { return []; } })();\n\nconst ga4ARaw = $('Dashbo GA4 Actual').first().json;\nconst ga4PRaw = $('Dashbo GA4 Anterior').first().json;\nconst ga4A    = Array.isArray(ga4ARaw.rows) ? ga4ARaw.rows[0] : ga4ARaw;\nconst ga4P    = Array.isArray(ga4PRaw.rows) ? ga4PRaw.rows[0] : ga4PRaw;\n\n// ── Helpers ───────────────────────────────────────────────────────────────\nconst parseNum = str => {\n  if (!str && str !== 0) return 0;\n  const s = String(str).replace(/[$%\\s]/g, '').replace(/\\./g, '').replace(',', '.');\n  return parseFloat(s) || 0;\n};\nconst parseRate = str => {\n  const s = String(str || '0').replace('%', '').trim();\n  const n = parseFloat(s.replace(',', '.')) || 0;\n  return (n > 0 && n < 1) ? n * 100 : n;\n};\nconst fmtNum   = n => Math.round(n).toLocaleString('es-AR');\nconst fmtPct   = n => n.toFixed(1).replace('.', ',') + '%';\nconst fmtMoney = n => '$' + Math.round(n).toLocaleString('es-AR');\nconst getField = (row, ...keys) => {\n  for (const k of keys) if (row[k] !== undefined && row[k] !== null && row[k] !== '') return row[k];\n  return undefined;\n};\nconst delta = (curr, prev, isRate = false) => {\n  if (!prev || prev === 0) return { str: '—', up: true };\n  if (isRate) {\n    const d = curr - prev;\n    return { str: (d >= 0 ? '+' : '') + d.toFixed(1).replace('.', ',') + 'pp', up: d >= 0 };\n  }\n  const pct = (curr - prev) / prev * 100;\n  return { str: (pct >= 0 ? '+' : '') + pct.toFixed(0) + '%', up: pct >= 0 };\n};\n\n// ── Totales de un conjunto de filas ──────────────────────────────────────\nconst calcTotals = rows => {\n  let envios = 0, trans = 0, ingresos = 0, sumAp = 0, sumCtor = 0, sumBajas = 0;\n  rows.forEach(r => {\n    const e = parseNum(getField(r, 'Delivered', 'Enviados', 'delivered'));\n    envios   += e;\n    trans    += parseNum(getField(r, 'Transacciones online', 'transacciones') || 0);\n    ingresos += parseNum(getField(r, 'Ingresos online', 'ingresos') || 0);\n    sumAp    += parseRate(getField(r, 'Open Rate', 'Tasa de apertura', 'open_rate')) * e;\n    sumCtor  += parseRate(getField(r, 'CTOR', 'ctor')) * e;\n    sumBajas += parseRate(getField(r, 'Unsubscribe Rate', 'Tasa de bajas', 'unsubscribe_rate')) * e;\n  });\n  return {\n    envios, trans, ingresos,\n    apertura: envios > 0 ? sumAp    / envios : 0,\n    ctor:     envios > 0 ? sumCtor  / envios : 0,\n    bajas:    envios > 0 ? sumBajas / envios : 0,\n  };\n};\n\n// ── Totales generales (todos los tipos) ───────────────────────────────────\nconst a = calcTotals(actual);\nconst p = calcTotals(anterior);\n\nconst dEnvios   = delta(a.envios,   p.envios);\nconst dApertura = delta(a.apertura, p.apertura, true);\nconst dCtor     = delta(a.ctor,     p.ctor,     true);\nconst dBajas    = delta(a.bajas,    p.bajas,    true);\nconst dTrans    = delta(a.trans,    p.trans);\nconst dIngresos = delta(a.ingresos, p.ingresos);\n\n// ── Detectar plataforma (desde primera fila del sheet) ───────────────────\nconst plataforma = String(getField(actual[0] || {}, 'Plataforma', 'plataforma', 'platform') || 'WOOWUP').toUpperCase();\nconst isWoowup   = plataforma === 'WOOWUP';\n\n// ── Separar filas por Tipo (solo Woowup) ─────────────────────────────────\nconst getTipo = r => String(getField(r, 'Tipo', 'tipo', 'type') || '').trim().toLowerCase();\nconst actualNewsletter   = isWoowup ? actual.filter(r => getTipo(r) === 'newsletter')   : [];\nconst actualAutomatizada = isWoowup ? actual.filter(r => getTipo(r) === 'automatizada' || getTipo(r) === 'automtizada') : [];\n\n// ── Construir array de campañas para un subconjunto de filas ─────────────\nconst hasTrans    = actual.some(r => parseNum(getField(r, 'Transacciones online', 'transacciones') || 0) > 0);\nconst hasIngresos = actual.some(r => parseNum(getField(r, 'Ingresos online', 'ingresos') || 0) > 0);\n\nconst buildCampanas = rows => rows\n  .map(r => {\n    const enviosRaw = parseNum(getField(r, 'Delivered', 'Enviados', 'delivered'));\n    const obj = {\n      nombre:   String(getField(r, 'Campaña', 'Campaign', 'campaña', 'campaign') || ''),\n      envios:   fmtNum(enviosRaw),\n      apertura: fmtPct(parseRate(getField(r, 'Open Rate', 'open_rate'))),\n      ctor:     fmtPct(parseRate(getField(r, 'CTOR', 'ctor'))),\n      bajas:    fmtPct(parseRate(getField(r, 'Unsubscribe Rate', 'unsubscribe_rate'))),\n      _raw:     enviosRaw,\n    };\n    if (hasTrans)    obj.transacciones = fmtNum(parseNum(getField(r, 'Transacciones online', 'transacciones') || 0));\n    if (hasIngresos) obj.ingresos      = fmtMoney(parseNum(getField(r, 'Ingresos online', 'ingresos') || 0));\n    return obj;\n  })\n  .sort((x, y) => y._raw - x._raw)\n  .map(({ _raw, ...rest }) => rest);\n\n// ── GA4 Canal Email ───────────────────────────────────────────────────────\nconst ga4Ses   = parseNum(ga4A['GA4__Sesiones']                              || ga4A['Sesiones']           || 0);\nconst ga4SesP  = parseNum(ga4P['GA4__Sesiones']                              || ga4P['Sesiones']           || 0);\nconst ga4Ingr  = parseNum(ga4A['GA4__Ingresos_totales']                      || ga4A['Ingresos_totales']   || 0);\nconst ga4IngrP = parseNum(ga4P['GA4__Ingresos_totales']                      || ga4P['Ingresos_totales']   || 0);\nconst ga4Tr    = parseNum(ga4A['GA4__Transacciones_de_comercio_electrónico'] || ga4A['Transacciones']      || 0);\nconst ga4TrP   = parseNum(ga4P['GA4__Transacciones_de_comercio_electrónico'] || ga4P['Transacciones']      || 0);\nconst ga4Conv  = parseRate(ga4A['GA4__Tasa_de_conversión_de_sesiones']       || ga4A['Tasa_de_conversión'] || 0);\nconst ga4ConvP = parseRate(ga4P['GA4__Tasa_de_conversión_de_sesiones']       || ga4P['Tasa_de_conversión'] || 0);\n\nconst hasGA4 = ga4Ses > 0;\nconst dGA4Ses  = delta(ga4Ses,  ga4SesP);\nconst dGA4Ingr = delta(ga4Ingr, ga4IngrP);\nconst dGA4Tr   = delta(ga4Tr,   ga4TrP);\nconst dGA4Conv = delta(ga4Conv, ga4ConvP, true);\n\n// ── DATA final ────────────────────────────────────────────────────────────\nconst DATA = {\n  CLIENTE_NOMBRE:         cfg.CLIENTE_NOMBRE        || '',\n  CLIENTE_LOGO_URL:       cfg.CLIENTE_LOGO_URL       || '',\n  PERIODO_ACTUAL_LABEL:   cfg.PERIODO_ACTUAL_LABEL   || '',\n  PERIODO_ANTERIOR_LABEL: cfg.PERIODO_ANTERIOR_LABEL || '',\n  WEB:                    'www.knownonline.com',\n  CONTACTO:               'ariel@knownonline.com',\n\n  // KPIs generales (suma de newsletter + automatizadas)\n  EMAIL_ENVIOS:          fmtNum(a.envios),\n  EMAIL_ENVIOS_PREV:     fmtNum(p.envios),\n  EMAIL_ENVIOS_DELTA:    dEnvios.str,\n  EMAIL_ENVIOS_DELTA_UP: dEnvios.up,\n\n  EMAIL_APERTURA:          fmtPct(a.apertura),\n  EMAIL_APERTURA_PREV:     fmtPct(p.apertura),\n  EMAIL_APERTURA_DELTA:    dApertura.str,\n  EMAIL_APERTURA_DELTA_UP: dApertura.up,\n\n  EMAIL_CTOR:          fmtPct(a.ctor),\n  EMAIL_CTOR_PREV:     fmtPct(p.ctor),\n  EMAIL_CTOR_DELTA:    dCtor.str,\n  EMAIL_CTOR_DELTA_UP: dCtor.up,\n\n  EMAIL_BAJAS:          fmtPct(a.bajas),\n  EMAIL_BAJAS_PREV:     fmtPct(p.bajas),\n  EMAIL_BAJAS_DELTA:    dBajas.str,\n  EMAIL_BAJAS_DELTA_UP: dBajas.up,\n\n  ...(a.trans > 0 ? {\n    EMAIL_TRANSACCIONES:          fmtNum(a.trans),\n    EMAIL_TRANSACCIONES_PREV:     fmtNum(p.trans),\n    EMAIL_TRANSACCIONES_DELTA:    dTrans.str,\n    EMAIL_TRANSACCIONES_DELTA_UP: dTrans.up,\n  } : {}),\n\n  ...(a.ingresos > 0 ? {\n    EMAIL_INGRESOS:          fmtMoney(a.ingresos),\n    EMAIL_INGRESOS_PREV:     fmtMoney(p.ingresos),\n    EMAIL_INGRESOS_DELTA:    dIngresos.str,\n    EMAIL_INGRESOS_DELTA_UP: dIngresos.up,\n  } : {}),\n\n  // Campañas: Woowup separa por tipo, otras plataformas usan EMAIL_CAMPANAS\n  PLATAFORMA_EMAIL:            plataforma,\n  ...(isWoowup ? {\n    EMAIL_CAMPANAS_NEWSLETTER:   buildCampanas(actualNewsletter),\n    EMAIL_CAMPANAS_AUTOMATIZADA: buildCampanas(actualAutomatizada),\n  } : {\n    EMAIL_CAMPANAS: buildCampanas(actual),\n  }),\n\n  GA4_TIENE_DATOS: hasGA4,\n  ...(hasGA4 ? {\n    GA4_SESIONES:               fmtNum(ga4Ses),\n    GA4_SESIONES_PREV:          fmtNum(ga4SesP),\n    GA4_SESIONES_DELTA:         dGA4Ses.str,\n    GA4_SESIONES_DELTA_UP:      dGA4Ses.up,\n    GA4_INGRESOS:               fmtMoney(ga4Ingr),\n    GA4_INGRESOS_PREV:          fmtMoney(ga4IngrP),\n    GA4_INGRESOS_DELTA:         dGA4Ingr.str,\n    GA4_INGRESOS_DELTA_UP:      dGA4Ingr.up,\n    GA4_TRANSACCIONES:          fmtNum(ga4Tr),\n    GA4_TRANSACCIONES_PREV:     fmtNum(ga4TrP),\n    GA4_TRANSACCIONES_DELTA:    dGA4Tr.str,\n    GA4_TRANSACCIONES_DELTA_UP: dGA4Tr.up,\n    GA4_TASA_CONV:              fmtPct(ga4Conv),\n    GA4_TASA_CONV_PREV:         fmtPct(ga4ConvP),\n    GA4_TASA_CONV_DELTA:        dGA4Conv.str,\n    GA4_TASA_CONV_DELTA_UP:     dGA4Conv.up,\n  } : {}),\n\n  RECOMENDACIONES: [],\n\n  // Evolutivo — solo si hay custom tab configurado\n  ...(customTabRows.length > 0 ? { EVOLUTIVO_ROWS: customTabRows } : {}),\n};\n\nreturn [{ json: { DATA } }];\n"
+        "jsCode": "// ── Fuentes de datos ─────────────────────────────────────────────────────\nconst cfg    = $('Preparar Config').first().json;\nconst actual = $('Sheet Actual').all().map(i => i.json);\nconst anterior = $('Sheet Anterior').all().map(i => i.json);\nconst customTabRows = (() => { try { return $('Sheet Custom Tab').all().map(i => i.json).filter(r => !r._sin_evolutivo); } catch(e) { return []; } })();\n\nconst ga4ARaw = $('Dashbo GA4 Actual').first().json;\nconst ga4PRaw = $('Dashbo GA4 Anterior').first().json;\nconst ga4A = Array.isArray(ga4ARaw.rows) ? ga4ARaw.rows[0] : ga4ARaw;\nconst ga4P = Array.isArray(ga4PRaw.rows) ? ga4PRaw.rows[0] : ga4PRaw;\n\n// ── Helpers ───────────────────────────────────────────────────────────────\nconst parseNum = str => {\n  if (!str && str !== 0) return 0;\n  const s = String(str).replace(/[$%\\s]/g, '').replace(/\\./g, '').replace(',', '.');\n  return parseFloat(s) || 0;\n};\nconst parseRate = str => {\n  const s = String(str || '0').replace('%', '').trim();\n  const n = parseFloat(s.replace(',', '.')) || 0;\n  return (n > 0 && n < 1) ? n * 100 : n;\n};\nconst fmtNum   = n => Math.round(n).toLocaleString('es-AR');\nconst fmtPct   = n => n.toFixed(1).replace('.', ',') + '%';\nconst fmtMoney = n => '$' + Math.round(n).toLocaleString('es-AR');\nconst getField = (row, ...keys) => {\n  for (const k of keys) if (row[k] !== undefined && row[k] !== null && row[k] !== '') return row[k];\n  return undefined;\n};\nconst delta = (curr, prev, isRate = false) => {\n  if (!prev || prev === 0) return { str: '—', up: true };\n  if (isRate) {\n    const d = curr - prev;\n    return { str: (d >= 0 ? '+' : '') + d.toFixed(1).replace('.', ',') + 'pp', up: d >= 0 };\n  }\n  const pct = (curr - prev) / prev * 100;\n  return { str: (pct >= 0 ? '+' : '') + pct.toFixed(0) + '%', up: pct >= 0 };\n};\n\n// ── Totales de un conjunto de filas ──────────────────────────────────────\nconst calcTotals = rows => {\n  let envios = 0, trans = 0, ingresos = 0, sumAp = 0, sumCtor = 0, sumBajas = 0;\n  rows.forEach(r => {\n    const e = parseNum(getField(r, 'Delivered', 'Enviados', 'delivered'));\n    envios   += e;\n    trans    += parseNum(getField(r, 'Transacciones online', 'transacciones') || 0);\n    ingresos += parseNum(getField(r, 'Ingresos online', 'ingresos') || 0);\n    sumAp    += parseRate(getField(r, 'Open Rate', 'Tasa de apertura', 'open_rate')) * e;\n    sumCtor  += parseRate(getField(r, 'CTOR', 'ctor')) * e;\n    sumBajas += parseRate(getField(r, 'Unsubscribe Rate', 'Tasa de bajas', 'unsubscribe_rate')) * e;\n  });\n  return {\n    envios, trans, ingresos,\n    apertura: envios > 0 ? sumAp    / envios : 0,\n    ctor:     envios > 0 ? sumCtor  / envios : 0,\n    bajas:    envios > 0 ? sumBajas / envios : 0,\n  };\n};\n\nconst a = calcTotals(actual);\nconst p = calcTotals(anterior);\n\nconst dEnvios   = delta(a.envios,   p.envios);\nconst dApertura = delta(a.apertura, p.apertura, true);\nconst dCtor     = delta(a.ctor,     p.ctor,     true);\nconst dBajas    = delta(a.bajas,    p.bajas,    true);\nconst dTrans    = delta(a.trans,    p.trans);\nconst dIngresos = delta(a.ingresos, p.ingresos);\n\n// ── Plataforma y split por Tipo ───────────────────────────────────────────\nconst plataforma = String(getField(actual[0] || {}, 'Plataforma', 'plataforma') || cfg.Plataforma || 'WOOWUP').toUpperCase();\nconst isWoowup   = plataforma === 'WOOWUP';\n\nconst getTipo = r => String(getField(r, 'Tipo', 'tipo', 'type') || '').trim().toLowerCase();\nconst actualNewsletter   = isWoowup ? actual.filter(r => getTipo(r) === 'newsletter')   : [];\nconst actualAutomatizada = isWoowup ? actual.filter(r => getTipo(r) === 'automatizada' || getTipo(r) === 'automtizada') : [];\n\nconst hasTrans    = actual.some(r => parseNum(getField(r, 'Transacciones online', 'transacciones') || 0) > 0);\nconst hasIngresos = actual.some(r => parseNum(getField(r, 'Ingresos online', 'ingresos') || 0) > 0);\n\nconst buildCampanas = rows => rows\n  .map(r => {\n    const enviosRaw = parseNum(getField(r, 'Delivered', 'Enviados', 'delivered'));\n    const obj = {\n      nombre:   String(getField(r, 'Campaña', 'Campaign', 'campaña', 'campaign') || ''),\n      envios:   fmtNum(enviosRaw),\n      apertura: fmtPct(parseRate(getField(r, 'Open Rate', 'open_rate'))),\n      ctor:     fmtPct(parseRate(getField(r, 'CTOR', 'ctor'))),\n      bajas:    fmtPct(parseRate(getField(r, 'Unsubscribe Rate', 'unsubscribe_rate'))),\n      _raw:     enviosRaw,\n    };\n    if (hasTrans)    obj.transacciones = fmtNum(parseNum(getField(r, 'Transacciones online', 'transacciones') || 0));\n    if (hasIngresos) obj.ingresos      = fmtMoney(parseNum(getField(r, 'Ingresos online', 'ingresos') || 0));\n    return obj;\n  })\n  .sort((x, y) => y._raw - x._raw)\n  .map(({ _raw, ...rest }) => rest);\n\n// ── GA4 ───────────────────────────────────────────────────────────────────\nconst ga4Ses   = parseNum(ga4A['GA4__Sesiones']                              || ga4A['Sesiones']           || 0);\nconst ga4SesP  = parseNum(ga4P['GA4__Sesiones']                              || ga4P['Sesiones']           || 0);\nconst ga4Ingr  = parseNum(ga4A['GA4__Ingresos_totales']                      || ga4A['Ingresos_totales']   || 0);\nconst ga4IngrP = parseNum(ga4P['GA4__Ingresos_totales']                      || ga4P['Ingresos_totales']   || 0);\nconst ga4Tr    = parseNum(ga4A['GA4__Transacciones_de_comercio_electrónico'] || ga4A['Transacciones']      || 0);\nconst ga4TrP   = parseNum(ga4P['GA4__Transacciones_de_comercio_electrónico'] || ga4P['Transacciones']      || 0);\nconst ga4Conv  = parseRate(ga4A['GA4__Tasa_de_conversión_de_sesiones']       || ga4A['Tasa_de_conversión'] || 0);\nconst ga4ConvP = parseRate(ga4P['GA4__Tasa_de_conversión_de_sesiones']       || ga4P['Tasa_de_conversión'] || 0);\n\nconst hasGA4 = ga4Ses > 0;\nconst dGA4Ses  = delta(ga4Ses,  ga4SesP);\nconst dGA4Ingr = delta(ga4Ingr, ga4IngrP);\nconst dGA4Tr   = delta(ga4Tr,   ga4TrP);\nconst dGA4Conv = delta(ga4Conv, ga4ConvP, true);\n\n// ── DATA final ────────────────────────────────────────────────────────────\nconst DATA = {\n  CLIENTE_NOMBRE:         cfg.CLIENTE_NOMBRE        || '',\n  CLIENTE_LOGO_URL:       cfg.CLIENTE_LOGO_URL       || '',\n  PERIODO_ACTUAL_LABEL:   cfg.PERIODO_ACTUAL_LABEL   || '',\n  PERIODO_ANTERIOR_LABEL: cfg.PERIODO_ANTERIOR_LABEL || '',\n  WEB:     'www.knownonline.com',\n  CONTACTO: 'ariel@knownonline.com',\n\n  EMAIL_ENVIOS:          fmtNum(a.envios),\n  EMAIL_ENVIOS_PREV:     fmtNum(p.envios),\n  EMAIL_ENVIOS_DELTA:    dEnvios.str,\n  EMAIL_ENVIOS_DELTA_UP: dEnvios.up,\n\n  EMAIL_APERTURA:          fmtPct(a.apertura),\n  EMAIL_APERTURA_PREV:     fmtPct(p.apertura),\n  EMAIL_APERTURA_DELTA:    dApertura.str,\n  EMAIL_APERTURA_DELTA_UP: dApertura.up,\n\n  EMAIL_CTOR:          fmtPct(a.ctor),\n  EMAIL_CTOR_PREV:     fmtPct(p.ctor),\n  EMAIL_CTOR_DELTA:    dCtor.str,\n  EMAIL_CTOR_DELTA_UP: dCtor.up,\n\n  EMAIL_BAJAS:          fmtPct(a.bajas),\n  EMAIL_BAJAS_PREV:     fmtPct(p.bajas),\n  EMAIL_BAJAS_DELTA:    dBajas.str,\n  EMAIL_BAJAS_DELTA_UP: dBajas.up,\n\n  ...(a.trans > 0 ? {\n    EMAIL_TRANSACCIONES:          fmtNum(a.trans),\n    EMAIL_TRANSACCIONES_PREV:     fmtNum(p.trans),\n    EMAIL_TRANSACCIONES_DELTA:    dTrans.str,\n    EMAIL_TRANSACCIONES_DELTA_UP: dTrans.up,\n  } : {}),\n\n  ...(a.ingresos > 0 ? {\n    EMAIL_INGRESOS:          fmtMoney(a.ingresos),\n    EMAIL_INGRESOS_PREV:     fmtMoney(p.ingresos),\n    EMAIL_INGRESOS_DELTA:    dIngresos.str,\n    EMAIL_INGRESOS_DELTA_UP: dIngresos.up,\n  } : {}),\n\n  PLATAFORMA_EMAIL: plataforma,\n  ...(isWoowup ? {\n    EMAIL_CAMPANAS_NEWSLETTER:   buildCampanas(actualNewsletter),\n    EMAIL_CAMPANAS_AUTOMATIZADA: buildCampanas(actualAutomatizada),\n  } : {\n    EMAIL_CAMPANAS: buildCampanas(actual),\n  }),\n\n  GA4_TIENE_DATOS: hasGA4,\n  ...(hasGA4 ? {\n    GA4_SESIONES:               fmtNum(ga4Ses),\n    GA4_SESIONES_PREV:          fmtNum(ga4SesP),\n    GA4_SESIONES_DELTA:         dGA4Ses.str,\n    GA4_SESIONES_DELTA_UP:      dGA4Ses.up,\n    GA4_INGRESOS:               fmtMoney(ga4Ingr),\n    GA4_INGRESOS_PREV:          fmtMoney(ga4IngrP),\n    GA4_INGRESOS_DELTA:         dGA4Ingr.str,\n    GA4_INGRESOS_DELTA_UP:      dGA4Ingr.up,\n    GA4_TRANSACCIONES:          fmtNum(ga4Tr),\n    GA4_TRANSACCIONES_PREV:     fmtNum(ga4TrP),\n    GA4_TRANSACCIONES_DELTA:    dGA4Tr.str,\n    GA4_TRANSACCIONES_DELTA_UP: dGA4Tr.up,\n    GA4_TASA_CONV:              fmtPct(ga4Conv),\n    GA4_TASA_CONV_PREV:         fmtPct(ga4ConvP),\n    GA4_TASA_CONV_DELTA:        dGA4Conv.str,\n    GA4_TASA_CONV_DELTA_UP:     dGA4Conv.up,\n  } : {}),\n\n  RECOMENDACIONES: [],\n  ...(customTabRows.length > 0 ? { EVOLUTIVO_ROWS: customTabRows } : {}),\n};\n\nreturn [{ json: { DATA } }];\n"
       },
       "id": "node-calcular",
       "name": "Calcular Variables y Deltas",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [900, 340]
+      "position": [1280, 340]
     },
 
     {
@@ -207,15 +226,21 @@
       "name": "Generar PPTX Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1120, 340]
+      "position": [1500, 340]
     }
   ],
 
   "connections": {
     "Manual Trigger": {
-      "main": [[ { "node": "Config Cliente", "type": "main", "index": 0 } ]]
+      "main": [[ { "node": "Config", "type": "main", "index": 0 } ]]
     },
-    "Config Cliente": {
+    "Config": {
+      "main": [[ { "node": "Leer Panel", "type": "main", "index": 0 } ]]
+    },
+    "Leer Panel": {
+      "main": [[ { "node": "Preparar Config", "type": "main", "index": 0 } ]]
+    },
+    "Preparar Config": {
       "main": [
         [ { "node": "Sheet Actual",        "type": "main", "index": 0 } ],
         [ { "node": "Sheet Anterior",      "type": "main", "index": 0 } ],
@@ -224,36 +249,20 @@
         [ { "node": "Tiene Custom Tab?",   "type": "main", "index": 0 } ]
       ]
     },
-    "Sheet Actual": {
-      "main": [[ { "node": "Merge Sheets", "type": "main", "index": 0 } ]]
-    },
-    "Sheet Anterior": {
-      "main": [[ { "node": "Merge Sheets", "type": "main", "index": 1 } ]]
-    },
-    "Dashbo GA4 Actual": {
-      "main": [[ { "node": "Merge GA4", "type": "main", "index": 0 } ]]
-    },
-    "Dashbo GA4 Anterior": {
-      "main": [[ { "node": "Merge GA4", "type": "main", "index": 1 } ]]
-    },
+    "Sheet Actual":   { "main": [[ { "node": "Merge Sheets", "type": "main", "index": 0 } ]] },
+    "Sheet Anterior": { "main": [[ { "node": "Merge Sheets", "type": "main", "index": 1 } ]] },
+    "Dashbo GA4 Actual":   { "main": [[ { "node": "Merge GA4", "type": "main", "index": 0 } ]] },
+    "Dashbo GA4 Anterior": { "main": [[ { "node": "Merge GA4", "type": "main", "index": 1 } ]] },
     "Tiene Custom Tab?": {
       "main": [
         [ { "node": "Sheet Custom Tab", "type": "main", "index": 0 } ],
         [ { "node": "Sin Evolutivo",    "type": "main", "index": 0 } ]
       ]
     },
-    "Sheet Custom Tab": {
-      "main": [[ { "node": "Calcular Variables y Deltas", "type": "main", "index": 2 } ]]
-    },
-    "Sin Evolutivo": {
-      "main": [[ { "node": "Calcular Variables y Deltas", "type": "main", "index": 2 } ]]
-    },
-    "Merge Sheets": {
-      "main": [[ { "node": "Calcular Variables y Deltas", "type": "main", "index": 0 } ]]
-    },
-    "Merge GA4": {
-      "main": [[ { "node": "Calcular Variables y Deltas", "type": "main", "index": 1 } ]]
-    },
+    "Sheet Custom Tab": { "main": [[ { "node": "Calcular Variables y Deltas", "type": "main", "index": 2 } ]] },
+    "Sin Evolutivo":    { "main": [[ { "node": "Calcular Variables y Deltas", "type": "main", "index": 2 } ]] },
+    "Merge Sheets": { "main": [[ { "node": "Calcular Variables y Deltas", "type": "main", "index": 0 } ]] },
+    "Merge GA4":    { "main": [[ { "node": "Calcular Variables y Deltas", "type": "main", "index": 1 } ]] },
     "Calcular Variables y Deltas": {
       "main": [[ { "node": "Generar PPTX Email", "type": "main", "index": 0 } ]]
     }
