@@ -342,7 +342,7 @@ async function generatePptx(DATA) {
     s7.addText(`${labelCortoAnterior}: ${m.val25}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
   });
 
-  if (!DATA.GA4_INGRESOS_PREV) {
+  if (parseNum(DATA.GA4_INGRESOS_PREV) === 0) {
     s7.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
     s7.addText("* Comparado con la data disponible del año pasado en GA4.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
   }
@@ -438,7 +438,7 @@ async function generatePptx(DATA) {
       }
     });
 
-    if (!DATA.GA4_INGRESOS_PREV) {
+    if (parseNum(DATA.GA4_INGRESOS_PREV) === 0) {
       sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
       sFm.addText("* Comparado con la data disponible del año pasado en GA4.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
     }
@@ -472,7 +472,7 @@ async function generatePptx(DATA) {
     s3.addText(k.delta, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fontSize: 10, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
   });
 
-  if ((DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("chaide") && (!DATA.META_ROAS || parseNum(DATA.META_ROAS) === 0)) {
+  if ((DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("chaide") && parseNum(DATA.META_ROAS) === 0) {
     s3.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
     s3.addText("* El Pixel de Meta no registraba valor de compra en el período anterior, por lo que el ROAS comparativo no está disponible.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
   }
