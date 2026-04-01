@@ -162,6 +162,8 @@ async function generatePptx(DATA) {
   s2.addText("Resumen Ejecutivo", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
   s2.addText("Inversión · Revenue · ROAS  ·  Meta Ads + Google Ads", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
+  const isChaide = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("chaide");
+
   const _invA  = parseNum(DATA.INVERSION_TOTAL), _invP = parseNum(DATA.INVERSION_PREV);
   const _revA  = parseNum(DATA.GA4_INGRESOS),    _revP = parseNum(DATA.GA4_INGRESOS_PREV);
   const _roasA = _invA > 0 ? _revA / _invA : 0;
@@ -174,7 +176,7 @@ async function generatePptx(DATA) {
   const kpis = [
     { label: "Inversión total", val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: DATA.INVERSION_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.INVERSION_PREV || ""}`, up: DATA.INVERSION_DELTA_UP === true },
     { label: "Revenue GA4",     val: fmtMoneyCompact(DATA.GA4_INGRESOS),    delta: DATA.GA4_INGRESOS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.GA4_INGRESOS_PREV || ""}`, up: DATA.GA4_INGRESOS_DELTA_UP === true },
-    _roasP > 0
+    (!isChaide && _roasP > 0)
       ? { label: "ROAS total",  val: _roasStr, delta: _roasDeltaStr, note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${_roasPrev}`, up: _roasA >= _roasP }
       : { label: "Sesiones",    val: DATA.GA4_SESIONES || "", delta: DATA.GA4_SESIONES_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.GA4_SESIONES_PREV || ""}`, up: DATA.GA4_SESIONES_DELTA_UP === true },
     { label: "Clicks totales",  val: DATA.CLICKS_TOTAL || "", delta: DATA.CLICKS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CLICKS_PREV || ""}`, up: DATA.CLICKS_DELTA_UP === true },
@@ -342,7 +344,7 @@ async function generatePptx(DATA) {
     s7.addText(`${labelCortoAnterior}: ${m.val25}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
   });
 
-  if (!DATA.GA4_INGRESOS_PREV) {
+  if (isChaide && parseNum(DATA.GA4_INGRESOS_PREV) === 0) {
     s7.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
     s7.addText("* Comparado con la data disponible del año pasado en GA4.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
   }
@@ -438,7 +440,7 @@ async function generatePptx(DATA) {
       }
     });
 
-    if (!DATA.GA4_INGRESOS_PREV) {
+    if (isChaide && parseNum(DATA.GA4_INGRESOS_PREV) === 0) {
       sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
       sFm.addText("* Comparado con la data disponible del año pasado en GA4.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
     }
@@ -472,7 +474,7 @@ async function generatePptx(DATA) {
     s3.addText(k.delta, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fontSize: 10, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
   });
 
-  if ((DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("chaide") && (!DATA.META_ROAS || parseNum(DATA.META_ROAS) === 0)) {
+  if ((DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("chaide") && parseNum(DATA.META_ROAS) === 0) {
     s3.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
     s3.addText("* El Pixel de Meta no registraba valor de compra en el período anterior, por lo que el ROAS comparativo no está disponible.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
   }
@@ -494,6 +496,10 @@ async function generatePptx(DATA) {
     { label: "CPC",         val: DATA.GOOGLE_CPC         || "", prev: DATA.GOOGLE_CPC_PREV         || "", delta: DATA.GOOGLE_CPC_DELTA         || "", good: DATA.GOOGLE_CPC_DELTA_UP         === true },
     { label: "ROAS",        val: DATA.GOOGLE_ROAS        || "", prev: DATA.GOOGLE_ROAS_PREV        || "", delta: DATA.GOOGLE_ROAS_DELTA        || "", good: DATA.GOOGLE_ROAS_DELTA_UP        === true },
   ];
+  if (isChaide) {
+    const roasKpi = googleKPIs.find(k => k.label === "ROAS");
+    if (roasKpi) { roasKpi.prev = "N/D"; roasKpi.delta = ""; }
+  }
   googleKPIs.forEach((k, i) => {
     const col = i % 3, row = Math.floor(i / 3);
     const x = 0.4 + col * 3.1, y = 1.3 + row * 1.6;
@@ -505,6 +511,10 @@ async function generatePptx(DATA) {
     s4.addText(k.delta, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fontSize: 10, bold: true, color: k.good ? GREEN : RED, fontFace: "DM Sans", align: "center" });
   });
 
+  if (isChaide) {
+    s4.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
+    s4.addText("* El valor de conversión no estaba configurado correctamente en el período anterior, por lo que el ROAS no es comparable.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
+  }
 
   // ── SLIDES 5A & 5B – TOP CAMPAÑAS POR ROAS (Google / Meta separados) ────
   const campaigns = DATA.CAMPANAS || [];
