@@ -472,6 +472,10 @@ async function generatePptx(DATA) {
     s3.addText(k.delta, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fontSize: 10, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
   });
 
+  if (!DATA.META_ROAS_PREV && (!DATA.META_ROAS || parseNum(DATA.META_ROAS) === 0)) {
+    s3.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
+    s3.addText("* El Pixel de Meta no registraba valor de compra en el período anterior, por lo que el ROAS comparativo no está disponible.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
+  }
 
   // ── SLIDE 4 – GOOGLE ADS DETALLE ──────────────────────────────────────────
   let s4 = pres.addSlide();
