@@ -438,7 +438,10 @@ async function generatePptx(DATA) {
       }
     });
 
-    // (insight box removed)
+    if (!DATA.GA4_INGRESOS_PREV) {
+      sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
+      sFm.addText("* Comparado con la data disponible del año pasado en GA4.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
+    }
   }
 
   // ── SLIDE 4 – META ADS DETALLE ────────────────────────────────────────────
