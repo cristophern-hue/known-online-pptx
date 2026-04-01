@@ -46,15 +46,22 @@ async function generatePptx(DATA) {
                     || Array.isArray(DATA.EMAIL_CAMPANAS_NEWSLETTER)
                     || Array.isArray(DATA.EMAIL_CAMPANAS_AUTOMATIZADA);
 
-  const todasCampanas         = Array.isArray(DATA.EMAIL_CAMPANAS) ? DATA.EMAIL_CAMPANAS : [];
-  const getTipo               = c => (c.tipo || c.Tipo || "").trim().toLowerCase();
-  const campañasNewsletter    = todasCampanas.filter(c => getTipo(c) === "newsletter");
-  const campañasAutomatizada  = todasCampanas.filter(c => getTipo(c) === "automatizada" || getTipo(c) === "automtizada");
-  const campañasUnicas        = todasCampanas;
+  const todasCampanas        = Array.isArray(DATA.EMAIL_CAMPANAS) ? DATA.EMAIL_CAMPANAS : [];
+  const getTipo              = c => (c.tipo || c.Tipo || "").trim().toLowerCase();
+  // Acepta arrays pre-spliteados desde n8n o splitea internamente desde EMAIL_CAMPANAS
+  const campañasNewsletter   = Array.isArray(DATA.EMAIL_CAMPANAS_NEWSLETTER)
+                             ? DATA.EMAIL_CAMPANAS_NEWSLETTER
+                             : todasCampanas.filter(c => getTipo(c) === "newsletter");
+  const campañasAutomatizada = Array.isArray(DATA.EMAIL_CAMPANAS_AUTOMATIZADA)
+                             ? DATA.EMAIL_CAMPANAS_AUTOMATIZADA
+                             : todasCampanas.filter(c => getTipo(c) === "automatizada" || getTipo(c) === "automtizada");
+  const campañasUnicas       = todasCampanas;
 
-  const top3Newsletter   = [...campañasNewsletter].sort((a, b) => parseRate(b.apertura) - parseRate(a.apertura)).slice(0, 3);
-  const top3Automatizada = [...campañasAutomatizada].sort((a, b) => parseRate(b.apertura) - parseRate(a.apertura)).slice(0, 3);
-  const top3Unicas       = [...campañasUnicas].sort((a, b) => parseRate(b.apertura) - parseRate(a.apertura)).slice(0, 3);
+  const sortByIngresos = (a, b) => parseNum((b.ingresos || "0").replace(/[^0-9,]/g, "").replace(",", "."))
+                                 - parseNum((a.ingresos || "0").replace(/[^0-9,]/g, "").replace(",", "."));
+  const top3Newsletter   = [...campañasNewsletter].sort(sortByIngresos).slice(0, 3);
+  const top3Automatizada = [...campañasAutomatizada].sort(sortByIngresos).slice(0, 3);
+  const top3Unicas       = [...campañasUnicas].sort(sortByIngresos).slice(0, 3);
 
   // ── Helper: tabla de campañas (paginada) ─────────────────────────────────
   function buildSlideTabla(campanas, tipo, accentColor, accentBg) {
@@ -170,7 +177,7 @@ async function generatePptx(DATA) {
     s.background = { color: WHITE };
 
     s.addText(`Top 3 ${tipo}`, { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
-    s.addText("por tasa de apertura", { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: accentColor, fontFace: "DM Sans", bold: true });
+    s.addText("por ingresos online", { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: accentColor, fontFace: "DM Sans", bold: true });
     s.addText(DATA.PERIODO_ACTUAL_LABEL || "", { x: 6.5, y: 0.3, w: 3, h: 0.3, fontSize: 11, color: GRAY_TEXT, fontFace: "DM Sans", align: "right" });
 
     const cardW  = 2.85;
@@ -189,13 +196,15 @@ async function generatePptx(DATA) {
       const nombre = (c.nombre || "").length > 50 ? (c.nombre || "").substring(0, 48) + "…" : (c.nombre || "");
       s.addText(nombre, { x: x + 0.1, y: y + 0.48, w: cardW - 0.2, h: 0.6, fontSize: 10.5, bold: true, color: DARK, fontFace: "DM Sans", align: "center", wrap: true });
 
-      s.addShape(pres.shapes.RECTANGLE, { x: x + 0.35, y: y + 1.2, w: cardW - 0.7, h: 0.9, fill: { color: accentColor }, line: { color: accentColor } });
-      s.addText(c.apertura || "", { x: x + 0.35, y: y + 1.2, w: cardW - 0.7, h: 0.9, fontSize: 32, bold: true, color: WHITE, fontFace: "Trebuchet MS", align: "center", valign: "middle" });
-      s.addText("apertura", { x: x + 0.35, y: y + 2.12, w: cardW - 0.7, h: 0.22, fontSize: 9, color: accentColor, fontFace: "DM Sans", align: "center" });
+      // Placeholder para captura de pantalla
+      s.addShape(pres.shapes.RECTANGLE, { x: x + 0.12, y: y + 1.1, w: cardW - 0.24, h: 1.55,
+        fill: { color: "F5F5F5" }, line: { color: "CCCCCC", width: 0.5, dashType: "dash" } });
+      s.addText("📷  Insertar captura", { x: x + 0.12, y: y + 1.1, w: cardW - 0.24, h: 1.55,
+        fontSize: 9, color: "AAAAAA", fontFace: "DM Sans", align: "center", valign: "middle" });
 
-      [{ lbl: "Envíos", val: c.envios || "—" }, { lbl: "CTOR", val: c.ctor || "—" }, { lbl: "Bajas", val: c.bajas || "—" }]
+      [{ lbl: "Ingresos", val: c.ingresos || "—" }, { lbl: "Apertura", val: c.apertura || "—" }, { lbl: "Envíos", val: c.envios || "—" }]
         .forEach((d, di) => {
-          const dy = y + 2.45 + di * 0.38;
+          const dy = y + 2.72 + di * 0.35;
           s.addShape(pres.shapes.RECTANGLE, { x: x + 0.15, y: dy, w: cardW - 0.3, h: 0.33, fill: { color: "F8F4F0" }, line: { color: "EEE8E0", width: 0.3 } });
           s.addText(d.lbl, { x: x + 0.22, y: dy + 0.05, w: 1.0,         h: 0.24, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
           s.addText(d.val, { x: x + 1.2,  y: dy + 0.05, w: cardW - 1.4, h: 0.24, fontSize: 9, bold: true, color: DARK, fontFace: "DM Sans", align: "right" });
