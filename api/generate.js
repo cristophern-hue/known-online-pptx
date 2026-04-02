@@ -61,8 +61,14 @@ async function generatePptx(DATA) {
   };
   const fmtMoneyCompact = val => {
     const n = parseNum(val);
-    if (n >= 1_000_000) return `$${Math.round(n / 1_000_000)} M`;
-    if (n >= 1_000)     return `$${Math.round(n / 1_000)} K`;
+    if (n >= 1_000_000) {
+      const m = n / 1_000_000;
+      return `$${m < 10 ? m.toFixed(1).replace(".", ",") : Math.round(m)} M`;
+    }
+    if (n >= 1_000) {
+      const k = n / 1_000;
+      return `$${k < 10 ? k.toFixed(1).replace(".", ",") : Math.round(k)} K`;
+    }
     return val || "";
   };
   const fmtMoneyNoDecimals = val => {
@@ -498,7 +504,7 @@ async function generatePptx(DATA) {
   ];
   if (isChaide) {
     const roasKpi = googleKPIs.find(k => k.label === "ROAS");
-    if (roasKpi) { roasKpi.prev = "N/D"; roasKpi.delta = ""; }
+    if (roasKpi) { roasKpi.prev = "N/D"; roasKpi.delta = "N/D"; roasKpi.noCompare = true; }
   }
   googleKPIs.forEach((k, i) => {
     const col = i % 3, row = Math.floor(i / 3);
@@ -507,8 +513,10 @@ async function generatePptx(DATA) {
     s4.addText(k.label, { x: x + 0.15, y: y + 0.12, w: 2.5, h: 0.28, fontSize: 11, color: GRAY_TEXT, fontFace: "DM Sans" });
     s4.addText(k.val,   { x: x + 0.15, y: y + 0.38, w: 2.5, h: 0.5,  fontSize: 24, bold: true, color: DARK, fontFace: "Trebuchet MS" });
     s4.addText(`${DATA.PERIODO_ANTERIOR_LABEL ? DATA.PERIODO_ANTERIOR_LABEL.split(" ")[0] : "Ant."}: ${k.prev}`, { x: x + 0.15, y: y + 0.88, w: 1.6, h: 0.25, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
-    s4.addShape(pres.shapes.RECTANGLE, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fill: { color: k.good ? GREEN_BG : RED_BG }, line: { color: k.good ? GREEN_BG : RED_BG } });
-    s4.addText(k.delta, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fontSize: 10, bold: true, color: k.good ? GREEN : RED, fontFace: "DM Sans", align: "center" });
+    const badgeBg  = k.noCompare ? "E8E8E8" : (k.good ? GREEN_BG : RED_BG);
+    const badgeTxt = k.noCompare ? GRAY_TEXT : (k.good ? GREEN : RED);
+    s4.addShape(pres.shapes.RECTANGLE, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fill: { color: badgeBg }, line: { color: badgeBg } });
+    s4.addText(k.delta, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fontSize: 10, bold: true, color: badgeTxt, fontFace: "DM Sans", align: "center" });
   });
 
   if (isChaide) {
