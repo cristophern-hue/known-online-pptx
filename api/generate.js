@@ -61,8 +61,14 @@ async function generatePptx(DATA) {
   };
   const fmtMoneyCompact = val => {
     const n = parseNum(val);
-    if (n >= 1_000_000) return `$${Math.round(n / 1_000_000)} M`;
-    if (n >= 1_000)     return `$${Math.round(n / 1_000)} K`;
+    if (n >= 1_000_000) {
+      const m = n / 1_000_000;
+      return `$${m < 10 ? m.toFixed(1).replace(".", ",") : Math.round(m)} M`;
+    }
+    if (n >= 1_000) {
+      const k = n / 1_000;
+      return `$${k < 10 ? k.toFixed(1).replace(".", ",") : Math.round(k)} K`;
+    }
     return val || "";
   };
   const fmtMoneyNoDecimals = val => {
