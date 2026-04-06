@@ -105,6 +105,7 @@ async function generatePptx(DATA) {
     s2.addText(k.note,  { x, y: 2.5, w: 2.1, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
   });
 
+  if (isManar) s2.addText("* Leads = Registros (formularios) + Conversaciones iniciadas (WhatsApp)", { x: 0.4, y: 2.78, w: 9.2, h: 0.2, fontSize: 8, color: GRAY_TEXT, fontFace: "DM Sans", italic: true });
   s2.addText("Comparativa por plataforma", { x: 0.5, y: 2.95, w: 9, h: 0.35, fontSize: 13, bold: true, color: DARK, fontFace: "DM Sans" });
 
   // Meta block
