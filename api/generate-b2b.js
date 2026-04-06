@@ -76,6 +76,8 @@ async function generatePptx(DATA) {
   const _manarCPL = isManar && _manarLeadsTotal > 0
     ? fmtMoneyCompact(parseNum(DATA.META_COSTO) / _manarLeadsTotal)
     : "";
+  const _manarLeadConv = isManar ? parseNum(DATA.META_CONV_7D) : 0;
+  const _manarLeadForm = isManar ? Math.max(_manarLeadsTotal - _manarLeadConv, 0) : 0;
 
   // ── SLIDE 1 – COVER ───────────────────────────────────────────────────────
   buildSlide_Cover(pres, DATA);
@@ -300,9 +302,9 @@ async function generatePptx(DATA) {
 
 
   // ── SLIDE – COMPOSICIÓN DE LEADS (solo MANAR) ───────────────────────────
-  if (isManar && (parseNum(DATA.META_LEAD_FORM) > 0 || parseNum(DATA.META_CONV_7D) > 0)) {
-    const _leadForm  = parseNum(DATA.META_LEAD_FORM);
-    const _leadConv  = parseNum(DATA.META_CONV_7D);
+  if (isManar && (_manarLeadConv > 0 || _manarLeadForm > 0)) {
+    const _leadForm  = _manarLeadForm;
+    const _leadConv  = _manarLeadConv;
     const _leadTotal = _leadForm + _leadConv;
     const _pctForm   = _leadTotal > 0 ? (_leadForm / _leadTotal * 100) : 0;
     const _pctConv   = _leadTotal > 0 ? (_leadConv / _leadTotal * 100) : 0;
@@ -588,7 +590,7 @@ async function generatePptx(DATA) {
       ...(Array.isArray(DATA.FUNNEL_ROWS) ? DATA.FUNNEL_ROWS : []),
       {
         mes:         DATA.PERIODO_ACTUAL_LABEL || "",
-        leads:       parseNum(DATA.META_LEAD_FORM) > 0 ? String(parseNum(DATA.META_LEAD_FORM)) : (DATA.META_LEADS || "—"),
+        leads:       _manarLeadForm > 0 ? String(_manarLeadForm) : (DATA.META_LEADS || "—"),
         inversion:   DATA.META_COSTO           || "—",
         calificados: "—",
         cierres:     "—",
