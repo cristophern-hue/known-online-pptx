@@ -281,8 +281,8 @@ async function generatePptx(DATA) {
     { label: "Clicks",      val: DATA.META_CLICKS       || "", prev: DATA.META_CLICKS_PREV       || "", delta: DATA.META_CLICKS_DELTA       || "", up: DATA.META_CLICKS_DELTA_UP       === true, warn: false },
     { label: "Impresiones", val: DATA.META_IMPRESIONES  || "", prev: DATA.META_IMPRESIONES_PREV  || "", delta: DATA.META_IMPRESIONES_DELTA  || "", up: DATA.META_IMPRESIONES_DELTA_UP  === true, warn: false },
     { label: "CTR",         val: DATA.META_CTR          || "", prev: DATA.META_CTR_PREV          || "", delta: DATA.META_CTR_DELTA          || "", up: DATA.META_CTR_DELTA_UP          === true, warn: false },
-    { label: "Leads",       val: DATA.META_LEADS        || "", prev: DATA.META_LEADS_PREV        || "", delta: DATA.META_LEADS_DELTA        || "", up: DATA.META_LEADS_DELTA_UP        === true, warn: false },
-    { label: "CPL",         val: DATA.META_CPL          || "", prev: DATA.META_CPL_PREV          || "", delta: DATA.META_CPL_DELTA          || "", up: DATA.META_CPL_DELTA_UP          === true, warn: false },
+    { label: "Leads",       val: isManar ? String(_manarLeadsTotal) : DATA.META_LEADS || "", prev: DATA.META_LEADS_PREV || "", delta: DATA.META_LEADS_DELTA || "", up: DATA.META_LEADS_DELTA_UP === true, warn: false },
+    { label: "CPL",         val: isManar ? fmtMoneyCompact(parseNum(DATA.META_COSTO) / (_manarLeadsTotal || 1)) : DATA.META_CPL || "", prev: DATA.META_CPL_PREV || "", delta: DATA.META_CPL_DELTA || "", up: DATA.META_CPL_DELTA_UP === true, warn: false },
   ];
   metaKPIs.forEach((k, i) => {
     const col = i % 3, row = Math.floor(i / 3);
