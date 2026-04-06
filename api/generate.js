@@ -170,7 +170,9 @@ async function generatePptx(DATA) {
 
   const isChaide = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("chaide");
 
-  const _invA  = parseNum(DATA.INVERSION_TOTAL), _invP = parseNum(DATA.INVERSION_PREV);
+  const _invA  = parseNum(DATA.INVERSION_TOTAL);
+  const _invPcalc = parseNum(DATA.META_COSTO_PREV) + parseNum(DATA.GOOGLE_COSTO_PREV) + parseNum(DATA.ATIKA_PINTEREST_INV_PREV);
+  const _invP  = _invPcalc > 0 ? _invPcalc : parseNum(DATA.INVERSION_PREV);
   const _revA  = parseNum(DATA.GA4_INGRESOS),    _revP = parseNum(DATA.GA4_INGRESOS_PREV);
   const _roasA = _invA > 0 ? _revA / _invA : 0;
   const _roasP = _invP > 0 ? _revP / _invP : 0;
