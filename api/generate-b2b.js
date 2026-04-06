@@ -299,6 +299,55 @@ async function generatePptx(DATA) {
   });
 
 
+  // ── SLIDE – COMPOSICIÓN DE LEADS (solo MANAR) ───────────────────────────
+  if (isManar && (parseNum(DATA.META_LEAD_FORM) > 0 || parseNum(DATA.META_CONV_7D) > 0)) {
+    const _leadForm  = parseNum(DATA.META_LEAD_FORM);
+    const _leadConv  = parseNum(DATA.META_CONV_7D);
+    const _leadTotal = _leadForm + _leadConv;
+    const _pctForm   = _leadTotal > 0 ? (_leadForm / _leadTotal * 100) : 0;
+    const _pctConv   = _leadTotal > 0 ? (_leadConv / _leadTotal * 100) : 0;
+    const barX = 0.5, barW = 9.0, barY = 2.18, barH = 0.55;
+    const barFormW = Math.max(barW * (_pctForm / 100), 0.01);
+
+    let sComp = pres.addSlide();
+    sComp.background = { color: WHITE };
+    sComp.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 1.08, fill: { color: ORANGE }, line: { color: ORANGE } });
+    sComp.addText("Composición de Leads", { x: 0.5, y: 0.15, w: 7, h: 0.52, fontSize: 28, bold: true, color: WHITE, fontFace: "Trebuchet MS" });
+    sComp.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  Meta Ads`, { x: 0.5, y: 0.68, w: 7, h: 0.3, fontSize: 13, color: "FFD4B8", fontFace: "DM Sans" });
+
+    // Total
+    sComp.addText("Total leads", { x: 0, y: 1.18, w: 10, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
+    sComp.addText(String(_leadTotal), { x: 0, y: 1.45, w: 10, h: 0.65, fontSize: 48, bold: true, color: DARK, fontFace: "Trebuchet MS", align: "center" });
+
+    // Barra apilada
+    sComp.addShape(pres.shapes.RECTANGLE, { x: barX,             y: barY, w: barFormW,          h: barH, fill: { color: ORANGE }, line: { color: ORANGE } });
+    sComp.addShape(pres.shapes.RECTANGLE, { x: barX + barFormW,  y: barY, w: barW - barFormW,   h: barH, fill: { color: DARK },   line: { color: DARK   } });
+    if (_pctForm > 5) sComp.addText(`${_pctForm.toFixed(0)}%`, { x: barX,            y: barY, w: barFormW,        h: barH, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+    if (_pctConv > 5) sComp.addText(`${_pctConv.toFixed(0)}%`, { x: barX + barFormW, y: barY, w: barW - barFormW, h: barH, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+
+    // Leyenda
+    sComp.addShape(pres.shapes.RECTANGLE, { x: barX,       y: barY + barH + 0.1, w: 0.18, h: 0.16, fill: { color: ORANGE }, line: { color: ORANGE } });
+    sComp.addText("Leads / Registros",       { x: barX + 0.24, y: barY + barH + 0.08, w: 2.8, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    sComp.addShape(pres.shapes.RECTANGLE, { x: barX + 3.2, y: barY + barH + 0.1, w: 0.18, h: 0.16, fill: { color: DARK },   line: { color: DARK   } });
+    sComp.addText("Conversaciones iniciadas", { x: barX + 3.44, y: barY + barH + 0.08, w: 3.0, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    // Cards
+    const cardY = 3.1;
+    [
+      { label: "Leads / Registros", sub: "Formularios y clicks de WhatsApp", val: _leadForm, pct: _pctForm, color: ORANGE, bg: "FFF4EC" },
+      { label: "Conversaciones iniciadas", sub: "Mensajes directos (ventana 7 días)", val: _leadConv, pct: _pctConv, color: DARK,   bg: LIGHT_BG },
+    ].forEach((c, i) => {
+      const cx = 0.5 + i * 4.75;
+      sComp.addShape(pres.shapes.RECTANGLE, { x: cx, y: cardY, w: 4.3, h: 2.15, fill: { color: c.bg }, line: { color: "E8E0D8", width: 0.5 } });
+      sComp.addShape(pres.shapes.RECTANGLE, { x: cx, y: cardY, w: 4.3, h: 0.06, fill: { color: c.color }, line: { color: c.color } });
+      sComp.addText(c.label, { x: cx + 0.2, y: cardY + 0.15, w: 3.9, h: 0.35, fontSize: 13, bold: true, color: DARK,      fontFace: "DM Sans" });
+      sComp.addText(c.sub,   { x: cx + 0.2, y: cardY + 0.48, w: 3.9, h: 0.28, fontSize: 9,             color: GRAY_TEXT, fontFace: "DM Sans" });
+      sComp.addText(String(c.val), { x: cx + 0.2, y: cardY + 0.78, w: 2.3, h: 0.72, fontSize: 44, bold: true, color: c.color, fontFace: "Trebuchet MS" });
+      sComp.addText(`${c.pct.toFixed(1).replace(".", ",")}%`, { x: cx + 2.5, y: cardY + 0.88, w: 1.6, h: 0.52, fontSize: 24, bold: true, color: c.color, fontFace: "Trebuchet MS", align: "right" });
+      sComp.addText("del total", { x: cx + 2.5, y: cardY + 1.38, w: 1.6, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", align: "right" });
+    });
+  }
+
   // ── SLIDE 4 – GOOGLE ADS DETALLE (condicional) ───────────────────────────
   if (hasGoogle) {
     let s4 = pres.addSlide();
@@ -539,7 +588,7 @@ async function generatePptx(DATA) {
       ...(Array.isArray(DATA.FUNNEL_ROWS) ? DATA.FUNNEL_ROWS : []),
       {
         mes:         DATA.PERIODO_ACTUAL_LABEL || "",
-        leads:       _manarLeadsTotal > 0 ? String(_manarLeadsTotal) : (DATA.META_LEADS || "—"),
+        leads:       parseNum(DATA.META_LEAD_FORM) > 0 ? String(parseNum(DATA.META_LEAD_FORM)) : (DATA.META_LEADS || "—"),
         inversion:   DATA.META_COSTO           || "—",
         calificados: "—",
         cierres:     "—",
