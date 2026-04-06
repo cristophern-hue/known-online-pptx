@@ -587,7 +587,7 @@ async function generatePptx(DATA) {
   // ── SLIDE – RESULTADOS COMERCIALES (solo MANAR, tabla unificada) ────────
   if (isManar) {
     const fnRowH = 0.42, fnY0 = 1.15, fnX0 = 0.35;
-    const fnColW  = [1.4, 0.95, 0.85, 0.85, 0.85, 1.4, 1.2, 0.85];
+    const fnColW  = [1.4, 0.95, 0.85, 0.85, 0.85, 1.4, 1.2, 1.2];
     const fnHdrs  = ["Mes", "Registros", "Conv.", "Total", "Cierres", "Inversión", "CPL", "ROAS"];
     const fnAlgn  = ["left", "right", "right", "right", "right", "right", "right", "right"];
     const fnTotalW = fnColW.reduce((s, w) => s + w, 0);
