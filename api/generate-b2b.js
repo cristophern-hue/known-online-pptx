@@ -85,8 +85,8 @@ async function generatePptx(DATA) {
 
   const kpis = [
     { label: "Inversión total", val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: DATA.INVERSION_DELTA   || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.INVERSION_PREV   || ""}`, up: DATA.INVERSION_DELTA_UP   === true },
-    { label: "Leads totales",   val: isManar ? String(_manarLeadsTotal) : DATA.LEADS_TOTAL || "", delta: DATA.LEADS_DELTA || (isManar ? DATA.META_LEADS_DELTA || "" : ""), note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.LEADS_PREV || (isManar ? DATA.META_LEADS_PREV || "" : "")}`, up: DATA.LEADS_DELTA_UP === true || (isManar && DATA.META_LEADS_DELTA_UP === true) },
-    { label: "CPL promedio",    val: isManar ? DATA.META_CPL || "" : DATA.CPL_TOTAL || "", delta: DATA.CPL_DELTA || (isManar ? DATA.META_CPL_DELTA || "" : ""), note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CPL_PREV || (isManar ? DATA.META_CPL_PREV || "" : "")}`, up: DATA.CPL_DELTA_UP === true || (isManar && DATA.META_CPL_DELTA_UP === true) },
+    { label: "Leads totales",   val: isManar ? String(_manarLeadsTotal) : DATA.LEADS_TOTAL || "", delta: isManar ? DATA.META_LEADS_DELTA || "" : DATA.LEADS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${isManar ? DATA.META_LEADS_PREV || "" : DATA.LEADS_PREV || ""}`, up: isManar ? DATA.META_LEADS_DELTA_UP === true : DATA.LEADS_DELTA_UP === true },
+    { label: "CPL promedio",    val: isManar ? DATA.META_CPL || "" : DATA.CPL_TOTAL || "", delta: isManar ? DATA.META_CPL_DELTA || "" : DATA.CPL_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${isManar ? DATA.META_CPL_PREV || "" : DATA.CPL_PREV || ""}`, up: isManar ? DATA.META_CPL_DELTA_UP === true : DATA.CPL_DELTA_UP === true },
     { label: "Clicks (todos)",   val: DATA.CLICKS_TOTAL || "",               delta: DATA.CLICKS_DELTA      || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CLICKS_PREV      || ""}`, up: DATA.CLICKS_DELTA_UP      === true },
   ];
   kpis.forEach((k, i) => {
@@ -281,8 +281,8 @@ async function generatePptx(DATA) {
     { label: "Clicks",      val: DATA.META_CLICKS       || "", prev: DATA.META_CLICKS_PREV       || "", delta: DATA.META_CLICKS_DELTA       || "", up: DATA.META_CLICKS_DELTA_UP       === true, warn: false },
     { label: "Impresiones", val: DATA.META_IMPRESIONES  || "", prev: DATA.META_IMPRESIONES_PREV  || "", delta: DATA.META_IMPRESIONES_DELTA  || "", up: DATA.META_IMPRESIONES_DELTA_UP  === true, warn: false },
     { label: "CTR",         val: DATA.META_CTR          || "", prev: DATA.META_CTR_PREV          || "", delta: DATA.META_CTR_DELTA          || "", up: DATA.META_CTR_DELTA_UP          === true, warn: false },
-    { label: "Leads",       val: DATA.META_LEADS        || "", prev: DATA.META_LEADS_PREV        || "", delta: DATA.META_LEADS_DELTA        || "", up: DATA.META_LEADS_DELTA_UP        === true, warn: false },
-    { label: "CPL",         val: DATA.META_CPL          || "", prev: DATA.META_CPL_PREV          || "", delta: DATA.META_CPL_DELTA          || "", up: DATA.META_CPL_DELTA_UP          === true, warn: false },
+    { label: "Leads",       val: isManar ? String(_manarLeadsTotal) : DATA.META_LEADS || "", prev: DATA.META_LEADS_PREV || "", delta: DATA.META_LEADS_DELTA || "", up: DATA.META_LEADS_DELTA_UP === true, warn: false },
+    { label: "CPL",         val: isManar ? fmtMoneyCompact(parseNum(DATA.META_COSTO) / (_manarLeadsTotal || 1)) : DATA.META_CPL || "", prev: DATA.META_CPL_PREV || "", delta: DATA.META_CPL_DELTA || "", up: DATA.META_CPL_DELTA_UP === true, warn: false },
   ];
   metaKPIs.forEach((k, i) => {
     const col = i % 3, row = Math.floor(i / 3);
@@ -378,7 +378,7 @@ async function generatePptx(DATA) {
 
 
   // ── SLIDE(S) – CONJUNTOS DE ANUNCIOS (paginado, todos los registros) ────────
-  if (Array.isArray(DATA.META_ADSETS) && DATA.META_ADSETS.length > 0) {
+  if (!isManar && Array.isArray(DATA.META_ADSETS) && DATA.META_ADSETS.length > 0) {
     const asColW = [3.2, 0.85, 1.0, 1.25, 0.9, 0.88, 0.94];
     const asHdrs = ["Conjunto de anuncios", "Leads", "CPL", "Inversión", "Clicks", "CPC", "Alcance"];
     const asW    = asColW.reduce((s, w) => s + w, 0);
