@@ -99,7 +99,7 @@ function buildSlide_Cover(pres, DATA) {
   s1.addShape(pres.shapes.RECTANGLE, { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fill: { color: ORANGE }, line: { color: ORANGE } });
   s1.addText(DATA.CLIENTE_NOMBRE || "CLIENTE", { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fontSize: 10, color: WHITE, bold: true, fontFace: "DM Sans", align: "center", margin: 0 });
 
-  s1.addText("Reporte\nPaid Media", { x: 0.45, y: 1.95, w: 7, h: 1.5, fontSize: 52, color: WHITE, bold: true, fontFace: "Trebuchet MS", valign: "top" });
+  s1.addText("Reporte\nPaid Media", { x: 0.45, y: 1.95, w: 7, h: 1.5, fontSize: 52, color: WHITE, bold: true, fontFace: "DM Sans", valign: "top" });
   s1.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs. ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.45, y: 3.55, w: 7, h: 0.45, fontSize: 18, color: ORANGE2, fontFace: "DM Sans" });
 
   if (DATA.TIPO_CAMBIO_USADO) {
@@ -115,7 +115,7 @@ function buildSlide_Recommendations(pres, DATA) {
   s.background = { color: DARK };
   s.addShape(pres.shapes.OVAL, { x:  7.5, y:  3.5, w: 3.5, h: 3.5, fill: { color: ORANGE, transparency: 92 }, line: { color: ORANGE, transparency: 92 } });
   s.addShape(pres.shapes.OVAL, { x: -1.0, y: -0.5, w: 2.5, h: 2.5, fill: { color: ORANGE, transparency: 88 }, line: { color: ORANGE, transparency: 88 } });
-  s.addText("Recomendaciones", { x: 0.5, y: 0.22, w: 9, h: 0.55, fontSize: 28, bold: true, color: WHITE, fontFace: "Trebuchet MS" });
+  s.addText("Recomendaciones", { x: 0.5, y: 0.22, w: 9, h: 0.55, fontSize: 28, bold: true, color: WHITE, fontFace: "DM Sans" });
   s.addText("Acciones prioritarias para optimizar la performance", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: "FF912D", fontFace: "DM Sans" });
 
   const _recs = Array.isArray(DATA.RECOMENDACIONES)
@@ -139,7 +139,7 @@ function buildSlide_Close(pres, DATA) {
   s.addShape(pres.shapes.OVAL, { x: 0.5,  y:  0.5, w: 0.55, h: 0.55, fill: { color: WHITE  }, line: { color: WHITE  } });
   s.addShape(pres.shapes.OVAL, { x: 0.65, y: 0.65, w: 0.28, h: 0.28, fill: { color: ORANGE }, line: { color: ORANGE } });
   s.addText("Known Online", { x: 1.2, y: 0.52, w: 4, h: 0.45, fontSize: 16, bold: true, color: WHITE, fontFace: "DM Sans", margin: 0 });
-  s.addText("¡Muchas gracias!", { x: 0.5, y: 1.6, w: 9, h: 1.4, fontSize: 56, bold: true, color: WHITE, fontFace: "Trebuchet MS", align: "center" });
+  s.addText("¡Muchas gracias!", { x: 0.5, y: 1.6, w: 9, h: 1.4, fontSize: 56, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
   s.addText("Logramos tu transformación digital", { x: 0.5, y: 3.1, w: 9, h: 0.45, fontSize: 18, color: "FFD4B8", fontFace: "DM Sans", align: "center", italic: true });
   s.addShape(pres.shapes.RECTANGLE, { x: 3.5, y: 3.7, w: 3.0, h: 0.04, fill: { color: WHITE, transparency: 60 }, line: { color: WHITE, transparency: 60 } });
   s.addText(DATA.WEB      || "www.knownonline.com",   { x: 0.5, y: 3.9, w: 9, h: 0.35, fontSize: 14, color: WHITE,    fontFace: "DM Sans", align: "center", bold: true });

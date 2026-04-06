@@ -85,7 +85,7 @@ async function generatePptx(DATA) {
   // ── SLIDE 2 – RESUMEN EJECUTIVO (solo con 2 plataformas) ─────────────────
   if (hasGoogle) { let s2 = pres.addSlide();
   s2.background = { color: WHITE };
-  s2.addText("Resumen Ejecutivo", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+  s2.addText("Resumen Ejecutivo", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
   s2.addText(`Inversión · Leads · CPL  ·  Meta Ads${hasGoogle ? " + Google Ads" : ""}`, { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
   const kpis = [
@@ -99,7 +99,7 @@ async function generatePptx(DATA) {
     s2.addShape(pres.shapes.RECTANGLE, { x, y: 1.2, w: 2.1, h: 1.55, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
     s2.addShape(pres.shapes.RECTANGLE, { x, y: 1.2, w: 2.1, h: 0.07, fill: { color: ORANGE }, line: { color: ORANGE } });
     s2.addText(k.label, { x, y: 1.32, w: 2.1, h: 0.3, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
-    s2.addText(k.val,   { x, y: 1.62, w: 2.1, h: 0.52, fontSize: 26, bold: true, color: DARK, fontFace: "Trebuchet MS", align: "center" });
+    s2.addText(k.val,   { x, y: 1.62, w: 2.1, h: 0.52, fontSize: 26, bold: true, color: DARK, fontFace: "DM Sans", align: "center" });
     s2.addShape(pres.shapes.RECTANGLE, { x: x + 0.6, y: 2.17, w: 0.9, h: 0.27, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
     s2.addText(k.delta, { x: x + 0.6, y: 2.17, w: 0.9, h: 0.27, fontSize: 11, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
     s2.addText(k.note,  { x, y: 2.5, w: 2.1, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
@@ -165,7 +165,7 @@ async function generatePptx(DATA) {
 
     let sVtex = pres.addSlide();
     sVtex.background = { color: WHITE };
-    sVtex.addText("Facturación & ROAS", { x: 0.5, y: 0.2, w: 8, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sVtex.addText("Facturación & ROAS", { x: 0.5, y: 0.2, w: 8, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
     sVtex.addText(`Ecommerce  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 8, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
     const vtexKPIs = [
@@ -183,7 +183,7 @@ async function generatePptx(DATA) {
       sVtex.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.82, w: 2.32, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
       sVtex.addText(DATA.PERIODO_ACTUAL_LABEL || "", { x: x + 0.14, y: y + 0.92, w: 2.0, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
       const fs = String(k.val).length > 12 ? 18 : String(k.val).length > 9 ? 22 : 28;
-      sVtex.addText(k.val, { x: x + 0.14, y: y + 1.12, w: 2.32, h: 0.65, fontSize: fs, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+      sVtex.addText(k.val, { x: x + 0.14, y: y + 1.12, w: 2.32, h: 0.65, fontSize: fs, bold: true, color: DARK, fontFace: "DM Sans" });
       sVtex.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 1.82, w: 2.32, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
       sVtex.addText(`${DATA.PERIODO_ANTERIOR_LABEL || "Período ant."}: ${k.prev}`, { x: x + 0.14, y: y + 1.92, w: 2.32, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
       sVtex.addShape(pres.shapes.RECTANGLE, { x: x + 0.5, y: y + 2.25, w: 1.6, h: 0.38, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
@@ -197,7 +197,7 @@ async function generatePptx(DATA) {
     smc.background = { color: WHITE };
 
     // Header
-    smc.addText("Campañas ", { x: 1.0, y: 0.15, w: 8.5, h: 0.6, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS",
+    smc.addText("Campañas ", { x: 1.0, y: 0.15, w: 8.5, h: 0.6, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans",
       paraSpaceAfter: 0,
       objects: [
         { text: "Campañas ", options: { bold: true, color: DARK } },
@@ -206,8 +206,8 @@ async function generatePptx(DATA) {
     });
     // Rewrite with two text runs
     smc.addText([
-      { text: "Campañas ", options: { bold: true, color: DARK, fontSize: 26, fontFace: "Trebuchet MS" } },
-      { text: `Facebook Ads – ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: ORANGE, fontSize: 26, fontFace: "Trebuchet MS" } },
+      { text: "Campañas ", options: { bold: true, color: DARK, fontSize: 26, fontFace: "DM Sans" } },
+      { text: `Facebook Ads – ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: ORANGE, fontSize: 26, fontFace: "DM Sans" } },
     ], { x: 1.0, y: 0.15, w: 8.8, h: 0.6 });
 
     // Orange circle icon placeholder
@@ -277,7 +277,7 @@ async function generatePptx(DATA) {
   let s3 = pres.addSlide();
   s3.background = { color: WHITE };
   s3.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 1.08, fill: { color: ORANGE }, line: { color: ORANGE } });
-  s3.addText("Meta Ads", { x: 0.5, y: 0.22, w: 6, h: 0.52, fontSize: 28, bold: true, color: WHITE, fontFace: "Trebuchet MS" });
+  s3.addText("Meta Ads", { x: 0.5, y: 0.22, w: 6, h: 0.52, fontSize: 28, bold: true, color: WHITE, fontFace: "DM Sans" });
   s3.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.72, w: 6, h: 0.3, fontSize: 13, color: "FFD4B8", fontFace: "DM Sans" });
   s3.addShape(pres.shapes.RECTANGLE, { x: 7.2, y: 0.35, w: 2.3, h: 0.5, fill: { color: WHITE, transparency: 20 }, line: { color: WHITE, transparency: 50 } });
   s3.addText(`Inversión: ${DATA.META_COSTO || ""}`, { x: 7.2, y: 0.35, w: 2.3, h: 0.5, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
@@ -295,7 +295,7 @@ async function generatePptx(DATA) {
     const x = 0.4 + col * 3.1, y = 1.3 + row * 1.6;
     s3.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.8, h: 1.45, fill: { color: k.warn ? "FFF5F5" : LIGHT_BG }, line: { color: k.warn ? "F7C1C1" : "F0E8E0", width: 0.5 } });
     s3.addText(k.label, { x: x + 0.15, y: y + 0.12, w: 2.5, h: 0.28, fontSize: 11, color: GRAY_TEXT, fontFace: "DM Sans" });
-    s3.addText(k.val,   { x: x + 0.15, y: y + 0.38, w: 2.5, h: 0.5,  fontSize: 24, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s3.addText(k.val,   { x: x + 0.15, y: y + 0.38, w: 2.5, h: 0.5,  fontSize: 24, bold: true, color: DARK, fontFace: "DM Sans" });
     s3.addText(`${DATA.PERIODO_ANTERIOR_LABEL ? DATA.PERIODO_ANTERIOR_LABEL.split(" ")[0] : "Ant."}: ${k.prev}`, { x: x + 0.15, y: y + 0.88, w: 1.6, h: 0.25, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
     s3.addShape(pres.shapes.RECTANGLE, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
     s3.addText(k.delta, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fontSize: 10, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
@@ -315,12 +315,12 @@ async function generatePptx(DATA) {
     let sComp = pres.addSlide();
     sComp.background = { color: WHITE };
     sComp.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 1.08, fill: { color: ORANGE }, line: { color: ORANGE } });
-    sComp.addText("Composición de Leads", { x: 0.5, y: 0.15, w: 7, h: 0.52, fontSize: 28, bold: true, color: WHITE, fontFace: "Trebuchet MS" });
+    sComp.addText("Composición de Leads", { x: 0.5, y: 0.15, w: 7, h: 0.52, fontSize: 28, bold: true, color: WHITE, fontFace: "DM Sans" });
     sComp.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  Meta Ads`, { x: 0.5, y: 0.68, w: 7, h: 0.3, fontSize: 13, color: "FFD4B8", fontFace: "DM Sans" });
 
     // Total
     sComp.addText("Total leads", { x: 0, y: 1.18, w: 10, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
-    sComp.addText(String(_leadTotal), { x: 0, y: 1.45, w: 10, h: 0.65, fontSize: 48, bold: true, color: DARK, fontFace: "Trebuchet MS", align: "center" });
+    sComp.addText(String(_leadTotal), { x: 0, y: 1.45, w: 10, h: 0.65, fontSize: 48, bold: true, color: DARK, fontFace: "DM Sans", align: "center" });
 
     // Barra apilada
     sComp.addShape(pres.shapes.RECTANGLE, { x: barX,             y: barY, w: barFormW,          h: barH, fill: { color: ORANGE }, line: { color: ORANGE } });
@@ -345,8 +345,8 @@ async function generatePptx(DATA) {
       sComp.addShape(pres.shapes.RECTANGLE, { x: cx, y: cardY, w: 4.3, h: 0.06, fill: { color: c.color }, line: { color: c.color } });
       sComp.addText(c.label, { x: cx + 0.2, y: cardY + 0.15, w: 3.9, h: 0.35, fontSize: 13, bold: true, color: DARK,      fontFace: "DM Sans" });
       sComp.addText(c.sub,   { x: cx + 0.2, y: cardY + 0.48, w: 3.9, h: 0.28, fontSize: 9,             color: GRAY_TEXT, fontFace: "DM Sans" });
-      sComp.addText(String(c.val), { x: cx + 0.2, y: cardY + 0.78, w: 2.3, h: 0.72, fontSize: 44, bold: true, color: c.color, fontFace: "Trebuchet MS" });
-      sComp.addText(`${c.pct.toFixed(1).replace(".", ",")}%`, { x: cx + 2.5, y: cardY + 0.88, w: 1.6, h: 0.52, fontSize: 24, bold: true, color: c.color, fontFace: "Trebuchet MS", align: "right" });
+      sComp.addText(String(c.val), { x: cx + 0.2, y: cardY + 0.78, w: 2.3, h: 0.72, fontSize: 44, bold: true, color: c.color, fontFace: "DM Sans" });
+      sComp.addText(`${c.pct.toFixed(1).replace(".", ",")}%`, { x: cx + 2.5, y: cardY + 0.88, w: 1.6, h: 0.52, fontSize: 24, bold: true, color: c.color, fontFace: "DM Sans", align: "right" });
       sComp.addText("del total", { x: cx + 2.5, y: cardY + 1.38, w: 1.6, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", align: "right" });
     });
   }
@@ -356,7 +356,7 @@ async function generatePptx(DATA) {
     let s4 = pres.addSlide();
     s4.background = { color: WHITE };
     s4.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 1.08, fill: { color: BLUE }, line: { color: BLUE } });
-    s4.addText("Google Ads", { x: 0.5, y: 0.22, w: 6, h: 0.52, fontSize: 28, bold: true, color: WHITE, fontFace: "Trebuchet MS" });
+    s4.addText("Google Ads", { x: 0.5, y: 0.22, w: 6, h: 0.52, fontSize: 28, bold: true, color: WHITE, fontFace: "DM Sans" });
     s4.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.72, w: 6, h: 0.3, fontSize: 13, color: "B5D4F4", fontFace: "DM Sans" });
     s4.addShape(pres.shapes.RECTANGLE, { x: 7.2, y: 0.35, w: 2.3, h: 0.5, fill: { color: WHITE, transparency: 20 }, line: { color: WHITE, transparency: 50 } });
     s4.addText(`Inversión: ${DATA.GOOGLE_COSTO || ""}`, { x: 7.2, y: 0.35, w: 2.3, h: 0.5, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans", align: "center" });
@@ -378,7 +378,7 @@ async function generatePptx(DATA) {
       const x = 0.4 + col * 3.1, y = 1.3 + row * 1.6;
       s4.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.8, h: 1.45, fill: { color: k.good ? LIGHT_BLUE : LIGHT_BG }, line: { color: k.good ? "B5D4F4" : "F0E8E0", width: 0.5 } });
       s4.addText(k.label, { x: x + 0.15, y: y + 0.12, w: 2.5, h: 0.28, fontSize: 11, color: GRAY_TEXT, fontFace: "DM Sans" });
-      s4.addText(k.val,   { x: x + 0.15, y: y + 0.38, w: 2.5, h: 0.5,  fontSize: 24, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+      s4.addText(k.val,   { x: x + 0.15, y: y + 0.38, w: 2.5, h: 0.5,  fontSize: 24, bold: true, color: DARK, fontFace: "DM Sans" });
       s4.addText(`${DATA.PERIODO_ANTERIOR_LABEL ? DATA.PERIODO_ANTERIOR_LABEL.split(" ")[0] : "Ant."}: ${k.prev}`, { x: x + 0.15, y: y + 0.88, w: 1.6, h: 0.25, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans" });
       s4.addShape(pres.shapes.RECTANGLE, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fill: { color: k.good ? GREEN_BG : RED_BG }, line: { color: k.good ? GREEN_BG : RED_BG } });
       s4.addText(k.delta, { x: x + 1.9, y: y + 0.88, w: 0.75, h: 0.25, fontSize: 10, bold: true, color: k.good ? GREEN : RED, fontFace: "DM Sans", align: "center" });
@@ -389,7 +389,7 @@ async function generatePptx(DATA) {
   // ── SLIDE 5 – TOP CAMPAÑAS POR CPL ───────────────────────────────────────
   let s5 = pres.addSlide();
   s5.background = { color: WHITE };
-  s5.addText("Top Campañas por CPL", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+  s5.addText("Top Campañas por CPL", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
   s5.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  ${hasGoogle ? "Google Ads + Meta Ads" : "Meta Ads"}`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
   // campaigns: array of { nombre, plataforma, costo, leads, cpl, nivel }
@@ -458,8 +458,8 @@ async function generatePptx(DATA) {
     const addAsHeader = (slide, pageNum) => {
       slide.background = { color: WHITE };
       slide.addText([
-        { text: "Conjuntos de Anuncios ", options: { bold: true, color: DARK,   fontSize: 26, fontFace: "Trebuchet MS" } },
-        { text: `Facebook Ads – ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: ORANGE, fontSize: 26, fontFace: "Trebuchet MS" } },
+        { text: "Conjuntos de Anuncios ", options: { bold: true, color: DARK,   fontSize: 26, fontFace: "DM Sans" } },
+        { text: `Facebook Ads – ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: ORANGE, fontSize: 26, fontFace: "DM Sans" } },
       ], { x: 1.0, y: 0.15, w: 8.0, h: 0.6 });
       slide.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: ORANGE }, line: { color: ORANGE } });
       slide.addText("f", { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fontSize: 18, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
@@ -526,7 +526,7 @@ async function generatePptx(DATA) {
 
     let s5b = pres.addSlide();
     s5b.background = { color: WHITE };
-    s5b.addText("Top Anuncios Meta por Leads", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s5b.addText("Top Anuncios Meta por Leads", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
     s5b.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  Ordenados por CPL`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
     const cardW = 2.8, cardH = 3.8, cardGap = 0.3;
@@ -616,7 +616,7 @@ async function generatePptx(DATA) {
 
     let sFunnel = pres.addSlide();
     sFunnel.background = { color: WHITE };
-    sFunnel.addText("Resultados Comerciales", { x: 0.5, y: 0.2, w: 9, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sFunnel.addText("Resultados Comerciales", { x: 0.5, y: 0.2, w: 9, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
     sFunnel.addText("Evolución mensual  ·  Registros · Conv. · Total · Cierres · Inversión · CPL · ROAS", { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
     sFunnel.addShape(pres.shapes.RECTANGLE, { x: fnX0, y: fnY0, w: fnTotalW, h: 0.4, fill: { color: DARK }, line: { color: DARK } });
@@ -639,7 +639,7 @@ async function generatePptx(DATA) {
           x: rx, y: ry + 0.08, w: fnColW[j], h: fnRowH - 0.15,
           fontSize: j === 0 ? 10 : 11, bold: isLast,
           color: isLast ? ORANGE : DARK,
-          fontFace: j === 0 ? "DM Sans" : "Trebuchet MS",
+          fontFace: "DM Sans",
           align: fnAlgn[j], valign: "middle",
         });
         rx += fnColW[j];
