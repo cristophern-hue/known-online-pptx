@@ -58,6 +58,7 @@ async function generatePptx(DATA) {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const parseNum = str => {
+    if (typeof str === "number") return str;
     const c = (str || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "");
     return parseFloat(c) || 0;
   };
@@ -66,8 +67,15 @@ async function generatePptx(DATA) {
     const n = parseNum(val);
     if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2).replace(".", ",")} M`;
     if (n >= 1_000)     return `$${(n / 1_000).toFixed(1).replace(".", ",")} K`;
-    return val || "";
+    return String(val || "");
   };
+  const isManar = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("manar");
+  const _manarLeadsTotal = isManar
+    ? (DATA.CAMPANAS || []).reduce((s, c) => s + parseNum(c.leads), 0)
+    : 0;
+  const _manarCPL = isManar && _manarLeadsTotal > 0
+    ? fmtMoneyCompact(parseNum(DATA.META_COSTO) / _manarLeadsTotal)
+    : "";
 
   // ── SLIDE 1 – COVER ───────────────────────────────────────────────────────
   buildSlide_Cover(pres, DATA);
@@ -86,7 +94,7 @@ async function generatePptx(DATA) {
   const kpis = [
     { label: "Inversión total", val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: DATA.INVERSION_DELTA   || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.INVERSION_PREV   || ""}`, up: DATA.INVERSION_DELTA_UP   === true },
     { label: "Leads totales",   val: isManar ? String(_manarLeadsTotal) : DATA.LEADS_TOTAL || "", delta: isManar ? DATA.META_LEADS_DELTA || "" : DATA.LEADS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${isManar ? DATA.META_LEADS_PREV || "" : DATA.LEADS_PREV || ""}`, up: isManar ? DATA.META_LEADS_DELTA_UP === true : DATA.LEADS_DELTA_UP === true },
-    { label: "CPL promedio",    val: isManar ? DATA.META_CPL || "" : DATA.CPL_TOTAL || "", delta: isManar ? DATA.META_CPL_DELTA || "" : DATA.CPL_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${isManar ? DATA.META_CPL_PREV || "" : DATA.CPL_PREV || ""}`, up: isManar ? DATA.META_CPL_DELTA_UP === true : DATA.CPL_DELTA_UP === true },
+    { label: "CPL promedio",    val: isManar ? _manarCPL : DATA.CPL_TOTAL || "", delta: isManar ? DATA.META_CPL_DELTA || "" : DATA.CPL_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${isManar ? DATA.META_CPL_PREV || "" : DATA.CPL_PREV || ""}`, up: isManar ? DATA.META_CPL_DELTA_UP === true : DATA.CPL_DELTA_UP === true },
     { label: "Clicks (todos)",   val: DATA.CLICKS_TOTAL || "",               delta: DATA.CLICKS_DELTA      || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CLICKS_PREV      || ""}`, up: DATA.CLICKS_DELTA_UP      === true },
   ];
   kpis.forEach((k, i) => {
@@ -109,8 +117,8 @@ async function generatePptx(DATA) {
   const metaStats = [
     ["Costo",  DATA.META_COSTO  || "", DATA.META_COSTO_DELTA  || "", DATA.META_COSTO_DELTA_UP  === true],
     ["Clicks", DATA.META_CLICKS || "", DATA.META_CLICKS_DELTA || "", DATA.META_CLICKS_DELTA_UP !== true],
-    ["CPL",    DATA.META_CPL    || "", DATA.META_CPL_DELTA    || "", DATA.META_CPL_DELTA_UP    === true],
-    ["Leads",  DATA.META_LEADS  || "", DATA.META_LEADS_DELTA  || "", DATA.META_LEADS_DELTA_UP  !== true],
+    ["CPL",    isManar ? _manarCPL : DATA.META_CPL || "", DATA.META_CPL_DELTA || "", DATA.META_CPL_DELTA_UP === true],
+    ["Leads",  isManar ? String(_manarLeadsTotal) : DATA.META_LEADS || "", DATA.META_LEADS_DELTA || "", DATA.META_LEADS_DELTA_UP !== true],
   ];
   metaStats.forEach(([lbl, val, delta, isDown], i) => {
     const col = i % 2, row = Math.floor(i / 2);
@@ -281,8 +289,8 @@ async function generatePptx(DATA) {
     { label: "Clicks",      val: DATA.META_CLICKS       || "", prev: DATA.META_CLICKS_PREV       || "", delta: DATA.META_CLICKS_DELTA       || "", up: DATA.META_CLICKS_DELTA_UP       === true, warn: false },
     { label: "Impresiones", val: DATA.META_IMPRESIONES  || "", prev: DATA.META_IMPRESIONES_PREV  || "", delta: DATA.META_IMPRESIONES_DELTA  || "", up: DATA.META_IMPRESIONES_DELTA_UP  === true, warn: false },
     { label: "CTR",         val: DATA.META_CTR          || "", prev: DATA.META_CTR_PREV          || "", delta: DATA.META_CTR_DELTA          || "", up: DATA.META_CTR_DELTA_UP          === true, warn: false },
-    { label: "Leads",       val: isManar ? String(_manarLeadsTotal) : DATA.META_LEADS || "", prev: DATA.META_LEADS_PREV || "", delta: DATA.META_LEADS_DELTA || "", up: DATA.META_LEADS_DELTA_UP === true, warn: false },
-    { label: "CPL",         val: isManar ? fmtMoneyCompact(parseNum(DATA.META_COSTO) / (_manarLeadsTotal || 1)) : DATA.META_CPL || "", prev: DATA.META_CPL_PREV || "", delta: DATA.META_CPL_DELTA || "", up: DATA.META_CPL_DELTA_UP === true, warn: false },
+    { label: "Leads", val: isManar ? String(_manarLeadsTotal) : DATA.META_LEADS || "", prev: DATA.META_LEADS_PREV || "", delta: parseNum(DATA.META_LEADS_PREV) > 0 ? DATA.META_LEADS_DELTA || "" : "", up: DATA.META_LEADS_DELTA_UP === true, warn: false },
+    { label: "CPL",   val: isManar ? _manarCPL : DATA.META_CPL || "", prev: DATA.META_CPL_PREV || "", delta: parseNum(DATA.META_CPL_PREV) > 0 ? DATA.META_CPL_DELTA || "" : "", up: DATA.META_CPL_DELTA_UP === true, warn: false },
   ];
   metaKPIs.forEach((k, i) => {
     const col = i % 3, row = Math.floor(i / 3);
@@ -536,7 +544,7 @@ async function generatePptx(DATA) {
       ...(Array.isArray(DATA.FUNNEL_ROWS) ? DATA.FUNNEL_ROWS : []),
       {
         mes:         DATA.PERIODO_ACTUAL_LABEL || "",
-        leads:       DATA.META_LEADS           || "—",
+        leads:       _manarLeadsTotal > 0 ? String(_manarLeadsTotal) : (DATA.META_LEADS || "—"),
         inversion:   DATA.META_COSTO           || "—",
         calificados: "—",
         cierres:     "—",
