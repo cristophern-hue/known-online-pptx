@@ -584,73 +584,66 @@ async function generatePptx(DATA) {
     });
   }
 
-  // ── SLIDES – RESULTADOS COMERCIALES (solo MANAR, dos tablas) ───────────
+  // ── SLIDE – RESULTADOS COMERCIALES (solo MANAR, tabla unificada) ────────
   if (isManar) {
     const fnRowH = 0.42, fnY0 = 1.15, fnX0 = 0.35;
-
-    const buildFunnelSlide = (title, subtitle, hdrs, colW, aligns, rows) => {
-      const totalW = colW.reduce((s, w) => s + w, 0);
-      const s = pres.addSlide();
-      s.background = { color: WHITE };
-      s.addText(title,    { x: 0.5, y: 0.2,  w: 9, h: 0.55, fontSize: 28, bold: true, color: DARK,      fontFace: "Trebuchet MS" });
-      s.addText(subtitle, { x: 0.5, y: 0.76, w: 9, h: 0.3,  fontSize: 13,             color: GRAY_TEXT, fontFace: "DM Sans" });
-      s.addShape(pres.shapes.RECTANGLE, { x: fnX0, y: fnY0, w: totalW, h: 0.4, fill: { color: DARK }, line: { color: DARK } });
-      let hx = fnX0 + 0.12;
-      hdrs.forEach((h, i) => {
-        s.addText(h, { x: hx, y: fnY0 + 0.02, w: colW[i], h: 0.36, fontSize: 10, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle", align: aligns[i] });
-        hx += colW[i];
-      });
-      rows.forEach((vals, i) => {
-        const ry     = fnY0 + 0.4 + i * fnRowH;
-        const isLast = i === rows.length - 1;
-        s.addShape(pres.shapes.RECTANGLE, { x: fnX0, y: ry, w: totalW, h: fnRowH - 0.03,
-          fill: { color: isLast ? "FFF4EE" : (i % 2 === 0 ? WHITE : LIGHT_BG) },
-          line: { color: isLast ? ORANGE : "EEEEEE", width: isLast ? 1 : 0.3 }
-        });
-        let rx = fnX0 + 0.12;
-        vals.forEach((v, j) => {
-          s.addText(v || "—", {
-            x: rx, y: ry + 0.08, w: colW[j], h: fnRowH - 0.15,
-            fontSize: j === 0 ? 10 : 11,
-            bold: isLast,
-            color: isLast ? ORANGE : DARK,
-            fontFace: j === 0 ? "DM Sans" : "Trebuchet MS",
-            align: aligns[j], valign: "middle",
-          });
-          rx += colW[j];
-        });
-      });
-    };
+    const fnColW  = [1.4, 0.95, 0.85, 0.85, 0.85, 1.4, 1.2, 0.85];
+    const fnHdrs  = ["Mes", "Registros", "Conv.", "Total", "Cierres", "Inversión", "CPL", "ROAS"];
+    const fnAlgn  = ["left", "right", "right", "right", "right", "right", "right", "right"];
+    const fnTotalW = fnColW.reduce((s, w) => s + w, 0);
 
     const historico = Array.isArray(DATA.FUNNEL_ROWS) ? DATA.FUNNEL_ROWS : [];
-
-    // — Slide 1: Registros —
-    const rowsReg = [
-      ...historico.map(r => [r.mes, r.leads, r.calificados, r.cierres, r.venta, r.inversion, r.roas]),
-      [DATA.PERIODO_ACTUAL_LABEL || "", _manarLeadForm > 0 ? String(_manarLeadForm) : "—", "—", "—", "—", DATA.META_COSTO || "—", "—"],
+    const funnelRows = [
+      ...historico.map(r => {
+        const reg  = r.leads  || r.registros || "—";
+        const conv = r.conv   || "—";
+        const tot  = parseNum(reg) + parseNum(conv) > 0
+          ? String(parseNum(reg) + parseNum(conv)) : (r.total || "—");
+        return [r.mes, reg, conv, tot, r.cierres || "—", r.inversion || "—", r.cpl || "—", r.roas || "—"];
+      }),
+      [
+        DATA.PERIODO_ACTUAL_LABEL || "",
+        _manarLeadForm > 0  ? String(_manarLeadForm)  : "—",
+        _manarLeadConv > 0  ? String(_manarLeadConv)  : "—",
+        _manarLeadsTotal > 0 ? String(_manarLeadsTotal) : "—",
+        "—",
+        DATA.META_COSTO     || "—",
+        _manarCPL           || "—",
+        DATA.META_ROAS      || "—",
+      ],
     ];
-    buildFunnelSlide(
-      "Resultados Comerciales · Registros",
-      "Evolución mensual  ·  Formularios · Calificados · Cierres · Venta · Inversión · ROAS",
-      ["Mes", "Registros", "Calificados", "Cierres", "Venta", "Inversión", "ROAS"],
-      [1.55, 1.1, 1.25, 1.0, 1.5, 1.5, 0.9],
-      ["left", "right", "right", "right", "right", "right", "right"],
-      rowsReg
-    );
 
-    // — Slide 2: Conversaciones iniciadas —
-    const rowsConv = [
-      ...historico.map(r => [r.mes, r.conv || "—", r.inversion]),
-      [DATA.PERIODO_ACTUAL_LABEL || "", _manarLeadConv > 0 ? String(_manarLeadConv) : "—", DATA.META_COSTO || "—"],
-    ];
-    buildFunnelSlide(
-      "Resultados Comerciales · Conversaciones",
-      "Evolución mensual  ·  Mensajes iniciados por WhatsApp · Inversión",
-      ["Mes", "Conv. iniciadas", "Inversión"],
-      [2.8, 3.2, 3.3],
-      ["left", "right", "right"],
-      rowsConv
-    );
+    let sFunnel = pres.addSlide();
+    sFunnel.background = { color: WHITE };
+    sFunnel.addText("Resultados Comerciales", { x: 0.5, y: 0.2, w: 9, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    sFunnel.addText("Evolución mensual  ·  Registros · Conv. · Total · Cierres · Inversión · CPL · ROAS", { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    sFunnel.addShape(pres.shapes.RECTANGLE, { x: fnX0, y: fnY0, w: fnTotalW, h: 0.4, fill: { color: DARK }, line: { color: DARK } });
+    let hx = fnX0 + 0.12;
+    fnHdrs.forEach((h, i) => {
+      sFunnel.addText(h, { x: hx, y: fnY0 + 0.02, w: fnColW[i], h: 0.36, fontSize: 10, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle", align: fnAlgn[i] });
+      hx += fnColW[i];
+    });
+
+    funnelRows.forEach((vals, i) => {
+      const ry     = fnY0 + 0.4 + i * fnRowH;
+      const isLast = i === funnelRows.length - 1;
+      sFunnel.addShape(pres.shapes.RECTANGLE, { x: fnX0, y: ry, w: fnTotalW, h: fnRowH - 0.03,
+        fill: { color: isLast ? "FFF4EE" : (i % 2 === 0 ? WHITE : LIGHT_BG) },
+        line: { color: isLast ? ORANGE : "EEEEEE", width: isLast ? 1 : 0.3 }
+      });
+      let rx = fnX0 + 0.12;
+      vals.forEach((v, j) => {
+        sFunnel.addText(v || "—", {
+          x: rx, y: ry + 0.08, w: fnColW[j], h: fnRowH - 0.15,
+          fontSize: j === 0 ? 10 : 11, bold: isLast,
+          color: isLast ? ORANGE : DARK,
+          fontFace: j === 0 ? "DM Sans" : "Trebuchet MS",
+          align: fnAlgn[j], valign: "middle",
+        });
+        rx += fnColW[j];
+      });
+    });
   }
 
   // ── SLIDE 6 – RECOMENDACIONES ─────────────────────────────────────────────
