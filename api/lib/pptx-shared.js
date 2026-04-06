@@ -106,8 +106,8 @@ function buildSlide_Cover(pres, DATA) {
 
   if (DATA.TIPO_CAMBIO_USADO) {
     const tcLabel = DATA.TIPO_CAMBIO_FALLBACK
-      ? `Inversión convertida a USD · TC ref: $${DATA.TIPO_CAMBIO_USADO.toLocaleString("es-AR")} ARS (sin conexión a API — verificar)`
-      : `Inversión convertida a USD · TC oficial: $${DATA.TIPO_CAMBIO_USADO.toLocaleString("es-AR")} ARS`;
+      ? `* Valores convertidos a USD · TC referencia: $${DATA.TIPO_CAMBIO_USADO.toLocaleString("es-AR")} ARS/USD (fallback — sin conexión a dolarapi.com al momento de generación)`
+      : `* Valores convertidos a USD · TC dólar oficial: $${DATA.TIPO_CAMBIO_USADO.toLocaleString("es-AR")} ARS/USD (Fuente: dolarapi.com · Banco Nación Argentina)`;
     s1.addText(tcLabel, { x: 0.45, y: 5.28, w: 9.1, h: 0.22, fontSize: 7.5, color: "999999", fontFace: "DM Sans" });
   }
 }
