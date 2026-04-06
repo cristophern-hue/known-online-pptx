@@ -83,7 +83,7 @@ async function generatePptx(DATA) {
   const kpis = [
     { label: "Inversión total", val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: DATA.INVERSION_DELTA   || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.INVERSION_PREV   || ""}`, up: DATA.INVERSION_DELTA_UP   === true },
     { label: "Leads totales",   val: DATA.LEADS_TOTAL || (isManar ? DATA.META_LEADS || "" : ""),  delta: DATA.LEADS_DELTA || (isManar ? DATA.META_LEADS_DELTA || "" : ""), note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.LEADS_PREV || (isManar ? DATA.META_LEADS_PREV || "" : "")}`, up: DATA.LEADS_DELTA_UP === true || (isManar && DATA.META_LEADS_DELTA_UP === true) },
-    { label: "CPL promedio",    val: DATA.CPL_TOTAL    || "",               delta: DATA.CPL_DELTA         || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CPL_PREV         || ""}`, up: DATA.CPL_DELTA_UP         === true },
+    { label: "CPL promedio",    val: DATA.CPL_TOTAL || (isManar ? DATA.META_CPL || "" : ""),  delta: DATA.CPL_DELTA || (isManar ? DATA.META_CPL_DELTA || "" : ""), note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CPL_PREV || (isManar ? DATA.META_CPL_PREV || "" : "")}`, up: DATA.CPL_DELTA_UP === true || (isManar && DATA.META_CPL_DELTA_UP === true) },
     { label: "Clicks (todos)",   val: DATA.CLICKS_TOTAL || "",               delta: DATA.CLICKS_DELTA      || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CLICKS_PREV      || ""}`, up: DATA.CLICKS_DELTA_UP      === true },
   ];
   kpis.forEach((k, i) => {
