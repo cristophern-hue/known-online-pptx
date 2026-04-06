@@ -170,7 +170,11 @@ async function generatePptx(DATA) {
 
   const isChaide = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("chaide");
 
-  const _invA  = parseNum(DATA.INVERSION_TOTAL), _invP = parseNum(DATA.INVERSION_PREV);
+  const _invA  = parseNum(DATA.INVERSION_TOTAL);
+  const isAtika = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("atika");
+  const _invP  = isAtika
+    ? parseNum(DATA.META_COSTO_PREV) + parseNum(DATA.GOOGLE_COSTO_PREV) + parseNum(DATA.ATIKA_PINTEREST_INV_PREV)
+    : parseNum(DATA.INVERSION_PREV);
   const _revA  = parseNum(DATA.GA4_INGRESOS),    _revP = parseNum(DATA.GA4_INGRESOS_PREV);
   const _roasA = _invA > 0 ? _revA / _invA : 0;
   const _roasP = _invP > 0 ? _revP / _invP : 0;
@@ -330,7 +334,7 @@ async function generatePptx(DATA) {
     { icon: "S", label: "Sesiones",              sub: "Sesiones frente al año anterior",          val26: DATA.GA4_SESIONES     || "", val25: DATA.GA4_SESIONES_PREV     || "", delta: DATA.GA4_SESIONES_DELTA     || "", deltaColor: DATA.GA4_SESIONES_DELTA_UP     === true ? GREEN : RED, deltaBg: DATA.GA4_SESIONES_DELTA_UP     === true ? GREEN_BG : RED_BG },
     { icon: "R", label: "Ingresos",               sub: "Revenue GA4 (Purchase)",                   val26: fmtMoneyCompact(DATA.GA4_INGRESOS), val25: DATA.GA4_INGRESOS_PREV     || "", delta: DATA.GA4_INGRESOS_DELTA     || "", deltaColor: DATA.GA4_INGRESOS_DELTA_UP     === true ? GREEN : RED, deltaBg: DATA.GA4_INGRESOS_DELTA_UP     === true ? GREEN_BG : RED_BG },
     { icon: "T", label: "Transacciones",         sub: "Transacciones ecommerce (VTEX/GA4)",        val26: DATA.GA4_TRANSACCIONES || "", val25: DATA.GA4_TRANSACCIONES_PREV || "", delta: DATA.GA4_TRANSACCIONES_DELTA || "", deltaColor: DATA.GA4_TRANSACCIONES_DELTA_UP === true ? GREEN : RED, deltaBg: DATA.GA4_TRANSACCIONES_DELTA_UP === true ? GREEN_BG : RED_BG },
-    { icon: "$", label: "Inversión publicitaria", sub: "Total Meta Ads + Google Ads",              val26: fmtMoneyCompact(DATA.INVERSION_TOTAL), val25: DATA.INVERSION_PREV        || "", delta: DATA.INVERSION_DELTA        || "", deltaColor: DATA.INVERSION_DELTA_UP        === true ? GREEN : RED, deltaBg: DATA.INVERSION_DELTA_UP        === true ? GREEN_BG : RED_BG },
+    { icon: "$", label: "Inversión publicitaria", sub: "Total Meta Ads + Google Ads",              val26: fmtMoneyCompact(DATA.INVERSION_TOTAL), val25: isAtika ? fmtMoneyCompact(_invP) : (DATA.INVERSION_PREV || ""), delta: DATA.INVERSION_DELTA        || "", deltaColor: DATA.INVERSION_DELTA_UP        === true ? GREEN : RED, deltaBg: DATA.INVERSION_DELTA_UP        === true ? GREEN_BG : RED_BG },
     { icon: "%", label: "Tasa de conversión",    sub: "eventCount(purchase) / sesiones",           val26: DATA.GA4_CONV_RATE    || "", val25: DATA.GA4_CONV_RATE_PREV    || "", delta: DATA.GA4_CONV_RATE_DELTA    || "", deltaColor: DATA.GA4_CONV_RATE_DELTA_UP    === true ? GREEN : RED, deltaBg: DATA.GA4_CONV_RATE_DELTA_UP    === true ? GREEN_BG : RED_BG },
     { icon: "T", label: "Ticket promedio",        sub: "Ingreso promedio por compra GA4",            val26: fmtMoneyNoDecimals(DATA.GA4_TICKET), val25: fmtMoneyNoDecimals(DATA.GA4_TICKET_PREV), delta: DATA.GA4_TICKET_DELTA        || "", deltaColor: DATA.GA4_TICKET_DELTA_UP        === true ? GREEN : RED, deltaBg: DATA.GA4_TICKET_DELTA_UP        === true ? GREEN_BG : RED_BG },
   ];
