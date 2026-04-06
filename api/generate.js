@@ -56,6 +56,7 @@ async function generatePptx(DATA) {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   const parseNum = str => {
+    if (typeof str === "number") return str;
     const c = (str || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "");
     return parseFloat(c) || 0;
   };
