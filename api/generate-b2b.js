@@ -378,7 +378,7 @@ async function generatePptx(DATA) {
 
 
   // ── SLIDE(S) – CONJUNTOS DE ANUNCIOS (paginado, todos los registros) ────────
-  if (Array.isArray(DATA.META_ADSETS) && DATA.META_ADSETS.length > 0) {
+  if (!isManar && Array.isArray(DATA.META_ADSETS) && DATA.META_ADSETS.length > 0) {
     const asColW = [3.2, 0.85, 1.0, 1.25, 0.9, 0.88, 0.94];
     const asHdrs = ["Conjunto de anuncios", "Leads", "CPL", "Inversión", "Clicks", "CPC", "Alcance"];
     const asW    = asColW.reduce((s, w) => s + w, 0);
