@@ -80,6 +80,11 @@ async function generatePptx(DATA) {
   // ── SLIDE 1 – COVER ───────────────────────────────────────────────────────
   buildSlide_Cover(pres, DATA);
 
+  const isManar = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("manar");
+  const _manarLeadsTotal = isManar
+    ? (DATA.CAMPANAS || []).reduce((s, c) => s + parseNum(c.leads), 0)
+    : 0;
+
   // ── SLIDE 2 – RESUMEN EJECUTIVO (solo con 2 plataformas) ─────────────────
   if (hasGoogle) { let s2 = pres.addSlide();
   s2.background = { color: WHITE };
