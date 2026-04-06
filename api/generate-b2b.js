@@ -72,6 +72,8 @@ async function generatePptx(DATA) {
   // ── SLIDE 1 – COVER ───────────────────────────────────────────────────────
   buildSlide_Cover(pres, DATA);
 
+  const isManar = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("manar");
+
   // ── SLIDE 2 – RESUMEN EJECUTIVO (solo con 2 plataformas) ─────────────────
   if (hasGoogle) { let s2 = pres.addSlide();
   s2.background = { color: WHITE };
@@ -80,7 +82,7 @@ async function generatePptx(DATA) {
 
   const kpis = [
     { label: "Inversión total", val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: DATA.INVERSION_DELTA   || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.INVERSION_PREV   || ""}`, up: DATA.INVERSION_DELTA_UP   === true },
-    { label: "Leads totales",   val: DATA.LEADS_TOTAL  || "",               delta: DATA.LEADS_DELTA       || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.LEADS_PREV       || ""}`, up: DATA.LEADS_DELTA_UP       === true },
+    { label: "Leads totales",   val: DATA.LEADS_TOTAL || (isManar ? DATA.META_LEADS || "" : ""),  delta: DATA.LEADS_DELTA || (isManar ? DATA.META_LEADS_DELTA || "" : ""), note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.LEADS_PREV || (isManar ? DATA.META_LEADS_PREV || "" : "")}`, up: DATA.LEADS_DELTA_UP === true || (isManar && DATA.META_LEADS_DELTA_UP === true) },
     { label: "CPL promedio",    val: DATA.CPL_TOTAL    || "",               delta: DATA.CPL_DELTA         || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CPL_PREV         || ""}`, up: DATA.CPL_DELTA_UP         === true },
     { label: "Clicks (todos)",   val: DATA.CLICKS_TOTAL || "",               delta: DATA.CLICKS_DELTA      || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CLICKS_PREV      || ""}`, up: DATA.CLICKS_DELTA_UP      === true },
   ];
@@ -525,7 +527,6 @@ async function generatePptx(DATA) {
   }
 
   // ── SLIDE – RESULTADOS COMERCIALES (solo MANAR, evolutivo) ──────────────
-  const isManar = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("manar");
   if (isManar) {
     // Filas históricas opcionales + fila del mes actual auto-completada
     const funnelRows = [
