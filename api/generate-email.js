@@ -105,8 +105,8 @@ async function generatePptx(DATA) {
       s.background = { color: WHITE };
 
       s.addText([
-        { text: tipo + pageLabel + " ", options: { bold: true, color: accentColor, fontSize: 26, fontFace: "Trebuchet MS" } },
-        { text: `– ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: DARK, fontSize: 26, fontFace: "Trebuchet MS" } },
+        { text: tipo + pageLabel + " ", options: { bold: true, color: accentColor, fontSize: 26, fontFace: "DM Sans" } },
+        { text: `– ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: DARK, fontSize: 26, fontFace: "DM Sans" } },
       ], { x: 1.0, y: 0.15, w: 8.8, h: 0.6 });
 
       s.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: accentColor }, line: { color: accentColor } });
@@ -176,7 +176,7 @@ async function generatePptx(DATA) {
     const s = pres.addSlide();
     s.background = { color: WHITE };
 
-    s.addText(`Top 3 ${tipo}`, { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s.addText(`Top 3 ${tipo}`, { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
     s.addText("por ingresos online", { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: accentColor, fontFace: "DM Sans", bold: true });
     s.addText(DATA.PERIODO_ACTUAL_LABEL || "", { x: 6.5, y: 0.3, w: 3, h: 0.3, fontSize: 11, color: GRAY_TEXT, fontFace: "DM Sans", align: "right" });
 
@@ -228,7 +228,7 @@ async function generatePptx(DATA) {
     s.addShape(pres.shapes.RECTANGLE, { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fill: { color: ORANGE }, line: { color: ORANGE } });
     s.addText(DATA.CLIENTE_NOMBRE || "CLIENTE", { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fontSize: 10, color: WHITE, bold: true, fontFace: "DM Sans", align: "center", margin: 0 });
 
-    s.addText("Reporte\nEmail Marketing", { x: 0.45, y: 1.95, w: 7.5, h: 1.5, fontSize: 48, color: WHITE, bold: true, fontFace: "Trebuchet MS", valign: "top" });
+    s.addText("Reporte\nEmail Marketing", { x: 0.45, y: 1.95, w: 7.5, h: 1.5, fontSize: 48, color: WHITE, bold: true, fontFace: "DM Sans", valign: "top" });
     s.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs. ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.45, y: 3.55, w: 7, h: 0.45, fontSize: 18, color: ORANGE2, fontFace: "DM Sans" });
 
     if (DATA.PLATAFORMA_EMAIL) {
@@ -241,7 +241,7 @@ async function generatePptx(DATA) {
     const s = pres.addSlide();
     s.background = { color: WHITE };
 
-    s.addText("Resumen de Plataforma", { x: 0.5, y: 0.22, w: 8, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s.addText("Resumen de Plataforma", { x: 0.5, y: 0.22, w: 8, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
     s.addText(`${DATA.PLATAFORMA_EMAIL || "Email Marketing"}  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, {
       x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans",
     });
@@ -268,7 +268,7 @@ async function generatePptx(DATA) {
       s.addShape(pres.shapes.RECTANGLE, { x, y, w: cardW, h: 1.65, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
       s.addShape(pres.shapes.RECTANGLE, { x, y, w: cardW, h: 0.07, fill: { color: ORANGE }, line: { color: ORANGE } });
       s.addText(k.label, { x, y: y + 0.12, w: cardW, h: 0.3,  fontSize: 9.5, color: GRAY_TEXT,  fontFace: "DM Sans",       align: "center" });
-      s.addText(k.val,   { x, y: y + 0.42, w: cardW, h: 0.55, fontSize: 24,  bold: true, color: DARK, fontFace: "Trebuchet MS", align: "center" });
+      s.addText(k.val,   { x, y: y + 0.42, w: cardW, h: 0.55, fontSize: 24,  bold: true, color: DARK, fontFace: "DM Sans", align: "center" });
       s.addShape(pres.shapes.RECTANGLE, { x: x + cardW * 0.25, y: y + 1.0, w: cardW * 0.5, h: 0.27, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
       s.addText(k.delta, { x: x + cardW * 0.25, y: y + 1.0, w: cardW * 0.5, h: 0.27, fontSize: 11, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
       s.addText(`${DATA.PERIODO_ANTERIOR_LABEL || "Ant."}: ${k.prev}`, { x, y: y + 1.35, w: cardW, h: 0.22, fontSize: 8.5, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
@@ -293,7 +293,7 @@ async function generatePptx(DATA) {
     const s = pres.addSlide();
     s.background = { color: WHITE };
 
-    s.addText("Rendimiento en Sitio Web", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s.addText("Rendimiento en Sitio Web", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
     s.addText(`Canal Email  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
     s.addShape(pres.shapes.RECTANGLE, { x: 8.8, y: 0.2, w: 1.0, h: 0.35, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
@@ -313,7 +313,7 @@ async function generatePptx(DATA) {
       s.addShape(pres.shapes.RECTANGLE, { x, y, w: ga4CardW, h: 2.0, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
       s.addShape(pres.shapes.RECTANGLE, { x, y, w: ga4CardW, h: 0.07, fill: { color: ORANGE }, line: { color: ORANGE } });
       s.addText(k.label, { x, y: y + 0.15, w: ga4CardW, h: 0.3,  fontSize: 9.5, color: GRAY_TEXT, fontFace: "DM Sans",       align: "center" });
-      s.addText(k.val,   { x, y: y + 0.48, w: ga4CardW, h: 0.65, fontSize: 26,  bold: true, color: DARK, fontFace: "Trebuchet MS", align: "center" });
+      s.addText(k.val,   { x, y: y + 0.48, w: ga4CardW, h: 0.65, fontSize: 26,  bold: true, color: DARK, fontFace: "DM Sans", align: "center" });
       s.addShape(pres.shapes.RECTANGLE, { x: x + 0.35, y: y + 1.18, w: ga4CardW - 0.7, h: 0.27, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
       s.addText(k.delta, { x: x + 0.35, y: y + 1.18, w: ga4CardW - 0.7, h: 0.27, fontSize: 11, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
       s.addText(`${DATA.PERIODO_ANTERIOR_LABEL || "Ant."}: ${k.prev}`, { x, y: y + 1.55, w: ga4CardW, h: 0.22, fontSize: 8.5, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
@@ -346,7 +346,7 @@ async function generatePptx(DATA) {
     const s = pres.addSlide();
     s.background = { color: WHITE };
 
-    s.addText("Evolución de Resultados", { x: 0.5, y: 0.18, w: 9, h: 0.52, fontSize: 26, bold: true, color: DARK, fontFace: "Trebuchet MS" });
+    s.addText("Evolución de Resultados", { x: 0.5, y: 0.18, w: 9, h: 0.52, fontSize: 26, bold: true, color: DARK, fontFace: "DM Sans" });
     s.addText(`${DATA.CLIENTE_NOMBRE || ""}  ·  ${DATA.PLATAFORMA_EMAIL || "Email Marketing"}`, {
       x: 0.5, y: 0.7, w: 9, h: 0.28, fontSize: 12, color: GRAY_TEXT, fontFace: "DM Sans",
     });
