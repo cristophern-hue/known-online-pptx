@@ -1,0 +1,86 @@
+{
+  "DATA": {
+    "CLIENTE_NOMBRE": "Anura",
+    "PERIODO_ACTUAL_LABEL": "Marzo 2026",
+    "PERIODO_ANTERIOR_LABEL": "Febrero 2026",
+
+    "ZOHO_LEADS_TOTAL": 45,
+    "ZOHO_LEADS_PREV": 38,
+    "ZOHO_LEADS_DELTA": "+18%",
+    "ZOHO_LEADS_DELTA_UP": true,
+
+    "ZOHO_LEADS_GOOGLE": 28,
+    "ZOHO_LEADS_META": 12,
+    "ZOHO_LEADS_WEB": 5,
+
+    "ZOHO_LEADS_NUEVO": 20,
+    "ZOHO_LEADS_CONTACTADO": 8,
+    "ZOHO_LEADS_MUERTO": 17,
+
+    "INVERSION_TOTAL": "770000",
+    "INVERSION_PREV": "650000",
+    "INVERSION_DELTA": "+18%",
+    "INVERSION_DELTA_UP": false,
+
+    "CPL_TOTAL": "17111",
+    "CPL_PREV": "17105",
+    "CPL_DELTA": "+0,03%",
+    "CPL_DELTA_UP": false,
+
+    "CLICKS_TOTAL": "2.124",
+    "CLICKS_PREV": "1.980",
+    "CLICKS_DELTA": "+7%",
+    "CLICKS_DELTA_UP": true,
+
+    "META_COSTO": "450000",
+    "META_COSTO_PREV": "380000",
+    "META_COSTO_DELTA": "+18%",
+    "META_COSTO_DELTA_UP": false,
+    "META_CLICKS": "1.234",
+    "META_CLICKS_PREV": "1.100",
+    "META_CLICKS_DELTA": "+12%",
+    "META_CLICKS_DELTA_UP": true,
+    "META_IMPRESIONES": "45.000",
+    "META_IMPRESIONES_PREV": "40.000",
+    "META_IMPRESIONES_DELTA": "+12%",
+    "META_IMPRESIONES_DELTA_UP": true,
+    "META_CTR": "2,7%",
+    "META_CTR_PREV": "2,5%",
+    "META_CTR_DELTA": "+0,2%",
+    "META_CTR_DELTA_UP": true,
+    "META_CPL": "37500",
+    "META_CPL_PREV": "34000",
+    "META_CPL_DELTA": "+10%",
+    "META_CPL_DELTA_UP": false,
+
+    "GOOGLE_COSTO": "320000",
+    "GOOGLE_COSTO_PREV": "270000",
+    "GOOGLE_COSTO_DELTA": "+18%",
+    "GOOGLE_COSTO_DELTA_UP": false,
+    "GOOGLE_CLICKS": "890",
+    "GOOGLE_CLICKS_PREV": "880",
+    "GOOGLE_CLICKS_DELTA": "+1%",
+    "GOOGLE_CLICKS_DELTA_UP": true,
+    "GOOGLE_IMPRESIONES": "32.000",
+    "GOOGLE_IMPRESIONES_PREV": "30.000",
+    "GOOGLE_IMPRESIONES_DELTA": "+7%",
+    "GOOGLE_IMPRESIONES_DELTA_UP": true,
+    "GOOGLE_CTR": "2,8%",
+    "GOOGLE_CTR_PREV": "2,9%",
+    "GOOGLE_CTR_DELTA": "-0,1%",
+    "GOOGLE_CTR_DELTA_UP": false,
+    "GOOGLE_CPL": "11428",
+    "GOOGLE_CPL_PREV": "10800",
+    "GOOGLE_CPL_DELTA": "+6%",
+    "GOOGLE_CPL_DELTA_UP": false,
+
+    "FUNNEL_ROWS": [
+      { "mes": "Nov 2025", "google": 22, "meta": 9,  "web": 3, "total": 34, "inversion": "$580.000", "cpl": "$17.059", "cierres": 3 },
+      { "mes": "Dic 2025", "google": 18, "meta": 7,  "web": 2, "total": 27, "inversion": "$510.000", "cpl": "$18.889", "cierres": 2 },
+      { "mes": "Ene 2026", "google": 25, "meta": 10, "web": 4, "total": 39, "inversion": "$620.000", "cpl": "$15.897", "cierres": 4 },
+      { "mes": "Feb 2026", "google": 24, "meta": 10, "web": 4, "total": 38, "inversion": "$650.000", "cpl": "$17.105", "cierres": 3 }
+    ],
+
+    "RECOMENDACIONES": []
+  }
+}
