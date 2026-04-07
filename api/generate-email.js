@@ -66,7 +66,7 @@ async function generatePptx(DATA) {
   const top3Unicas       = [...campañasUnicas].sort(sortByIngresos).slice(0, 3);
 
   // ── Helper: tabla de campañas (paginada) ─────────────────────────────────
-  function buildSlideTabla(campanas, tipo, accentColor, accentBg) {
+  function buildSlideTabla(campanas, tipo = "Campañas", accentColor, accentBg) {
     if (campanas.length === 0) return;
 
     // ── Calcular fila de totales/promedios del array completo ────────────
@@ -252,7 +252,7 @@ async function generatePptx(DATA) {
       { label: "Envíos",           val: DATA.EMAIL_ENVIOS    || "", delta: fmtDelta(DATA.EMAIL_ENVIOS_DELTA), up: DATA.EMAIL_ENVIOS_DELTA_UP    === true, prev: DATA.EMAIL_ENVIOS_PREV    || "" },
       { label: "Tasa de apertura", val: DATA.EMAIL_APERTURA  || "", delta: fmtDelta(DATA.EMAIL_APERTURA_DELTA), up: DATA.EMAIL_APERTURA_DELTA_UP  === true, prev: DATA.EMAIL_APERTURA_PREV  || "" },
       { label: "CTOR",             val: DATA.EMAIL_CTOR      || "", delta: fmtDelta(DATA.EMAIL_CTOR_DELTA), up: DATA.EMAIL_CTOR_DELTA_UP      === true, prev: DATA.EMAIL_CTOR_PREV      || "" },
-      { label: "Tasa de bajas",    val: DATA.EMAIL_BAJAS     || "", delta: fmtDelta(DATA.EMAIL_BAJAS_DELTA), up: DATA.EMAIL_BAJAS_DELTA_UP     !== true, prev: DATA.EMAIL_BAJAS_PREV     || "" },
+      ...(DATA.EMAIL_BAJAS && DATA.EMAIL_BAJAS !== "—" ? [{ label: "Tasa de bajas", val: DATA.EMAIL_BAJAS, delta: fmtDelta(DATA.EMAIL_BAJAS_DELTA), up: DATA.EMAIL_BAJAS_DELTA_UP !== true, prev: DATA.EMAIL_BAJAS_PREV || "" }] : []),
     ];
     if (DATA.EMAIL_TRANSACCIONES) kpis.push({ label: "Transacciones",  val: DATA.EMAIL_TRANSACCIONES || "", delta: fmtDelta(DATA.EMAIL_TRANSACCIONES_DELTA), up: DATA.EMAIL_TRANSACCIONES_DELTA_UP === true, prev: DATA.EMAIL_TRANSACCIONES_PREV || "" });
     if (DATA.EMAIL_INGRESOS)      kpis.push({ label: "Ingresos online", val: DATA.EMAIL_INGRESOS      || "", delta: fmtDelta(DATA.EMAIL_INGRESOS_DELTA), up: DATA.EMAIL_INGRESOS_DELTA_UP      === true, prev: DATA.EMAIL_INGRESOS_PREV      || "" });
@@ -285,7 +285,7 @@ async function generatePptx(DATA) {
     buildSlideTop3 (top3Automatizada,     "Automatizadas", ORANGE);
   } else {
     // MAIUP / ICOMM / otras: tabla única
-    const label = plataforma === "MAIUP" ? "Mailup" : plataforma === "ICOMM" ? "Icomm" : (DATA.PLATAFORMA_EMAIL || "Email");
+    const label = plataforma === "MAIUP" ? "Mailup" : plataforma === "ICOMM" ? "Icomm" : (DATA.PLATAFORMA_EMAIL || "Campañas");
     buildSlideTabla(campañasUnicas, label, ORANGE, LIGHT_BG);
     buildSlideTop3 (top3Unicas,    label, ORANGE);
   }
