@@ -59,11 +59,13 @@ async function generatePptx(DATA) {
                              : todasCampanas.filter(c => getTipo(c) === "automatizada" || getTipo(c) === "automtizada");
   const campañasUnicas       = todasCampanas;
 
-  const sortByIngresos = (a, b) => parseNum((b.ingresos || "0").replace(/[^0-9,]/g, "").replace(",", "."))
-                                 - parseNum((a.ingresos || "0").replace(/[^0-9,]/g, "").replace(",", "."));
-  const top3Newsletter   = [...campañasNewsletter].sort(sortByIngresos).slice(0, 3);
-  const top3Automatizada = [...campañasAutomatizada].sort(sortByIngresos).slice(0, 3);
-  const top3Unicas       = [...campañasUnicas].sort(sortByIngresos).slice(0, 3);
+  const hasIngresos      = arr => arr.some(c => c.ingresos && c.ingresos !== "—" && parseNum((c.ingresos || "0").replace(/[^0-9,]/g, "").replace(",", ".")) > 0);
+  const sortByIngresos   = (a, b) => parseNum((b.ingresos || "0").replace(/[^0-9,]/g, "").replace(",", ".")) - parseNum((a.ingresos || "0").replace(/[^0-9,]/g, "").replace(",", "."));
+  const sortByApertura   = (a, b) => parseNum((b.apertura || "0").replace("%", "")) - parseNum((a.apertura || "0").replace("%", ""));
+  const sortCampanas     = arr => [...arr].sort(hasIngresos(arr) ? sortByIngresos : sortByApertura);
+  const top3Newsletter   = sortCampanas(campañasNewsletter).slice(0, 3);
+  const top3Automatizada = sortCampanas(campañasAutomatizada).slice(0, 3);
+  const top3Unicas       = sortCampanas(campañasUnicas).slice(0, 3);
 
   // ── Helper: tabla de campañas (paginada) ─────────────────────────────────
   function buildSlideTabla(campanas, tipo = "Campañas", accentColor, accentBg) {
