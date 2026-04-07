@@ -112,11 +112,11 @@ function buildSlide_Cover(pres, DATA) {
 
 function buildSlide_Recommendations(pres, DATA) {
   const s = pres.addSlide();
-  s.background = { color: ORANGE };
-  s.addShape(pres.shapes.OVAL, { x:  7.5, y:  3.5, w: 3.5, h: 3.5, fill: { color: WHITE, transparency: 92 }, line: { color: WHITE, transparency: 92 } });
-  s.addShape(pres.shapes.OVAL, { x: -1.0, y: -0.5, w: 2.5, h: 2.5, fill: { color: WHITE, transparency: 88 }, line: { color: WHITE, transparency: 88 } });
+  s.background = { color: DARK };
+  s.addShape(pres.shapes.OVAL, { x:  7.5, y:  3.5, w: 3.5, h: 3.5, fill: { color: ORANGE, transparency: 92 }, line: { color: ORANGE, transparency: 92 } });
+  s.addShape(pres.shapes.OVAL, { x: -1.0, y: -0.5, w: 2.5, h: 2.5, fill: { color: ORANGE, transparency: 88 }, line: { color: ORANGE, transparency: 88 } });
   s.addText("Recomendaciones", { x: 0.5, y: 0.22, w: 9, h: 0.55, fontSize: 28, bold: true, color: WHITE, fontFace: "DM Sans" });
-  s.addText("Acciones prioritarias para optimizar la performance", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: "FFD4B8", fontFace: "DM Sans" });
+  s.addText("Acciones prioritarias para optimizar la performance", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: "FF912D", fontFace: "DM Sans" });
 
   const _recs = Array.isArray(DATA.RECOMENDACIONES)
     ? DATA.RECOMENDACIONES
@@ -124,10 +124,10 @@ function buildSlide_Recommendations(pres, DATA) {
   _recs.slice(0, 5).forEach((r, i) => {
     const num = String(i + 1).padStart(2, "0");
     const y   = 1.22 + i * 0.82;
-    s.addShape(pres.shapes.OVAL, { x: 0.4, y, w: 0.45, h: 0.45, fill: { color: WHITE }, line: { color: WHITE } });
-    s.addText(num,      { x: 0.4,  y,        w: 0.45, h: 0.45, fontSize: 11, bold: true, color: ORANGE,   fontFace: "DM Sans", align: "center", valign: "middle" });
+    s.addShape(pres.shapes.OVAL, { x: 0.4, y, w: 0.45, h: 0.45, fill: { color: ORANGE }, line: { color: ORANGE } });
+    s.addText(num,      { x: 0.4,  y,        w: 0.45, h: 0.45, fontSize: 11, bold: true, color: WHITE,    fontFace: "DM Sans", align: "center", valign: "middle" });
     s.addText(r.titulo || "", { x: 1.05, y: y + 0.02, w: 8.5,  h: 0.28, fontSize: 13, bold: true, color: WHITE,    fontFace: "DM Sans" });
-    s.addText(r.texto  || "", { x: 1.05, y: y + 0.29, w: 8.5,  h: 0.25, fontSize: 11,              color: "FFD4B8", fontFace: "DM Sans" });
+    s.addText(r.texto  || "", { x: 1.05, y: y + 0.29, w: 8.5,  h: 0.25, fontSize: 11,              color: "B0B8C8", fontFace: "DM Sans" });
   });
 }
 
