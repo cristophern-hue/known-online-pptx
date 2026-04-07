@@ -116,22 +116,24 @@ async function generatePptx(DATA) {
       s.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: accentColor }, line: { color: accentColor } });
       s.addText("@", { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fontSize: 16, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
 
+      const hasBajas = campanas.some(c => c.bajas && c.bajas !== "—" && c.bajas !== "0" && c.bajas !== "0,0%");
+
       const cols = hasEcommerce
         ? [
-            { hdr: "Campaña",   key: "nombre",       w: 2.55, align: "left",   color: accentColor },
+            { hdr: "Campaña",   key: "nombre",       w: hasBajas ? 2.55 : 2.9,  align: "left",   color: accentColor },
             { hdr: "Envíos",    key: "envios",        w: 0.9,  align: "center", color: DARK },
             { hdr: "Apertura",  key: "apertura",      w: 0.9,  align: "center", color: DARK },
             { hdr: "CTOR",      key: "ctor",          w: 0.75, align: "center", color: DARK },
-            { hdr: "Bajas",     key: "bajas",         w: 0.75, align: "center", color: DARK },
+            ...(hasBajas ? [{ hdr: "Bajas", key: "bajas", w: 0.75, align: "center", color: DARK }] : []),
             { hdr: "Transacc.", key: "transacciones", w: 0.85, align: "center", color: DARK },
             { hdr: "Ingresos",  key: "ingresos",      w: 1.15, align: "center", color: DARK },
           ]
         : [
-            { hdr: "Campaña",  key: "nombre",   w: 3.5,  align: "left",   color: accentColor },
+            { hdr: "Campaña",  key: "nombre",   w: hasBajas ? 3.5 : 4.0, align: "left",   color: accentColor },
             { hdr: "Envíos",   key: "envios",   w: 1.2,  align: "center", color: DARK },
             { hdr: "Apertura", key: "apertura", w: 1.2,  align: "center", color: DARK },
             { hdr: "CTOR",     key: "ctor",     w: 1.0,  align: "center", color: DARK },
-            { hdr: "Bajas",    key: "bajas",    w: 1.0,  align: "center", color: DARK },
+            ...(hasBajas ? [{ hdr: "Bajas", key: "bajas", w: 1.0, align: "center", color: DARK }] : []),
           ];
 
       const totalW  = cols.reduce((acc, c) => acc + c.w, 0);
