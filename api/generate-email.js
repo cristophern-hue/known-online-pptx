@@ -254,8 +254,8 @@ async function generatePptx(DATA) {
       { label: "CTOR",             val: DATA.EMAIL_CTOR      || "", delta: fmtDelta(DATA.EMAIL_CTOR_DELTA), up: DATA.EMAIL_CTOR_DELTA_UP      === true, prev: DATA.EMAIL_CTOR_PREV      || "" },
       ...(DATA.EMAIL_BAJAS && DATA.EMAIL_BAJAS !== "—" ? [{ label: "Tasa de bajas", val: DATA.EMAIL_BAJAS, delta: fmtDelta(DATA.EMAIL_BAJAS_DELTA), up: DATA.EMAIL_BAJAS_DELTA_UP !== true, prev: DATA.EMAIL_BAJAS_PREV || "" }] : []),
     ];
-    if (DATA.EMAIL_TRANSACCIONES) kpis.push({ label: "Transacciones",  val: DATA.EMAIL_TRANSACCIONES || "", delta: fmtDelta(DATA.EMAIL_TRANSACCIONES_DELTA), up: DATA.EMAIL_TRANSACCIONES_DELTA_UP === true, prev: DATA.EMAIL_TRANSACCIONES_PREV || "" });
-    if (DATA.EMAIL_INGRESOS)      kpis.push({ label: "Ingresos online", val: DATA.EMAIL_INGRESOS      || "", delta: fmtDelta(DATA.EMAIL_INGRESOS_DELTA), up: DATA.EMAIL_INGRESOS_DELTA_UP      === true, prev: DATA.EMAIL_INGRESOS_PREV      || "" });
+    if (DATA.EMAIL_TRANSACCIONES && DATA.EMAIL_TRANSACCIONES !== "—") kpis.push({ label: "Transacciones",  val: DATA.EMAIL_TRANSACCIONES, delta: fmtDelta(DATA.EMAIL_TRANSACCIONES_DELTA), up: DATA.EMAIL_TRANSACCIONES_DELTA_UP === true, prev: DATA.EMAIL_TRANSACCIONES_PREV || "" });
+    if (DATA.EMAIL_INGRESOS && DATA.EMAIL_INGRESOS !== "—")           kpis.push({ label: "Ingresos online", val: DATA.EMAIL_INGRESOS,      delta: fmtDelta(DATA.EMAIL_INGRESOS_DELTA),      up: DATA.EMAIL_INGRESOS_DELTA_UP      === true, prev: DATA.EMAIL_INGRESOS_PREV      || "" });
 
     const cardW      = 2.1;
     const itemsPerRow = Math.min(kpis.length, 4);
