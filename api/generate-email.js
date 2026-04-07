@@ -36,9 +36,10 @@ async function generatePptx(DATA) {
           GREEN, GREEN_BG, RED, RED_BG, BLUE, LIGHT_BLUE } = COLORS;
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  const parseNum  = str => parseFloat((str || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) || 0;
+  const parseNum  = str => { if (typeof str === "number") return str; return parseFloat((str || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) || 0; };
   const parseRate = str => parseNum((str || "0").replace("%", "").replace("pp", ""));
   const fmtDelta  = str => (str || "").replace(/pp$/i, "%");
+  const fmtMoneyCompact = val => { const n = parseNum(val); if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2).replace(".", ",")} M`; if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(".", ",")} K`; return String(val || ""); };
   const hasEcommerce = !!(DATA.EMAIL_INGRESOS || DATA.EMAIL_TRANSACCIONES);
   const hasGA4       = DATA.GA4_TIENE_DATOS === true;
   const plataforma   = (DATA.PLATAFORMA_EMAIL || DATA.Plataforma || "").toUpperCase();
@@ -312,7 +313,7 @@ async function generatePptx(DATA) {
     const ga4Kpis = [
       { label: "Sesiones",          val: DATA.GA4_SESIONES      || "", delta: fmtDelta(DATA.GA4_SESIONES_DELTA), up: DATA.GA4_SESIONES_DELTA_UP      === true, prev: fmtPrev(DATA.GA4_SESIONES_PREV) },
       { label: "Transacciones",     val: DATA.GA4_TRANSACCIONES || "", delta: fmtDelta(DATA.GA4_TRANSACCIONES_DELTA), up: DATA.GA4_TRANSACCIONES_DELTA_UP === true, prev: fmtPrev(DATA.GA4_TRANSACCIONES_PREV) },
-      { label: "Ingresos",          val: DATA.GA4_INGRESOS      || "", delta: fmtDelta(DATA.GA4_INGRESOS_DELTA), up: DATA.GA4_INGRESOS_DELTA_UP      === true, prev: fmtPrev(DATA.GA4_INGRESOS_PREV) },
+      { label: "Ingresos",          val: fmtMoneyCompact(DATA.GA4_INGRESOS), delta: fmtDelta(DATA.GA4_INGRESOS_DELTA), up: DATA.GA4_INGRESOS_DELTA_UP === true, prev: fmtPrev(DATA.GA4_INGRESOS_PREV) },
       { label: "Tasa de conversión",val: _ga4TC, delta: fmtDelta(DATA.GA4_TASA_CONV_DELTA), up: DATA.GA4_TASA_CONV_DELTA_UP === true, prev: _ga4TCP },
     ];
 
