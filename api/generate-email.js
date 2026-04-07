@@ -217,24 +217,24 @@ async function generatePptx(DATA) {
   // ── SLIDE 1 – COVER ───────────────────────────────────────────────────────
   {
     const s = pres.addSlide();
-    s.background = { color: DARK };
+    s.background = { color: ORANGE };
 
-    s.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 0.18, h: 5.625, fill: { color: ORANGE }, line: { color: ORANGE } });
-    s.addShape(pres.shapes.OVAL, { x: 7.8, y: -1.2, w: 4.0, h: 4.0, fill: { color: ORANGE, transparency: 88 }, line: { color: ORANGE, transparency: 88 } });
-    s.addShape(pres.shapes.OVAL, { x: 8.5, y: -0.4, w: 2.4, h: 2.4, fill: { color: ORANGE, transparency: 75 }, line: { color: ORANGE, transparency: 75 } });
+    s.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 0.18, h: 5.625, fill: { color: WHITE }, line: { color: WHITE } });
+    s.addShape(pres.shapes.OVAL, { x: 7.8, y: -1.2, w: 4.0, h: 4.0, fill: { color: WHITE, transparency: 88 }, line: { color: WHITE, transparency: 88 } });
+    s.addShape(pres.shapes.OVAL, { x: 8.5, y: -0.4, w: 2.4, h: 2.4, fill: { color: WHITE, transparency: 75 }, line: { color: WHITE, transparency: 75 } });
 
-    s.addShape(pres.shapes.OVAL, { x: 0.5,  y: 0.45, w: 0.52, h: 0.52, fill: { color: ORANGE }, line: { color: ORANGE } });
-    s.addShape(pres.shapes.OVAL, { x: 0.64, y: 0.59, w: 0.26, h: 0.26, fill: { color: WHITE  }, line: { color: WHITE  } });
-    s.addText("Known Online", { x: 1.15, y: 0.48, w: 3.5, h: 0.45, fontSize: 15, color: ORANGE, bold: true, fontFace: "DM Sans", margin: 0 });
+    s.addShape(pres.shapes.OVAL, { x: 0.5,  y: 0.45, w: 0.52, h: 0.52, fill: { color: WHITE  }, line: { color: WHITE  } });
+    s.addShape(pres.shapes.OVAL, { x: 0.64, y: 0.59, w: 0.26, h: 0.26, fill: { color: ORANGE }, line: { color: ORANGE } });
+    s.addText("Known Online", { x: 1.15, y: 0.48, w: 3.5, h: 0.45, fontSize: 15, color: WHITE, bold: true, fontFace: "DM Sans", margin: 0 });
 
-    s.addShape(pres.shapes.RECTANGLE, { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fill: { color: ORANGE }, line: { color: ORANGE } });
-    s.addText(DATA.CLIENTE_NOMBRE || "CLIENTE", { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fontSize: 10, color: WHITE, bold: true, fontFace: "DM Sans", align: "center", margin: 0 });
+    s.addShape(pres.shapes.RECTANGLE, { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fill: { color: WHITE }, line: { color: WHITE } });
+    s.addText(DATA.CLIENTE_NOMBRE || "CLIENTE", { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fontSize: 10, color: ORANGE, bold: true, fontFace: "DM Sans", align: "center", margin: 0 });
 
     s.addText("Reporte\nEmail Marketing", { x: 0.45, y: 1.95, w: 7.5, h: 1.5, fontSize: 48, color: WHITE, bold: true, fontFace: "DM Sans", valign: "top" });
-    s.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs. ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.45, y: 3.55, w: 7, h: 0.45, fontSize: 18, color: ORANGE2, fontFace: "DM Sans" });
+    s.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs. ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.45, y: 3.55, w: 7, h: 0.45, fontSize: 18, color: "FFD4B8", fontFace: "DM Sans" });
 
     if (DATA.PLATAFORMA_EMAIL) {
-      s.addText(`Plataforma: ${DATA.PLATAFORMA_EMAIL}`, { x: 0.45, y: 5.28, w: 9.1, h: 0.22, fontSize: 9, color: "999999", fontFace: "DM Sans" });
+      s.addText(`Plataforma: ${DATA.PLATAFORMA_EMAIL}`, { x: 0.45, y: 5.28, w: 9.1, h: 0.22, fontSize: 9, color: "FFD4B8", fontFace: "DM Sans" });
     }
   }
 

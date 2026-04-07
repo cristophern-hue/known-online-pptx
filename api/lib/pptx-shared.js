@@ -86,21 +86,21 @@ function normalizeDataForUSD(DATA, rate) {
 
 function buildSlide_Cover(pres, DATA) {
   const s1 = pres.addSlide();
-  s1.background = { color: DARK };
+  s1.background = { color: ORANGE };
 
-  s1.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 0.18, h: 5.625, fill: { color: ORANGE }, line: { color: ORANGE } });
-  s1.addShape(pres.shapes.OVAL, { x: 7.8, y: -1.2, w: 4.0, h: 4.0, fill: { color: ORANGE, transparency: 88 }, line: { color: ORANGE, transparency: 88 } });
-  s1.addShape(pres.shapes.OVAL, { x: 8.5, y: -0.4, w: 2.4, h: 2.4, fill: { color: ORANGE, transparency: 75 }, line: { color: ORANGE, transparency: 75 } });
+  s1.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 0.18, h: 5.625, fill: { color: WHITE }, line: { color: WHITE } });
+  s1.addShape(pres.shapes.OVAL, { x: 7.8, y: -1.2, w: 4.0, h: 4.0, fill: { color: WHITE, transparency: 88 }, line: { color: WHITE, transparency: 88 } });
+  s1.addShape(pres.shapes.OVAL, { x: 8.5, y: -0.4, w: 2.4, h: 2.4, fill: { color: WHITE, transparency: 75 }, line: { color: WHITE, transparency: 75 } });
 
-  s1.addShape(pres.shapes.OVAL, { x: 0.5,  y: 0.45, w: 0.52, h: 0.52, fill: { color: ORANGE }, line: { color: ORANGE } });
-  s1.addShape(pres.shapes.OVAL, { x: 0.64, y: 0.59, w: 0.26, h: 0.26, fill: { color: WHITE  }, line: { color: WHITE  } });
-  s1.addText("Known Online", { x: 1.15, y: 0.48, w: 3.5, h: 0.45, fontSize: 15, color: ORANGE, bold: true, fontFace: "DM Sans", margin: 0 });
+  s1.addShape(pres.shapes.OVAL, { x: 0.5,  y: 0.45, w: 0.52, h: 0.52, fill: { color: WHITE  }, line: { color: WHITE  } });
+  s1.addShape(pres.shapes.OVAL, { x: 0.64, y: 0.59, w: 0.26, h: 0.26, fill: { color: ORANGE }, line: { color: ORANGE } });
+  s1.addText("Known Online", { x: 1.15, y: 0.48, w: 3.5, h: 0.45, fontSize: 15, color: WHITE, bold: true, fontFace: "DM Sans", margin: 0 });
 
-  s1.addShape(pres.shapes.RECTANGLE, { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fill: { color: ORANGE }, line: { color: ORANGE } });
-  s1.addText(DATA.CLIENTE_NOMBRE || "CLIENTE", { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fontSize: 10, color: WHITE, bold: true, fontFace: "DM Sans", align: "center", margin: 0 });
+  s1.addShape(pres.shapes.RECTANGLE, { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fill: { color: WHITE }, line: { color: WHITE } });
+  s1.addText(DATA.CLIENTE_NOMBRE || "CLIENTE", { x: 0.45, y: 1.5, w: 1.8, h: 0.32, fontSize: 10, color: ORANGE, bold: true, fontFace: "DM Sans", align: "center", margin: 0 });
 
   s1.addText("Reporte\nPaid Media", { x: 0.45, y: 1.95, w: 7, h: 1.5, fontSize: 52, color: WHITE, bold: true, fontFace: "DM Sans", valign: "top" });
-  s1.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs. ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.45, y: 3.55, w: 7, h: 0.45, fontSize: 18, color: ORANGE2, fontFace: "DM Sans" });
+  s1.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""} vs. ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.45, y: 3.55, w: 7, h: 0.45, fontSize: 18, color: "FFD4B8", fontFace: "DM Sans" });
 
   if (DATA.TIPO_CAMBIO_USADO) {
     const tcLabel = DATA.TIPO_CAMBIO_FALLBACK
@@ -112,11 +112,11 @@ function buildSlide_Cover(pres, DATA) {
 
 function buildSlide_Recommendations(pres, DATA) {
   const s = pres.addSlide();
-  s.background = { color: DARK };
-  s.addShape(pres.shapes.OVAL, { x:  7.5, y:  3.5, w: 3.5, h: 3.5, fill: { color: ORANGE, transparency: 92 }, line: { color: ORANGE, transparency: 92 } });
-  s.addShape(pres.shapes.OVAL, { x: -1.0, y: -0.5, w: 2.5, h: 2.5, fill: { color: ORANGE, transparency: 88 }, line: { color: ORANGE, transparency: 88 } });
+  s.background = { color: ORANGE };
+  s.addShape(pres.shapes.OVAL, { x:  7.5, y:  3.5, w: 3.5, h: 3.5, fill: { color: WHITE, transparency: 92 }, line: { color: WHITE, transparency: 92 } });
+  s.addShape(pres.shapes.OVAL, { x: -1.0, y: -0.5, w: 2.5, h: 2.5, fill: { color: WHITE, transparency: 88 }, line: { color: WHITE, transparency: 88 } });
   s.addText("Recomendaciones", { x: 0.5, y: 0.22, w: 9, h: 0.55, fontSize: 28, bold: true, color: WHITE, fontFace: "DM Sans" });
-  s.addText("Acciones prioritarias para optimizar la performance", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: "FF912D", fontFace: "DM Sans" });
+  s.addText("Acciones prioritarias para optimizar la performance", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: "FFD4B8", fontFace: "DM Sans" });
 
   const _recs = Array.isArray(DATA.RECOMENDACIONES)
     ? DATA.RECOMENDACIONES
@@ -124,10 +124,10 @@ function buildSlide_Recommendations(pres, DATA) {
   _recs.slice(0, 5).forEach((r, i) => {
     const num = String(i + 1).padStart(2, "0");
     const y   = 1.22 + i * 0.82;
-    s.addShape(pres.shapes.OVAL, { x: 0.4, y, w: 0.45, h: 0.45, fill: { color: ORANGE }, line: { color: ORANGE } });
-    s.addText(num,      { x: 0.4,  y,        w: 0.45, h: 0.45, fontSize: 11, bold: true, color: WHITE,    fontFace: "DM Sans", align: "center", valign: "middle" });
+    s.addShape(pres.shapes.OVAL, { x: 0.4, y, w: 0.45, h: 0.45, fill: { color: WHITE }, line: { color: WHITE } });
+    s.addText(num,      { x: 0.4,  y,        w: 0.45, h: 0.45, fontSize: 11, bold: true, color: ORANGE,   fontFace: "DM Sans", align: "center", valign: "middle" });
     s.addText(r.titulo || "", { x: 1.05, y: y + 0.02, w: 8.5,  h: 0.28, fontSize: 13, bold: true, color: WHITE,    fontFace: "DM Sans" });
-    s.addText(r.texto  || "", { x: 1.05, y: y + 0.29, w: 8.5,  h: 0.25, fontSize: 11,              color: "B0B8C8", fontFace: "DM Sans" });
+    s.addText(r.texto  || "", { x: 1.05, y: y + 0.29, w: 8.5,  h: 0.25, fontSize: 11,              color: "FFD4B8", fontFace: "DM Sans" });
   });
 }
 
