@@ -304,12 +304,10 @@ async function generatePptx(DATA) {
     const fmtPrev = v => (v && v !== "0" && v !== 0) ? v : "";
     const _ga4Ses  = parseNum(DATA.GA4_SESIONES);
     const _ga4Trx  = parseNum(DATA.GA4_TRANSACCIONES);
-    const _ga4TC   = (parseRate(DATA.GA4_TASA_CONV) > 0 ? DATA.GA4_TASA_CONV : null)
-                   || (_ga4Ses > 0 ? `${(_ga4Trx / _ga4Ses * 100).toFixed(2).replace(".", ",")}%` : "");
+    const _ga4TC   = _ga4Ses > 0 ? `${(_ga4Trx / _ga4Ses * 100).toFixed(2).replace(".", ",")}%` : "";
     const _ga4SesP = parseNum(DATA.GA4_SESIONES_PREV);
     const _ga4TrxP = parseNum(DATA.GA4_TRANSACCIONES_PREV);
-    const _ga4TCP  = (parseRate(DATA.GA4_TASA_CONV_PREV) > 0 ? fmtPrev(DATA.GA4_TASA_CONV_PREV) : null)
-                   || (_ga4SesP > 0 ? `${(_ga4TrxP / _ga4SesP * 100).toFixed(2).replace(".", ",")}%` : "");
+    const _ga4TCP  = _ga4SesP > 0 ? `${(_ga4TrxP / _ga4SesP * 100).toFixed(2).replace(".", ",")}%` : "";
     const ga4Kpis = [
       { label: "Sesiones",          val: DATA.GA4_SESIONES      || "", delta: fmtDelta(DATA.GA4_SESIONES_DELTA), up: DATA.GA4_SESIONES_DELTA_UP      === true, prev: fmtPrev(DATA.GA4_SESIONES_PREV) },
       { label: "Transacciones",     val: DATA.GA4_TRANSACCIONES || "", delta: fmtDelta(DATA.GA4_TRANSACCIONES_DELTA), up: DATA.GA4_TRANSACCIONES_DELTA_UP === true, prev: fmtPrev(DATA.GA4_TRANSACCIONES_PREV) },
