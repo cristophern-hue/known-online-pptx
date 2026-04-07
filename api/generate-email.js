@@ -301,11 +301,17 @@ async function generatePptx(DATA) {
     s.addText("GA4", { x: 8.8, y: 0.2, w: 1.0, h: 0.35, fontSize: 10, bold: true, color: ORANGE, fontFace: "DM Sans", align: "center", valign: "middle" });
 
     const fmtPrev = v => (v && v !== "0" && v !== 0) ? v : "";
+    const _ga4Ses  = parseNum(DATA.GA4_SESIONES);
+    const _ga4Trx  = parseNum(DATA.GA4_TRANSACCIONES);
+    const _ga4TC   = DATA.GA4_TASA_CONV || (_ga4Ses > 0 ? `${(_ga4Trx / _ga4Ses * 100).toFixed(2).replace(".", ",")}%` : "");
+    const _ga4SesP = parseNum(DATA.GA4_SESIONES_PREV);
+    const _ga4TrxP = parseNum(DATA.GA4_TRANSACCIONES_PREV);
+    const _ga4TCP  = fmtPrev(DATA.GA4_TASA_CONV_PREV) || (_ga4SesP > 0 ? `${(_ga4TrxP / _ga4SesP * 100).toFixed(2).replace(".", ",")}%` : "");
     const ga4Kpis = [
       { label: "Sesiones",          val: DATA.GA4_SESIONES      || "", delta: fmtDelta(DATA.GA4_SESIONES_DELTA), up: DATA.GA4_SESIONES_DELTA_UP      === true, prev: fmtPrev(DATA.GA4_SESIONES_PREV) },
       { label: "Transacciones",     val: DATA.GA4_TRANSACCIONES || "", delta: fmtDelta(DATA.GA4_TRANSACCIONES_DELTA), up: DATA.GA4_TRANSACCIONES_DELTA_UP === true, prev: fmtPrev(DATA.GA4_TRANSACCIONES_PREV) },
       { label: "Ingresos",          val: DATA.GA4_INGRESOS      || "", delta: fmtDelta(DATA.GA4_INGRESOS_DELTA), up: DATA.GA4_INGRESOS_DELTA_UP      === true, prev: fmtPrev(DATA.GA4_INGRESOS_PREV) },
-      { label: "Tasa de conversión",val: DATA.GA4_TASA_CONV     || "", delta: fmtDelta(DATA.GA4_TASA_CONV_DELTA), up: DATA.GA4_TASA_CONV_DELTA_UP     === true, prev: fmtPrev(DATA.GA4_TASA_CONV_PREV) },
+      { label: "Tasa de conversión",val: _ga4TC, delta: fmtDelta(DATA.GA4_TASA_CONV_DELTA), up: DATA.GA4_TASA_CONV_DELTA_UP === true, prev: _ga4TCP },
     ];
 
     const ga4CardW = 2.1;
