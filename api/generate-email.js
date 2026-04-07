@@ -304,15 +304,21 @@ async function generatePptx(DATA) {
     const fmtPrev = v => (v && v !== "0" && v !== 0) ? v : "";
     const _ga4Ses  = parseNum(DATA.GA4_SESIONES);
     const _ga4Trx  = parseNum(DATA.GA4_TRANSACCIONES);
-    const _ga4TC   = _ga4Ses > 0 ? `${(_ga4Trx / _ga4Ses * 100).toFixed(2).replace(".", ",")}%` : "";
+    const _ga4TCn  = _ga4Ses > 0 ? _ga4Trx / _ga4Ses * 100 : 0;
+    const _ga4TC   = _ga4TCn > 0 ? `${_ga4TCn.toFixed(2).replace(".", ",")}%` : "";
     const _ga4SesP = parseNum(DATA.GA4_SESIONES_PREV);
     const _ga4TrxP = parseNum(DATA.GA4_TRANSACCIONES_PREV);
-    const _ga4TCP  = _ga4SesP > 0 ? `${(_ga4TrxP / _ga4SesP * 100).toFixed(2).replace(".", ",")}%` : "";
+    const _ga4TCPn = _ga4SesP > 0 ? _ga4TrxP / _ga4SesP * 100 : 0;
+    const _ga4TCP  = _ga4TCPn > 0 ? `${_ga4TCPn.toFixed(2).replace(".", ",")}%` : "";
+    const _ga4TCDelta = (_ga4TCn > 0 && _ga4TCPn > 0)
+      ? `${(_ga4TCn >= _ga4TCPn ? "+" : "")}${(_ga4TCn - _ga4TCPn).toFixed(2).replace(".", ",")}%`
+      : "";
+    const _ga4TCUp = _ga4TCn >= _ga4TCPn;
     const ga4Kpis = [
       { label: "Sesiones",          val: DATA.GA4_SESIONES      || "", delta: fmtDelta(DATA.GA4_SESIONES_DELTA), up: DATA.GA4_SESIONES_DELTA_UP      === true, prev: fmtPrev(DATA.GA4_SESIONES_PREV) },
       { label: "Transacciones",     val: DATA.GA4_TRANSACCIONES || "", delta: fmtDelta(DATA.GA4_TRANSACCIONES_DELTA), up: DATA.GA4_TRANSACCIONES_DELTA_UP === true, prev: fmtPrev(DATA.GA4_TRANSACCIONES_PREV) },
       { label: "Ingresos",          val: fmtMoneyCompact(DATA.GA4_INGRESOS), delta: fmtDelta(DATA.GA4_INGRESOS_DELTA), up: DATA.GA4_INGRESOS_DELTA_UP === true, prev: fmtPrev(DATA.GA4_INGRESOS_PREV) },
-      { label: "Tasa de conversión",val: _ga4TC, delta: fmtDelta(DATA.GA4_TASA_CONV_DELTA), up: DATA.GA4_TASA_CONV_DELTA_UP === true, prev: _ga4TCP },
+      { label: "Tasa de conversión",val: _ga4TC, delta: _ga4TCDelta, up: _ga4TCUp, prev: _ga4TCP },
     ];
 
     const ga4CardW = 2.1;
