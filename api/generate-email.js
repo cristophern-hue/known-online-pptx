@@ -38,6 +38,7 @@ async function generatePptx(DATA) {
   // ── Helpers ───────────────────────────────────────────────────────────────
   const parseNum  = str => parseFloat((str || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) || 0;
   const parseRate = str => parseNum((str || "0").replace("%", "").replace("pp", ""));
+  const fmtDelta  = str => (str || "").replace(/pp$/i, "%");
   const hasEcommerce = !!(DATA.EMAIL_INGRESOS || DATA.EMAIL_TRANSACCIONES);
   const hasGA4       = DATA.GA4_TIENE_DATOS === true;
   const plataforma   = (DATA.PLATAFORMA_EMAIL || DATA.Plataforma || "").toUpperCase();
@@ -247,13 +248,13 @@ async function generatePptx(DATA) {
     });
 
     const kpis = [
-      { label: "Envíos",           val: DATA.EMAIL_ENVIOS    || "", delta: DATA.EMAIL_ENVIOS_DELTA    || "", up: DATA.EMAIL_ENVIOS_DELTA_UP    === true, prev: DATA.EMAIL_ENVIOS_PREV    || "" },
-      { label: "Tasa de apertura", val: DATA.EMAIL_APERTURA  || "", delta: DATA.EMAIL_APERTURA_DELTA  || "", up: DATA.EMAIL_APERTURA_DELTA_UP  === true, prev: DATA.EMAIL_APERTURA_PREV  || "" },
-      { label: "CTOR",             val: DATA.EMAIL_CTOR      || "", delta: DATA.EMAIL_CTOR_DELTA      || "", up: DATA.EMAIL_CTOR_DELTA_UP      === true, prev: DATA.EMAIL_CTOR_PREV      || "" },
-      { label: "Tasa de bajas",    val: DATA.EMAIL_BAJAS     || "", delta: DATA.EMAIL_BAJAS_DELTA     || "", up: DATA.EMAIL_BAJAS_DELTA_UP     !== true, prev: DATA.EMAIL_BAJAS_PREV     || "" },
+      { label: "Envíos",           val: DATA.EMAIL_ENVIOS    || "", delta: fmtDelta(DATA.EMAIL_ENVIOS_DELTA), up: DATA.EMAIL_ENVIOS_DELTA_UP    === true, prev: DATA.EMAIL_ENVIOS_PREV    || "" },
+      { label: "Tasa de apertura", val: DATA.EMAIL_APERTURA  || "", delta: fmtDelta(DATA.EMAIL_APERTURA_DELTA), up: DATA.EMAIL_APERTURA_DELTA_UP  === true, prev: DATA.EMAIL_APERTURA_PREV  || "" },
+      { label: "CTOR",             val: DATA.EMAIL_CTOR      || "", delta: fmtDelta(DATA.EMAIL_CTOR_DELTA), up: DATA.EMAIL_CTOR_DELTA_UP      === true, prev: DATA.EMAIL_CTOR_PREV      || "" },
+      { label: "Tasa de bajas",    val: DATA.EMAIL_BAJAS     || "", delta: fmtDelta(DATA.EMAIL_BAJAS_DELTA), up: DATA.EMAIL_BAJAS_DELTA_UP     !== true, prev: DATA.EMAIL_BAJAS_PREV     || "" },
     ];
-    if (DATA.EMAIL_TRANSACCIONES) kpis.push({ label: "Transacciones",  val: DATA.EMAIL_TRANSACCIONES || "", delta: DATA.EMAIL_TRANSACCIONES_DELTA || "", up: DATA.EMAIL_TRANSACCIONES_DELTA_UP === true, prev: DATA.EMAIL_TRANSACCIONES_PREV || "" });
-    if (DATA.EMAIL_INGRESOS)      kpis.push({ label: "Ingresos online", val: DATA.EMAIL_INGRESOS      || "", delta: DATA.EMAIL_INGRESOS_DELTA      || "", up: DATA.EMAIL_INGRESOS_DELTA_UP      === true, prev: DATA.EMAIL_INGRESOS_PREV      || "" });
+    if (DATA.EMAIL_TRANSACCIONES) kpis.push({ label: "Transacciones",  val: DATA.EMAIL_TRANSACCIONES || "", delta: fmtDelta(DATA.EMAIL_TRANSACCIONES_DELTA), up: DATA.EMAIL_TRANSACCIONES_DELTA_UP === true, prev: DATA.EMAIL_TRANSACCIONES_PREV || "" });
+    if (DATA.EMAIL_INGRESOS)      kpis.push({ label: "Ingresos online", val: DATA.EMAIL_INGRESOS      || "", delta: fmtDelta(DATA.EMAIL_INGRESOS_DELTA), up: DATA.EMAIL_INGRESOS_DELTA_UP      === true, prev: DATA.EMAIL_INGRESOS_PREV      || "" });
 
     const cardW      = 2.1;
     const itemsPerRow = Math.min(kpis.length, 4);
@@ -300,10 +301,10 @@ async function generatePptx(DATA) {
     s.addText("GA4", { x: 8.8, y: 0.2, w: 1.0, h: 0.35, fontSize: 10, bold: true, color: ORANGE, fontFace: "DM Sans", align: "center", valign: "middle" });
 
     const ga4Kpis = [
-      { label: "Sesiones",          val: DATA.GA4_SESIONES      || "", delta: DATA.GA4_SESIONES_DELTA      || "", up: DATA.GA4_SESIONES_DELTA_UP      === true, prev: DATA.GA4_SESIONES_PREV      || "" },
-      { label: "Transacciones",     val: DATA.GA4_TRANSACCIONES || "", delta: DATA.GA4_TRANSACCIONES_DELTA || "", up: DATA.GA4_TRANSACCIONES_DELTA_UP === true, prev: DATA.GA4_TRANSACCIONES_PREV || "" },
-      { label: "Ingresos",          val: DATA.GA4_INGRESOS      || "", delta: DATA.GA4_INGRESOS_DELTA      || "", up: DATA.GA4_INGRESOS_DELTA_UP      === true, prev: DATA.GA4_INGRESOS_PREV      || "" },
-      { label: "Tasa de conversión",val: DATA.GA4_TASA_CONV     || "", delta: DATA.GA4_TASA_CONV_DELTA     || "", up: DATA.GA4_TASA_CONV_DELTA_UP     === true, prev: DATA.GA4_TASA_CONV_PREV     || "" },
+      { label: "Sesiones",          val: DATA.GA4_SESIONES      || "", delta: fmtDelta(DATA.GA4_SESIONES_DELTA), up: DATA.GA4_SESIONES_DELTA_UP      === true, prev: DATA.GA4_SESIONES_PREV      || "" },
+      { label: "Transacciones",     val: DATA.GA4_TRANSACCIONES || "", delta: fmtDelta(DATA.GA4_TRANSACCIONES_DELTA), up: DATA.GA4_TRANSACCIONES_DELTA_UP === true, prev: DATA.GA4_TRANSACCIONES_PREV || "" },
+      { label: "Ingresos",          val: DATA.GA4_INGRESOS      || "", delta: fmtDelta(DATA.GA4_INGRESOS_DELTA), up: DATA.GA4_INGRESOS_DELTA_UP      === true, prev: DATA.GA4_INGRESOS_PREV      || "" },
+      { label: "Tasa de conversión",val: DATA.GA4_TASA_CONV     || "", delta: fmtDelta(DATA.GA4_TASA_CONV_DELTA), up: DATA.GA4_TASA_CONV_DELTA_UP     === true, prev: DATA.GA4_TASA_CONV_PREV     || "" },
     ];
 
     const ga4CardW = 2.1;
