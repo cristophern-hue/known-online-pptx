@@ -13,7 +13,9 @@ module.exports = async function handler(req, res) {
   const { DATA } = req.body || {};
   if (!DATA) return res.status(400).json({ error: "Missing DATA in request body." });
   try {
-    const isAnuraPeru = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("anura peru");
+    const isAnuraPeru = (DATA.CLIENTE_NOMBRE || "").toLowerCase().replace(/\s+/g, " ").trim().includes("anura peru")
+      || DATA.GOOGLE_MONEDA === "PEN"
+      || DATA.CONVIERTE_PEN_USD === true;
     let pptxData = DATA;
 
     if (isAnuraPeru) {
