@@ -319,6 +319,81 @@ async function generatePptx(DATA) {
     s.addText(`Total: ${parseNum(DATA.ZOHO_LEADS_TOTAL)} leads procesados en Zoho CRM`, { x: 0.5, y: 5.08, w: 9, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", italic: true });
   }
 
+  // ── SLIDE 7a – CALIDAD DE LEADS POR CANAL (condicional) ───────────────────
+  if (DATA.ZOHO_QUALITY && typeof DATA.ZOHO_QUALITY === "object") {
+    const q = DATA.ZOHO_QUALITY;
+    const canales = [
+      { label: "Google Ads",     key: "google" },
+      { label: "Meta Ads",       key: "meta"   },
+      { label: "Formulario Web", key: "web"    },
+    ].filter(c => q[c.key] && (q[c.key].nuevo || q[c.key].contactado || q[c.key].muerto));
+
+    if (canales.length > 0) {
+      const s = pres.addSlide();
+      s.background = { color: WHITE };
+      s.addText("Calidad de Leads por Canal", { x: 0.5, y: 0.22, w: 9, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
+      s.addText(`Distribución de estados por fuente — Zoho CRM  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""}`, { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+      const estadoDef = [
+        { label: "Nuevo",      key: "nuevo",      color: "185FA5", bg: LIGHT_BLUE },
+        { label: "Contactado", key: "contactado",  color: AMBER,    bg: AMBER_BG  },
+        { label: "Muerto",     key: "muerto",      color: "A32D2D", bg: RED_BG    },
+      ];
+
+      const colW = 9.0 / canales.length;
+      canales.forEach((canal, ci) => {
+        const cx = 0.5 + ci * colW;
+        const cData = q[canal.key] || {};
+        const cTotal = (cData.nuevo || 0) + (cData.contactado || 0) + (cData.muerto || 0);
+
+        s.addShape(pres.shapes.RECTANGLE, { x: cx + 0.08, y: 1.15, w: colW - 0.16, h: 0.38, fill: { color: ORANGE }, line: { color: ORANGE } });
+        s.addText(canal.label, { x: cx + 0.08, y: 1.17, w: colW - 0.16, h: 0.34, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
+        s.addText(`${cTotal} lead${cTotal !== 1 ? "s" : ""}`, { x: cx + 0.08, y: 1.58, w: colW - 0.16, h: 0.3, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
+
+        estadoDef.forEach((est, ei) => {
+          const n = cData[est.key] || 0;
+          const pct = cTotal > 0 ? Math.round(n / cTotal * 100) : 0;
+          const ey = 1.95 + ei * 1.08;
+          s.addShape(pres.shapes.RECTANGLE, { x: cx + 0.08, y: ey, w: colW - 0.16, h: 0.95, fill: { color: est.bg }, line: { color: "F0E8E0", width: 0.5 } });
+          s.addShape(pres.shapes.RECTANGLE, { x: cx + 0.08, y: ey, w: colW - 0.16, h: 0.06, fill: { color: est.color }, line: { color: est.color } });
+          s.addText(est.label, { x: cx + 0.08, y: ey + 0.1,  w: colW - 0.16, h: 0.24, fontSize: 9,  color: GRAY_TEXT,  fontFace: "DM Sans", align: "center" });
+          s.addText(String(n), { x: cx + 0.08, y: ey + 0.32, w: colW - 0.16, h: 0.38, fontSize: 26, bold: true, color: est.color, fontFace: "DM Sans", align: "center" });
+          s.addText(`${pct}%`,  { x: cx + 0.08, y: ey + 0.68, w: colW - 0.16, h: 0.22, fontSize: 10, color: GRAY_TEXT,  fontFace: "DM Sans", align: "center" });
+        });
+      });
+    }
+  }
+
+  // ── SLIDE 7b – GESTIÓN COMERCIAL DE LEADS (condicional) ───────────────────
+  {
+    const _contactRate = DATA.ZOHO_CONTACT_RATE != null && DATA.ZOHO_CONTACT_RATE !== "" ? Number(DATA.ZOHO_CONTACT_RATE) : null;
+    const _deadRate    = DATA.ZOHO_DEAD_RATE    != null && DATA.ZOHO_DEAD_RATE    !== "" ? Number(DATA.ZOHO_DEAD_RATE)    : null;
+    if (_contactRate !== null || _deadRate !== null) {
+      const fmtPct = n => `${Number(n).toFixed(1).replace(".", ",")}%`;
+      const s = pres.addSlide();
+      s.background = { color: WHITE };
+      s.addText("Gestión Comercial de Leads", { x: 0.5, y: 0.22, w: 9, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
+      s.addText(`Indicadores de gestión — Zoho CRM  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""}`, { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+      const mgmtKpis = [
+        ...(_contactRate !== null ? [{ label: "Tasa de contacto", val: fmtPct(_contactRate), color: "185FA5", bg: LIGHT_BLUE, desc: "Porcentaje de leads que recibieron al menos un intento de contacto durante el período." }] : []),
+        ...(_deadRate    !== null ? [{ label: "Tasa de descarte", val: fmtPct(_deadRate),    color: "A32D2D", bg: RED_BG,     desc: "Porcentaje de leads marcados como no calificados o descartados en Zoho CRM."         }] : []),
+      ];
+
+      const cW = mgmtKpis.length === 1 ? 5.0 : 4.3;
+      const startX = mgmtKpis.length === 1 ? 2.5 : 0.6;
+      mgmtKpis.forEach((k, i) => {
+        const x = startX + i * (cW + 0.4);
+        s.addShape(pres.shapes.RECTANGLE, { x, y: 1.3, w: cW, h: 3.5,  fill: { color: k.bg }, line: { color: "F0E8E0", width: 0.5 } });
+        s.addShape(pres.shapes.RECTANGLE, { x, y: 1.3, w: cW, h: 0.08, fill: { color: k.color }, line: { color: k.color } });
+        s.addText(k.label, { x, y: 1.45, w: cW, h: 0.35, fontSize: 13, bold: true, color: k.color, fontFace: "DM Sans", align: "center" });
+        s.addText(k.val,   { x, y: 1.88, w: cW, h: 1.2,  fontSize: 64, bold: true, color: k.color, fontFace: "DM Sans", align: "center", valign: "middle" });
+        s.addShape(pres.shapes.RECTANGLE, { x: x + 0.4, y: 3.22, w: cW - 0.8, h: 0.02, fill: { color: "E8E0D8" }, line: { color: "E8E0D8" } });
+        s.addText(k.desc,  { x: x + 0.2, y: 3.32, w: cW - 0.4, h: 0.55, fontSize: 9.5, color: GRAY_TEXT, fontFace: "DM Sans", align: "center", italic: true });
+      });
+    }
+  }
+
   // ── SLIDE 7 – RESULTADOS COMERCIALES (condicional) ────────────────────────
   if (Array.isArray(DATA.FUNNEL_ROWS) && DATA.FUNNEL_ROWS.length > 0) {
     const s = pres.addSlide();
