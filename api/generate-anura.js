@@ -98,8 +98,8 @@ async function generatePptx(DATA) {
 
     // Google block (condicional)
     if (hasGoogle) {
-      s.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: 3.48, w: 4.4, h: 1.72, fill: { color: LIGHT_BLUE }, line: { color: "D0E4F5", width: 0.5 } });
-      s.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: 3.48, w: 4.4, h: 0.36, fill: { color: BLUE }, line: { color: BLUE } });
+      s.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: 3.48, w: 4.4, h: 1.72, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+      s.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: 3.48, w: 4.4, h: 0.36, fill: { color: ORANGE }, line: { color: ORANGE } });
       s.addText("Google Ads", { x: 5.35, y: 3.5, w: 3, h: 0.3, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
       const googleStats = [
         ["Inversión", fmtMoneyCompact(DATA.GOOGLE_COSTO), DATA.GOOGLE_COSTO_DELTA  || "", DATA.GOOGLE_COSTO_DELTA_UP  === true],
@@ -123,10 +123,10 @@ async function generatePptx(DATA) {
   if (hasGoogle) {
     const s = pres.addSlide();
     s.background = { color: WHITE };
-    s.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: BLUE }, line: { color: BLUE } });
+    s.addShape(pres.shapes.OVAL, { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fill: { color: ORANGE }, line: { color: ORANGE } });
     s.addText("G", { x: 0.15, y: 0.1, w: 0.72, h: 0.72, fontSize: 18, bold: true, color: WHITE, fontFace: "DM Sans", align: "center", valign: "middle" });
     s.addText([
-      { text: "Google Ads ", options: { bold: true, color: BLUE, fontSize: 26, fontFace: "DM Sans" } },
+      { text: "Google Ads ", options: { bold: true, color: ORANGE, fontSize: 26, fontFace: "DM Sans" } },
       { text: `– ${DATA.PERIODO_ACTUAL_LABEL || ""}`, options: { bold: true, color: DARK, fontSize: 26, fontFace: "DM Sans" } },
     ], { x: 1.0, y: 0.15, w: 8.8, h: 0.6 });
 
@@ -141,8 +141,8 @@ async function generatePptx(DATA) {
     const cardW = 1.48, cardH = 2.0, startX = 0.35, startY = 0.95, gap = 0.08;
     gKpis.forEach((k, i) => {
       const x = startX + i * (cardW + gap), y = startY;
-      s.addShape(pres.shapes.RECTANGLE, { x, y, w: cardW, h: cardH, fill: { color: LIGHT_BLUE }, line: { color: "D0E4F5", width: 0.5 } });
-      s.addShape(pres.shapes.RECTANGLE, { x, y, w: cardW, h: 0.06, fill: { color: BLUE }, line: { color: BLUE } });
+      s.addShape(pres.shapes.RECTANGLE, { x, y, w: cardW, h: cardH, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+      s.addShape(pres.shapes.RECTANGLE, { x, y, w: cardW, h: 0.06, fill: { color: ORANGE }, line: { color: ORANGE } });
       s.addText(k.label, { x, y: y + 0.1,  w: cardW, h: 0.28, fontSize: 9,  color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
       s.addText(k.val,   { x, y: y + 0.42, w: cardW, h: 0.65, fontSize: 22, bold: true, color: DARK, fontFace: "DM Sans", align: "center" });
       s.addShape(pres.shapes.RECTANGLE, { x: x + 0.2, y: y + 1.12, w: cardW - 0.4, h: 0.26, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
@@ -154,15 +154,15 @@ async function generatePptx(DATA) {
     if (Array.isArray(DATA.GOOGLE_CAMPANAS) && DATA.GOOGLE_CAMPANAS.length > 0) {
       const tY = 3.18, hdrs = ["Campaña", "Clicks", "Impresiones", "CTR", "Inversión"], colW = [3.8, 1.2, 1.5, 1.0, 1.6];
       const tW = colW.reduce((a, b) => a + b, 0), mX = (10 - tW) / 2;
-      s.addShape(pres.shapes.RECTANGLE, { x: mX, y: tY, w: tW, h: 0.32, fill: { color: BLUE }, line: { color: BLUE } });
+      s.addShape(pres.shapes.RECTANGLE, { x: mX, y: tY, w: tW, h: 0.32, fill: { color: ORANGE }, line: { color: ORANGE } });
       let cx = mX + 0.1;
       hdrs.forEach((h, i) => { s.addText(h, { x: cx, y: tY + 0.04, w: colW[i] - 0.1, h: 0.24, fontSize: 9, bold: true, color: WHITE, fontFace: "DM Sans", align: i === 0 ? "left" : "center" }); cx += colW[i]; });
       DATA.GOOGLE_CAMPANAS.slice(0, 6).forEach((row, ri) => {
-        const ry = tY + 0.32 + ri * 0.32, bg = ri % 2 === 0 ? WHITE : LIGHT_BLUE;
+        const ry = tY + 0.32 + ri * 0.32, bg = ri % 2 === 0 ? WHITE : "FFF8F5";
         s.addShape(pres.shapes.RECTANGLE, { x: mX, y: ry, w: tW, h: 0.32, fill: { color: bg }, line: { color: bg } });
         const vals = [row.nombre || "", row.clicks || "", row.impresiones || "", row.ctr || "", fmtMoneyCompact(row.costo)];
         let vx = mX + 0.1;
-        vals.forEach((v, vi) => { s.addText(String(v), { x: vx, y: ry + 0.05, w: colW[vi] - 0.1, h: 0.22, fontSize: 9, color: vi === 0 ? BLUE : DARK, fontFace: "DM Sans", align: vi === 0 ? "left" : "center" }); vx += colW[vi]; });
+        vals.forEach((v, vi) => { s.addText(String(v), { x: vx, y: ry + 0.05, w: colW[vi] - 0.1, h: 0.22, fontSize: 9, color: vi === 0 ? ORANGE : DARK, fontFace: "DM Sans", align: vi === 0 ? "left" : "center" }); vx += colW[vi]; });
       });
     }
   }
