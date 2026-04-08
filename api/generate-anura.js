@@ -96,7 +96,7 @@ async function generatePptx(DATA) {
       ["Inversión", fmtCompact(DATA.META_COSTO), DATA.META_COSTO_DELTA  || "", DATA.META_COSTO_DELTA_UP  === true],
       ["Clicks",    DATA.META_CLICKS || "", DATA.META_CLICKS_DELTA || "", DATA.META_CLICKS_DELTA_UP === true],
       ["CPL",       fmtCompact(DATA.META_CPL), DATA.META_CPL_DELTA || "", DATA.META_CPL_DELTA_UP === true],
-      ["Leads Zoho",String(parseNum(DATA.ZOHO_LEADS_META) || DATA.ZOHO_LEADS_META || ""), "", true],
+      ["Leads Zoho",String(parseNum(DATA.ZOHO_LEADS_META) || DATA.ZOHO_LEADS_META || ""), fmtDelta(DATA.ZOHO_LEADS_META_DELTA || ""), DATA.ZOHO_LEADS_META_DELTA_UP === true],
     ];
     metaStats.forEach(([lbl, val, delta, up], i) => {
       const col = i % 2, row = Math.floor(i / 2);
@@ -117,7 +117,7 @@ async function generatePptx(DATA) {
         ["Inversión", fmtCompact(DATA.GOOGLE_COSTO), DATA.GOOGLE_COSTO_DELTA  || "", DATA.GOOGLE_COSTO_DELTA_UP  === true],
         ["Clicks",    DATA.GOOGLE_CLICKS || "", DATA.GOOGLE_CLICKS_DELTA || "", DATA.GOOGLE_CLICKS_DELTA_UP === true],
         ["CPL",       fmtCompact(DATA.GOOGLE_CPL), DATA.GOOGLE_CPL_DELTA || "", DATA.GOOGLE_CPL_DELTA_UP === true],
-        ["Leads Zoho",String(parseNum(DATA.ZOHO_LEADS_GOOGLE) || DATA.ZOHO_LEADS_GOOGLE || ""), "", true],
+        ["Leads Zoho",String(parseNum(DATA.ZOHO_LEADS_GOOGLE) || DATA.ZOHO_LEADS_GOOGLE || ""), fmtDelta(DATA.ZOHO_LEADS_GOOGLE_DELTA || ""), DATA.ZOHO_LEADS_GOOGLE_DELTA_UP === true],
       ];
       googleStats.forEach(([lbl, val, delta, up], i) => {
         const col = i % 2, row = Math.floor(i / 2);
@@ -148,7 +148,7 @@ async function generatePptx(DATA) {
       { label: "Impresiones",  val: DATA.GOOGLE_IMPRESIONES || "",         prev: DATA.GOOGLE_IMPRESIONES_PREV || "",         delta: fmtDelta(DATA.GOOGLE_IMPRESIONES_DELTA), up: DATA.GOOGLE_IMPRESIONES_DELTA_UP === true },
       { label: "CTR",          val: DATA.GOOGLE_CTR  || "",                prev: DATA.GOOGLE_CTR_PREV     || "",            delta: fmtDelta(DATA.GOOGLE_CTR_DELTA),     up: DATA.GOOGLE_CTR_DELTA_UP     === true },
       { label: "CPL",          val: fmtCompact(DATA.GOOGLE_CPL),         prev: formatCurrency(DATA.GOOGLE_CPL_PREV),     delta: fmtDelta(DATA.GOOGLE_CPL_DELTA),     up: DATA.GOOGLE_CPL_DELTA_UP     === true },
-      { label: "Leads Zoho",   val: String(parseNum(DATA.ZOHO_LEADS_GOOGLE) || DATA.ZOHO_LEADS_GOOGLE || ""), prev: DATA.ZOHO_LEADS_GOOGLE_PREV || "", delta: "", up: true },
+      { label: "Leads Zoho",   val: String(parseNum(DATA.ZOHO_LEADS_GOOGLE) || DATA.ZOHO_LEADS_GOOGLE || ""), prev: DATA.ZOHO_LEADS_GOOGLE_PREV || "", delta: fmtDelta(DATA.ZOHO_LEADS_GOOGLE_DELTA || ""), up: DATA.ZOHO_LEADS_GOOGLE_DELTA_UP === true },
     ];
     const cardW = 1.48, cardH = 2.0, startX = 0.35, startY = 0.95, gap = 0.08;
     gKpis.forEach((k, i) => {
@@ -196,7 +196,7 @@ async function generatePptx(DATA) {
       { label: "Impresiones", val: DATA.META_IMPRESIONES || "",         prev: DATA.META_IMPRESIONES_PREV || "",        delta: fmtDelta(DATA.META_IMPRESIONES_DELTA), up: DATA.META_IMPRESIONES_DELTA_UP === true },
       { label: "CTR",         val: DATA.META_CTR  || "",                prev: DATA.META_CTR_PREV     || "",           delta: fmtDelta(DATA.META_CTR_DELTA),     up: DATA.META_CTR_DELTA_UP     === true },
       { label: "CPL",         val: fmtCompact(DATA.META_CPL),         prev: formatCurrency(DATA.META_CPL_PREV),     delta: fmtDelta(DATA.META_CPL_DELTA),     up: DATA.META_CPL_DELTA_UP     === true },
-      { label: "Leads Zoho",  val: String(parseNum(DATA.ZOHO_LEADS_META) || DATA.ZOHO_LEADS_META || ""), prev: DATA.ZOHO_LEADS_META_PREV || "", delta: "", up: true },
+      { label: "Leads Zoho",  val: String(parseNum(DATA.ZOHO_LEADS_META) || DATA.ZOHO_LEADS_META || ""), prev: DATA.ZOHO_LEADS_META_PREV || "", delta: fmtDelta(DATA.ZOHO_LEADS_META_DELTA || ""), up: DATA.ZOHO_LEADS_META_DELTA_UP === true },
     ];
     const cardW = 1.48, cardH = 2.0, startX = 0.35, startY = 0.95, gap = 0.08;
     mKpis.forEach((k, i) => {
