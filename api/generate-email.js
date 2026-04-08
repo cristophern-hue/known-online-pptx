@@ -32,7 +32,7 @@ module.exports = async function handler(req, res) {
         if (usd >= 1_000)     return `$ ${(usd / 1_000).toFixed(1).replace(".", ",")} K`;
         return `$ ${usd.toFixed(0)}`;
       };
-      const convertCampanas = arr => (arr || []).map(c => ({ ...c, ingresos: clpToUsd(c.ingresos) }));
+      const convertCampanas = arr => arr ? arr.map(c => ({ ...c, ingresos: clpToUsd(c.ingresos) })) : arr;
       pptxData = {
         ...DATA,
         EMAIL_INGRESOS:              clpToUsd(DATA.EMAIL_INGRESOS),
