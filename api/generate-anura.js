@@ -13,7 +13,47 @@ module.exports = async function handler(req, res) {
   const { DATA } = req.body || {};
   if (!DATA) return res.status(400).json({ error: "Missing DATA in request body." });
   try {
-    const base64 = await generatePptx(DATA);
+    const isAnuraPeru = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("anura peru");
+    let pptxData = DATA;
+
+    if (isAnuraPeru) {
+      let penRate = 3.75; // fallback
+      try {
+        const rateRes = await fetch("https://open.er-api.com/v6/latest/USD");
+        const rateJson = await rateRes.json();
+        if (rateJson.rates && rateJson.rates.PEN) penRate = rateJson.rates.PEN;
+      } catch (_) { /* usa fallback */ }
+      const penToUsd = val => {
+        if (val === null || val === undefined || val === "" || val === "—") return val;
+        const n = typeof val === "number" ? val : parseFloat(String(val).replace(/[^0-9.]/g, "")) || 0;
+        return n > 0 ? n / penRate : val;
+      };
+      const convertCampanas = arr => arr ? arr.map(c => ({ ...c, costo: penToUsd(c.costo) })) : arr;
+
+      const googleCostoUsd     = penToUsd(DATA.GOOGLE_COSTO)      || 0;
+      const googleCostoPrevUsd = penToUsd(DATA.GOOGLE_COSTO_PREV) || 0;
+      const metaCosto          = parseFloat(DATA.META_COSTO)      || 0;
+      const metaCostoPrev      = parseFloat(DATA.META_COSTO_PREV) || 0;
+      const inversionUsd       = metaCosto + googleCostoUsd;
+      const inversionPrevUsd   = metaCostoPrev + googleCostoPrevUsd;
+      const leads              = parseFloat(DATA.ZOHO_LEADS_TOTAL) || 1;
+      const leadsPrev          = parseFloat(DATA.ZOHO_LEADS_PREV)  || 1;
+
+      pptxData = {
+        ...DATA,
+        GOOGLE_COSTO:      googleCostoUsd,
+        GOOGLE_COSTO_PREV: googleCostoPrevUsd,
+        GOOGLE_CPL:        penToUsd(DATA.GOOGLE_CPL),
+        GOOGLE_CPL_PREV:   penToUsd(DATA.GOOGLE_CPL_PREV),
+        GOOGLE_CAMPANAS:   convertCampanas(DATA.GOOGLE_CAMPANAS),
+        INVERSION_TOTAL:   inversionUsd,
+        INVERSION_PREV:    inversionPrevUsd,
+        CPL_TOTAL:         inversionUsd / leads,
+        CPL_PREV:          inversionPrevUsd / leadsPrev,
+      };
+    }
+
+    const base64 = await generatePptx(pptxData);
     const filename = `Reporte_Anura_${DATA.PERIODO_ACTUAL_LABEL || "Periodo"}.pptx`.replace(/\s+/g, "_");
     return res.status(200).json({ pptx: base64, filename });
   } catch (err) {
