@@ -16,7 +16,34 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const base64 = await generatePptx(DATA);
+    const isCummins = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("cummins");
+    let pptxData = DATA;
+
+    if (isCummins) {
+      // Icomm envía ingresos en CLP → convertir a USD
+      const CLP_FALLBACK = 950;
+      const clpRate = parseFloat(DATA.TIPO_CAMBIO_CLP) || CLP_FALLBACK;
+      const clpToUsd = val => {
+        if (!val || val === "—") return val;
+        const n = parseFloat((String(val) || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) || 0;
+        if (n === 0) return val;
+        const usd = n / clpRate;
+        if (usd >= 1_000_000) return `$ ${(usd / 1_000_000).toFixed(2).replace(".", ",")} M`;
+        if (usd >= 1_000)     return `$ ${(usd / 1_000).toFixed(1).replace(".", ",")} K`;
+        return `$ ${usd.toFixed(0)}`;
+      };
+      const convertCampanas = arr => (arr || []).map(c => ({ ...c, ingresos: clpToUsd(c.ingresos) }));
+      pptxData = {
+        ...DATA,
+        EMAIL_INGRESOS:              clpToUsd(DATA.EMAIL_INGRESOS),
+        EMAIL_INGRESOS_PREV:         clpToUsd(DATA.EMAIL_INGRESOS_PREV),
+        EMAIL_CAMPANAS:              convertCampanas(DATA.EMAIL_CAMPANAS),
+        EMAIL_CAMPANAS_NEWSLETTER:   convertCampanas(DATA.EMAIL_CAMPANAS_NEWSLETTER),
+        EMAIL_CAMPANAS_AUTOMATIZADA: convertCampanas(DATA.EMAIL_CAMPANAS_AUTOMATIZADA),
+      };
+    }
+
+    const base64 = await generatePptx(pptxData);
     const filename = `Reporte_Email_${DATA.CLIENTE_NOMBRE || "Cliente"}_${DATA.PERIODO_ACTUAL_LABEL || "Periodo"}.pptx`
       .replace(/\s+/g, "_");
     return res.status(200).json({ pptx: base64, filename });
