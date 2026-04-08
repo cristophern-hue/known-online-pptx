@@ -19,10 +19,16 @@ module.exports = async function handler(req, res) {
     if (isAnuraPeru) {
       let penRate = 3.75; // fallback
       try {
-        const rateRes = await fetch("https://open.er-api.com/v6/latest/USD");
+        const rateRes = await fetch("https://api.exchangerate-api.com/v4/latest/USD", { signal: AbortSignal.timeout(4000) });
         const rateJson = await rateRes.json();
         if (rateJson.rates && rateJson.rates.PEN) penRate = rateJson.rates.PEN;
-      } catch (_) { /* usa fallback */ }
+      } catch (_) {
+        try {
+          const r2 = await fetch("https://open.er-api.com/v6/latest/USD", { signal: AbortSignal.timeout(4000) });
+          const j2 = await r2.json();
+          if (j2.rates && j2.rates.PEN) penRate = j2.rates.PEN;
+        } catch (_) { /* usa fallback 3.75 */ }
+      }
       const penToUsd = val => {
         if (val === null || val === undefined || val === "" || val === "—") return val;
         const n = typeof val === "number" ? val : parseFloat(String(val).replace(/[^0-9.]/g, "")) || 0;
