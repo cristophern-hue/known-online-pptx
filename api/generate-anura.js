@@ -35,18 +35,28 @@ module.exports = async function handler(req, res) {
       const inversionPrevUsd   = metaCostoPrev + googleCostoPrevUsd;
       const leads              = parseFloat(DATA.ZOHO_LEADS_TOTAL) || 1;
       const leadsPrev          = parseFloat(DATA.ZOHO_LEADS_PREV)  || 1;
+      const cplUsd             = inversionUsd / leads;
+      const cplPrevUsd         = inversionPrevUsd / leadsPrev;
+
+      const calcDelta = (curr, prev) => prev > 0
+        ? `${curr >= prev ? "+" : ""}${((curr - prev) / prev * 100).toFixed(1).replace(".", ",")}%`
+        : "";
 
       pptxData = {
         ...DATA,
-        GOOGLE_COSTO:      googleCostoUsd,
-        GOOGLE_COSTO_PREV: googleCostoPrevUsd,
-        GOOGLE_CPL:        penToUsd(DATA.GOOGLE_CPL),
-        GOOGLE_CPL_PREV:   penToUsd(DATA.GOOGLE_CPL_PREV),
-        GOOGLE_CAMPANAS:   convertCampanas(DATA.GOOGLE_CAMPANAS),
-        INVERSION_TOTAL:   inversionUsd,
-        INVERSION_PREV:    inversionPrevUsd,
-        CPL_TOTAL:         inversionUsd / leads,
-        CPL_PREV:          inversionPrevUsd / leadsPrev,
+        GOOGLE_COSTO:       googleCostoUsd,
+        GOOGLE_COSTO_PREV:  googleCostoPrevUsd,
+        GOOGLE_CPL:         penToUsd(DATA.GOOGLE_CPL),
+        GOOGLE_CPL_PREV:    penToUsd(DATA.GOOGLE_CPL_PREV),
+        GOOGLE_CAMPANAS:    convertCampanas(DATA.GOOGLE_CAMPANAS),
+        INVERSION_TOTAL:    inversionUsd,
+        INVERSION_PREV:     inversionPrevUsd,
+        INVERSION_DELTA:    calcDelta(inversionUsd, inversionPrevUsd),
+        INVERSION_DELTA_UP: inversionUsd >= inversionPrevUsd,
+        CPL_TOTAL:          cplUsd,
+        CPL_PREV:           cplPrevUsd,
+        CPL_DELTA:          calcDelta(cplUsd, cplPrevUsd),
+        CPL_DELTA_UP:       cplUsd <= cplPrevUsd,
       };
     }
 
