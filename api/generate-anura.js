@@ -36,8 +36,9 @@ async function generatePptx(DATA) {
     return parseFloat((str || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) || 0;
   };
   const formatCurrency = (value, decimals = 0) => {
-    const n = Number(String(value || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) || 0;
-    if (!n) return String(value || "");
+    if (value === null || value === undefined || value === "" || value === "—") return String(value ?? "");
+    const n = typeof value === "number" ? value : Number(value);
+    if (isNaN(n) || n === 0) return String(value || "");
     return "$" + new Intl.NumberFormat("es-AR", {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
