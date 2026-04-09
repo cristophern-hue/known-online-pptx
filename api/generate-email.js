@@ -74,6 +74,8 @@ async function generatePptx(DATA) {
   const isWoowup     = plataforma === "WOOWUP"
                     || Array.isArray(DATA.EMAIL_CAMPANAS_NEWSLETTER)
                     || Array.isArray(DATA.EMAIL_CAMPANAS_AUTOMATIZADA);
+  const isMailup     = plataforma === "MAILUP";
+  const isValledor   = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("valledor");
 
   const todasCampanas        = Array.isArray(DATA.EMAIL_CAMPANAS) ? DATA.EMAIL_CAMPANAS : [];
   const getTipo              = c => (c.tipo || c.Tipo || "").trim().toLowerCase();
@@ -89,7 +91,7 @@ async function generatePptx(DATA) {
   const hasIngresos      = arr => arr.some(c => c.ingresos && c.ingresos !== "—" && parseNum((c.ingresos || "0").replace(/[^0-9,]/g, "").replace(",", ".")) > 0);
   const sortByIngresos   = (a, b) => parseNum((b.ingresos || "0").replace(/[^0-9,]/g, "").replace(",", ".")) - parseNum((a.ingresos || "0").replace(/[^0-9,]/g, "").replace(",", "."));
   const sortByApertura   = (a, b) => parseNum((b.apertura || "0").replace("%", "")) - parseNum((a.apertura || "0").replace("%", ""));
-  const sortCampanas     = arr => [...arr].sort(hasIngresos(arr) ? sortByIngresos : sortByApertura);
+  const sortCampanas     = arr => [...arr].sort((isMailup || !hasIngresos(arr)) ? sortByApertura : sortByIngresos);
   const top3Newsletter   = sortCampanas(campañasNewsletter).slice(0, 3);
   const top3Automatizada = sortCampanas(campañasAutomatizada).slice(0, 3);
   const top3Unicas       = sortCampanas(campañasUnicas).slice(0, 3);
@@ -210,7 +212,7 @@ async function generatePptx(DATA) {
     s.background = { color: WHITE };
 
     s.addText(`Top 3 ${tipo}`, { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
-    s.addText("por ingresos online", { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: accentColor, fontFace: "DM Sans", bold: true });
+    s.addText(isMailup ? "por apertura" : "por ingresos online", { x: 0.5, y: 0.78, w: 7, h: 0.3, fontSize: 13, color: accentColor, fontFace: "DM Sans", bold: true });
     s.addText(DATA.PERIODO_ACTUAL_LABEL || "", { x: 6.5, y: 0.3, w: 3, h: 0.3, fontSize: 11, color: GRAY_TEXT, fontFace: "DM Sans", align: "right" });
 
     const cardW  = 2.85;
@@ -235,7 +237,10 @@ async function generatePptx(DATA) {
       s.addText("📷  Insertar captura", { x: x + 0.12, y: y + 1.1, w: cardW - 0.24, h: 2.0,
         fontSize: 9, color: "AAAAAA", fontFace: "DM Sans", align: "center", valign: "middle" });
 
-      [{ lbl: "Ingresos", val: c.ingresos || "—" }, { lbl: "Apertura", val: c.apertura || "—" }, { lbl: "Envíos", val: c.envios || "—" }]
+      (isMailup
+        ? [{ lbl: "Apertura", val: c.apertura || "—" }, { lbl: "CTOR", val: c.ctor || "—" }, { lbl: "Envíos", val: c.envios || "—" }]
+        : [{ lbl: "Ingresos", val: c.ingresos || "—" }, { lbl: "Apertura", val: c.apertura || "—" }, { lbl: "Envíos", val: c.envios || "—" }]
+      )
         .forEach((d, di) => {
           const dy = y + 3.15 + di * 0.30;
           s.addShape(pres.shapes.RECTANGLE, { x: x + 0.15, y: dy, w: cardW - 0.3, h: 0.33, fill: { color: "F8F4F0" }, line: { color: "EEE8E0", width: 0.3 } });
@@ -287,6 +292,7 @@ async function generatePptx(DATA) {
     ];
     if (DATA.EMAIL_TRANSACCIONES && DATA.EMAIL_TRANSACCIONES !== "—") kpis.push({ label: "Transacciones",  val: DATA.EMAIL_TRANSACCIONES, delta: fmtDelta(DATA.EMAIL_TRANSACCIONES_DELTA), up: DATA.EMAIL_TRANSACCIONES_DELTA_UP === true, prev: DATA.EMAIL_TRANSACCIONES_PREV || "" });
     if (DATA.EMAIL_INGRESOS && DATA.EMAIL_INGRESOS !== "—")           kpis.push({ label: "Ingresos online", val: DATA.EMAIL_INGRESOS,      delta: fmtDelta(DATA.EMAIL_INGRESOS_DELTA),      up: DATA.EMAIL_INGRESOS_DELTA_UP      === true, prev: DATA.EMAIL_INGRESOS_PREV      || "" });
+    if (isValledor && DATA.GA4_SESIONES)                              kpis.push({ label: "Sesiones web",    val: DATA.GA4_SESIONES,        delta: fmtDelta(DATA.GA4_SESIONES_DELTA),        up: DATA.GA4_SESIONES_DELTA_UP        === true, prev: DATA.GA4_SESIONES_PREV        || "" });
 
     const cardW      = 2.1;
     const itemsPerRow = Math.min(kpis.length, 4);
@@ -322,7 +328,7 @@ async function generatePptx(DATA) {
   }
 
   // ── SLIDE – GA4 CANAL EMAIL (condicional) ─────────────────────────────────
-  if (hasGA4) {
+  if (hasGA4 && !isValledor) {
     const s = pres.addSlide();
     s.background = { color: WHITE };
 
