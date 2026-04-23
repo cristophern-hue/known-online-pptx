@@ -211,7 +211,7 @@ async function generatePptx(DATA) {
     });
   }
 
-  const pY = isTiendaInglesa ? 1.2 : 3.35;
+  const pY = isTiendaInglesa ? 1.8 : 3.35;
   s2.addText("Comparativa por plataforma", { x: 0.5, y: pY - 0.4, w: 9, h: 0.35, fontSize: 13, bold: true, color: DARK, fontFace: "DM Sans" });
 
   // Meta block
