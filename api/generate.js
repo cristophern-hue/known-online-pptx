@@ -163,11 +163,22 @@ async function generatePptx(DATA) {
     });
   }
 
+  const isTiendaInglesa = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("tienda inglesa");
+  const _impA = parseNum(DATA.META_IMPRESIONES) + parseNum(DATA.GOOGLE_IMPRESIONES);
+  const _impP = parseNum(DATA.META_IMPRESIONES_PREV) + parseNum(DATA.GOOGLE_IMPRESIONES_PREV);
+  const _impDeltaUp  = _impA >= _impP;
+  const _impDeltaStr = _impP > 0 ? ((_impDeltaUp ? "+" : "") + ((_impA - _impP) / _impP * 100).toFixed(1).replace(".", ",") + "%") : "";
+  const fmtNumCompact = n => {
+    if (n >= 1_000_000) return `${n / 1_000_000 < 10 ? (n / 1_000_000).toFixed(1).replace(".", ",") : Math.round(n / 1_000_000)} M`;
+    if (n >= 1_000)     return `${n / 1_000     < 10 ? (n / 1_000    ).toFixed(1).replace(".", ",") : Math.round(n / 1_000    )} K`;
+    return n > 0 ? String(Math.round(n)) : "";
+  };
+
   // ── SLIDE 2 – RESUMEN EJECUTIVO ───────────────────────────────────────────
   let s2 = pres.addSlide();
   s2.background = { color: WHITE };
   s2.addText("Resumen Ejecutivo", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
-  s2.addText("Inversión · Revenue · ROAS  ·  Meta Ads + Google Ads", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+  s2.addText(isTiendaInglesa ? "Inversión · Impresiones · Clicks  ·  Meta Ads + Google Ads" : "Inversión · Revenue · ROAS  ·  Meta Ads + Google Ads", { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
   const isChaide = (DATA.CLIENTE_NOMBRE || "").toLowerCase().includes("chaide");
 
@@ -188,23 +199,32 @@ async function generatePptx(DATA) {
   const _roasDelta = _roasP > 0 ? (((_roasA - _roasP) / _roasP) * 100) : null;
   const _roasDeltaStr = _roasDelta !== null ? (_roasDelta >= 0 ? "+" : "") + _roasDelta.toFixed(1).replace(".", ",") + "%" : "";
 
-  const kpis = [
-    { label: "Inversión total", val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: _invDeltaStr, note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${isAtika ? fmtMoneyCompact(_invP) : (DATA.INVERSION_PREV || "")}`, up: _invDeltaUp },
-    { label: "Revenue GA4",     val: fmtMoneyCompact(DATA.GA4_INGRESOS),    delta: DATA.GA4_INGRESOS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.GA4_INGRESOS_PREV || ""}`, up: DATA.GA4_INGRESOS_DELTA_UP === true },
-    (!isChaide && _roasP > 0)
-      ? { label: "ROAS total",  val: _roasStr, delta: _roasDeltaStr, note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${_roasPrev}`, up: _roasA >= _roasP }
-      : { label: "Sesiones",    val: DATA.GA4_SESIONES || "", delta: DATA.GA4_SESIONES_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.GA4_SESIONES_PREV || ""}`, up: DATA.GA4_SESIONES_DELTA_UP === true },
-    { label: "Clicks totales",  val: DATA.CLICKS_TOTAL || "", delta: DATA.CLICKS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CLICKS_PREV || ""}`, up: DATA.CLICKS_DELTA_UP === true },
-  ];
+  const kpis = isTiendaInglesa
+    ? [
+        { label: "Inversión total",     val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: _invDeltaStr,           note: `${DATA.PERIODO_ANTERIOR_LABEL || "Período ant."}: ${DATA.INVERSION_PREV || ""}`,  up: _invDeltaUp },
+        { label: "Impresiones totales", val: fmtNumCompact(_impA),                  delta: _impDeltaStr,           note: `${DATA.PERIODO_ANTERIOR_LABEL || "Período ant."}: ${fmtNumCompact(_impP)}`,        up: _impDeltaUp },
+        { label: "Clicks totales",      val: DATA.CLICKS_TOTAL || "",               delta: DATA.CLICKS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Período ant."}: ${DATA.CLICKS_PREV || ""}`,      up: DATA.CLICKS_DELTA_UP === true },
+      ]
+    : [
+        { label: "Inversión total", val: fmtMoneyCompact(DATA.INVERSION_TOTAL), delta: _invDeltaStr, note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${isAtika ? fmtMoneyCompact(_invP) : (DATA.INVERSION_PREV || "")}`, up: _invDeltaUp },
+        { label: "Revenue GA4",     val: fmtMoneyCompact(DATA.GA4_INGRESOS),    delta: DATA.GA4_INGRESOS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.GA4_INGRESOS_PREV || ""}`, up: DATA.GA4_INGRESOS_DELTA_UP === true },
+        (!isChaide && _roasP > 0)
+          ? { label: "ROAS total",  val: _roasStr, delta: _roasDeltaStr, note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${_roasPrev}`, up: _roasA >= _roasP }
+          : { label: "Sesiones",    val: DATA.GA4_SESIONES || "", delta: DATA.GA4_SESIONES_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.GA4_SESIONES_PREV || ""}`, up: DATA.GA4_SESIONES_DELTA_UP === true },
+        { label: "Clicks totales",  val: DATA.CLICKS_TOTAL || "", delta: DATA.CLICKS_DELTA || "", note: `${DATA.PERIODO_ANTERIOR_LABEL || "Año ant."}: ${DATA.CLICKS_PREV || ""}`, up: DATA.CLICKS_DELTA_UP === true },
+      ];
+  const kpiCardW = isTiendaInglesa ? 2.7  : 2.1;
+  const kpiStep  = isTiendaInglesa ? 3.25 : 2.32;
   kpis.forEach((k, i) => {
-    const x = 0.4 + i * 2.32;
-    s2.addShape(pres.shapes.RECTANGLE, { x, y: 1.2, w: 2.1, h: 1.55, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
-    s2.addShape(pres.shapes.RECTANGLE, { x, y: 1.2, w: 2.1, h: 0.07, fill: { color: ORANGE }, line: { color: ORANGE } });
-    s2.addText(k.label, { x, y: 1.32, w: 2.1, h: 0.3, fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
-    s2.addText(k.val,   { x, y: 1.62, w: 2.1, h: 0.52, fontSize: 26, bold: true, color: DARK, fontFace: "DM Sans", align: "center" });
-    s2.addShape(pres.shapes.RECTANGLE, { x: x + 0.6, y: 2.17, w: 0.9, h: 0.27, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
-    s2.addText(k.delta, { x: x + 0.6, y: 2.17, w: 0.9, h: 0.27, fontSize: 11, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
-    s2.addText(k.note,  { x, y: 2.5, w: 2.1, h: 0.25, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
+    const x  = 0.4 + i * kpiStep;
+    const dX = x + (kpiCardW - 0.9) / 2;
+    s2.addShape(pres.shapes.RECTANGLE, { x, y: 1.2, w: kpiCardW, h: 1.55, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+    s2.addShape(pres.shapes.RECTANGLE, { x, y: 1.2, w: kpiCardW, h: 0.07, fill: { color: ORANGE }, line: { color: ORANGE } });
+    s2.addText(k.label, { x, y: 1.32, w: kpiCardW, h: 0.3,  fontSize: 10, color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
+    s2.addText(k.val,   { x, y: 1.62, w: kpiCardW, h: 0.52, fontSize: 26, bold: true, color: DARK, fontFace: "DM Sans", align: "center" });
+    s2.addShape(pres.shapes.RECTANGLE, { x: dX, y: 2.17, w: 0.9, h: 0.27, fill: { color: k.up ? GREEN_BG : RED_BG }, line: { color: k.up ? GREEN_BG : RED_BG } });
+    s2.addText(k.delta, { x: dX, y: 2.17, w: 0.9, h: 0.27, fontSize: 11, bold: true, color: k.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
+    s2.addText(k.note,  { x, y: 2.5,  w: kpiCardW, h: 0.25, fontSize: 9,  color: GRAY_TEXT, fontFace: "DM Sans", align: "center" });
   });
 
   s2.addText("Comparativa por plataforma", { x: 0.5, y: 2.95, w: 9, h: 0.35, fontSize: 13, bold: true, color: DARK, fontFace: "DM Sans" });
@@ -330,6 +350,7 @@ async function generatePptx(DATA) {
   }
 
   // ── SLIDE 3 – GA4 ─────────────────────────────────────────────────────────
+  if (!isTiendaInglesa) {
   let s7 = pres.addSlide();
   s7.background = { color: WHITE };
   s7.addText("Informe del Sitio", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
@@ -363,6 +384,7 @@ async function generatePptx(DATA) {
     s7.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
     s7.addText("* Comparado con la data disponible del año pasado en GA4.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
   }
+  } // end !isTiendaInglesa (GA4 slide)
 
   // ── SLIDE 3B – ECOMMERCE PLATFORM (OPCIONAL) ─────────────────────────────
   if (DATA.ECOMMERCE_INGRESOS) {
@@ -397,7 +419,7 @@ async function generatePptx(DATA) {
   // ── SLIDE 5B – TOP CANALES (GA4) ─────────────────────────────────────────
   // fuenteMedio: array of { nombre, sesiones, txns, tc, tc_prev, tc_delta, tc_delta_up, revenue, revenue_prev, revenue_delta, revenue_delta_up }
   const fuenteMedio = DATA.FUENTE_MEDIO || [];
-  if (fuenteMedio.length > 0) {
+  if (!isTiendaInglesa && fuenteMedio.length > 0) {
     let sFm = pres.addSlide();
     sFm.background = { color: WHITE };
     sFm.addText("Top 10 Canales", { x: 0.5, y: 0.18, w: 7, h: 0.52, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
@@ -459,6 +481,16 @@ async function generatePptx(DATA) {
       sFm.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 5.1, w: 9.2, h: 0.38, fill: { color: "FFF8F0" }, line: { color: "F0C090", width: 0.5 } });
       sFm.addText("* Comparado con la data disponible del año pasado en GA4.", { x: 0.55, y: 5.1, w: 9.0, h: 0.38, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans", valign: "middle", italic: true });
     }
+  }
+
+  // ── SLIDE GA4 CAMPAÑAS (TIENDA INGLESA) – placeholder para screenshot ──────
+  if (isTiendaInglesa) {
+    let sTiGA4 = pres.addSlide();
+    sTiGA4.background = { color: WHITE };
+    sTiGA4.addText("Informe del Sitio", { x: 0.5, y: 0.22, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
+    sTiGA4.addText(`GA4 · Campañas por ingreso  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""}`, { x: 0.5, y: 0.78, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+    sTiGA4.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 1.25, w: 9.2, h: 4.55, fill: { color: WHITE }, line: { color: ORANGE, width: 3 } });
+    sTiGA4.addText("Insertar captura de campañas por ingreso GA4", { x: 0.5, y: 3.2, w: 9.0, h: 0.7, fontSize: 16, color: ORANGE, fontFace: "DM Sans", align: "center", italic: true });
   }
 
   // ── SLIDE 4 – META ADS DETALLE ────────────────────────────────────────────
