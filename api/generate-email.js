@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
         if (!val || val === "—") return val;
         const n = parseFloat((String(val) || "0").replace(/\./g, "").replace(",", ".").replace(/[^0-9.]/g, "")) || 0;
         if (n === 0) return val;
-        const usd = n / clpRate;
+        const usd = (n / 1.19) / clpRate;
         if (usd >= 1_000_000) return `$ ${(usd / 1_000_000).toFixed(2).replace(".", ",")} M`;
         if (usd >= 1_000)     return `$ ${(usd / 1_000).toFixed(1).replace(".", ",")} K`;
         return `$ ${usd.toFixed(0)}`;
