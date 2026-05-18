@@ -372,21 +372,39 @@ async function generatePptx(DATA) {
   } // end !isTiendaInglesa
 
   // ── SLIDE GA4 CPC – TIENDA INGLESA ───────────────────────────────────────
-  if (isTiendaInglesa && DATA.TI_CPC_SESIONES) {
+  const tiCpcRows  = Array.isArray(DATA.TI_CPC_ROWS)      ? DATA.TI_CPC_ROWS      : [];
+  const tiCpcRowsP = Array.isArray(DATA.TI_CPC_ROWS_PREV) ? DATA.TI_CPC_ROWS_PREV : [];
+  if (isTiendaInglesa && tiCpcRows.length > 0) {
+    const tiSum = (rows, f) => rows.reduce((a, r) => a + (parseFloat(r[f]) || 0), 0);
+    const tiPct = (a, p) => {
+      if (!p) return { v: "N/D", up: null };
+      const d = ((a - p) / Math.abs(p)) * 100;
+      return { v: (d >= 0 ? "+" : "") + d.toFixed(1).replace(".", ",") + "%", up: d >= 0 };
+    };
+    const tiFmt  = (n, d = 0) => n == null || isNaN(n) ? "N/D" : new Intl.NumberFormat("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
+
+    const cSesA = tiSum(tiCpcRows,  "GA4__Sesiones"), cSesP = tiSum(tiCpcRowsP, "GA4__Sesiones");
+    const cRevA = tiSum(tiCpcRows,  "GA4__Ingresos_por_compras"), cRevP = tiSum(tiCpcRowsP, "GA4__Ingresos_por_compras");
+    const cTxnA = tiSum(tiCpcRows,  "GA4__Transacciones_de_comercio_electrónico"), cTxnP = tiSum(tiCpcRowsP, "GA4__Transacciones_de_comercio_electrónico");
+    const cTcA  = cSesA > 0 ? cTxnA / cSesA : 0, cTcP = cSesP > 0 ? cTxnP / cSesP : 0;
+    const cTkA  = cTxnA > 0 ? cRevA / cTxnA : 0, cTkP = cTxnP > 0 ? cRevP / cTxnP : 0;
+    const cCostA = parseNum(DATA.GOOGLE_COSTO), cCostP = parseNum(DATA.GOOGLE_COSTO_PREV);
+    const cRoasA = cCostA > 0 ? cRevA / cCostA : 0, cRoasP = cCostP > 0 ? cRevP / cCostP : 0;
+
+    const cpcMetrics = [
+      { label: "Sesiones",           sub: "Sesiones google / cpc",            val: tiFmt(cSesA),                                    prev: tiFmt(cSesP),                                    delta: tiPct(cSesA, cSesP).v,  up: tiPct(cSesA, cSesP).up  === true },
+      { label: "Ingresos",           sub: "Revenue GA4 (Purchase)",           val: "$" + tiFmt(cRevA, 2),                           prev: "$" + tiFmt(cRevP, 2),                           delta: tiPct(cRevA, cRevP).v,  up: tiPct(cRevA, cRevP).up  === true },
+      { label: "Transacciones",      sub: "Transacciones ecommerce",          val: tiFmt(cTxnA),                                    prev: tiFmt(cTxnP),                                    delta: tiPct(cTxnA, cTxnP).v,  up: tiPct(cTxnA, cTxnP).up  === true },
+      { label: "Tasa de conversión", sub: "Transacciones / sesiones",         val: (cTcA*100).toFixed(2).replace(".",",")+"%",       prev: (cTcP*100).toFixed(2).replace(".",",")+"%",       delta: tiPct(cTcA, cTcP).v,    up: tiPct(cTcA, cTcP).up    === true },
+      { label: "Ticket promedio",    sub: "Ingreso promedio por transacción", val: "$" + tiFmt(cTkA, 2),                            prev: "$" + tiFmt(cTkP, 2),                            delta: tiPct(cTkA, cTkP).v,    up: tiPct(cTkA, cTkP).up    === true },
+      { label: "ROAS",               sub: "Ingresos GA4 / inversión Google",  val: tiFmt(cRoasA, 2) + "x",                         prev: tiFmt(cRoasP, 2) + "x",                         delta: tiPct(cRoasA, cRoasP).v, up: tiPct(cRoasA, cRoasP).up === true },
+    ];
+
     let sCpc = pres.addSlide();
     sCpc.background = { color: WHITE };
     sCpc.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: BLUE }, line: { color: BLUE } });
     sCpc.addText("Google CPC · Datos del Sitio", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
     sCpc.addText(`GA4 · google / cpc  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
-
-    const cpcMetrics = [
-      { label: "Sesiones",           sub: "Sesiones google / cpc",              val: DATA.TI_CPC_SESIONES        || "", prev: DATA.TI_CPC_SESIONES_PREV        || "", delta: DATA.TI_CPC_SESIONES_DELTA        || "", up: DATA.TI_CPC_SESIONES_UP        === true },
-      { label: "Ingresos",           sub: "Revenue GA4 (Purchase)",             val: DATA.TI_CPC_INGRESOS        || "", prev: DATA.TI_CPC_INGRESOS_PREV        || "", delta: DATA.TI_CPC_INGRESOS_DELTA        || "", up: DATA.TI_CPC_INGRESOS_UP        === true },
-      { label: "Transacciones",      sub: "Transacciones ecommerce",            val: DATA.TI_CPC_TRANSACCIONES   || "", prev: DATA.TI_CPC_TRANSACCIONES_PREV   || "", delta: DATA.TI_CPC_TRANSACCIONES_DELTA   || "", up: DATA.TI_CPC_TRANSACCIONES_UP   === true },
-      { label: "Tasa de conversión", sub: "Transacciones / sesiones",           val: DATA.TI_CPC_TC              || "", prev: DATA.TI_CPC_TC_PREV              || "", delta: DATA.TI_CPC_TC_DELTA              || "", up: DATA.TI_CPC_TC_UP              === true },
-      { label: "Ticket promedio",    sub: "Ingreso promedio por transacción",   val: DATA.TI_CPC_TICKET          || "", prev: DATA.TI_CPC_TICKET_PREV          || "", delta: DATA.TI_CPC_TICKET_DELTA          || "", up: DATA.TI_CPC_TICKET_UP          === true },
-      { label: "Tiempo en sitio",    sub: "Duración promedio de sesión",        val: DATA.TI_CPC_TIEMPO          || "", prev: DATA.TI_CPC_TIEMPO_PREV          || "", delta: DATA.TI_CPC_TIEMPO_DELTA          || "", up: DATA.TI_CPC_TIEMPO_UP          === true },
-    ];
     cpcMetrics.forEach((m, i) => {
       const col = i % 3, row = Math.floor(i / 3);
       const x = 0.4 + col * 3.13, y = 1.2 + row * 1.85;
@@ -406,20 +424,31 @@ async function generatePptx(DATA) {
   }
 
   // ── SLIDE META CPC – TIENDA INGLESA ─────────────────────────────────────
-  if (isTiendaInglesa && DATA.TI_META_SESIONES) {
-    let sMeta = pres.addSlide();
-    sMeta.background = { color: WHITE };
-    sMeta.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
-    sMeta.addText("Meta · Datos del Sitio", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
-    sMeta.addText(`GA4 · Paid Social  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+  const tiMetaRow  = DATA.TI_META_ROW      || null;
+  const tiMetaRowP = DATA.TI_META_ROW_PREV || null;
+  if (isTiendaInglesa && tiMetaRow) {
+    const tiPct = (a, p) => {
+      if (!p) return { v: "N/D", up: null };
+      const d = ((a - p) / Math.abs(p)) * 100;
+      return { v: (d >= 0 ? "+" : "") + d.toFixed(1).replace(".", ",") + "%", up: d >= 0 };
+    };
+    const tiFmt = (n, d = 0) => n == null || isNaN(n) ? "N/D" : new Intl.NumberFormat("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
+
+    const mSesA = parseFloat(tiMetaRow["GA4__Sesiones"]) || 0,  mSesP = parseFloat((tiMetaRowP || {})["GA4__Sesiones"]) || 0;
+    const mRevA = parseFloat(tiMetaRow["GA4__Ingresos_por_compras"]) || 0, mRevP = parseFloat((tiMetaRowP || {})["GA4__Ingresos_por_compras"]) || 0;
+    const mTxnA = parseFloat(tiMetaRow["GA4__Transacciones_de_comercio_electrónico"]) || 0, mTxnP = parseFloat((tiMetaRowP || {})["GA4__Transacciones_de_comercio_electrónico"]) || 0;
+    const mTcA  = mSesA > 0 ? mTxnA / mSesA : 0, mTcP = mSesP > 0 ? mTxnP / mSesP : 0;
+    const mTkA  = mTxnA > 0 ? mRevA / mTxnA : 0, mTkP = mTxnP > 0 ? mRevP / mTxnP : 0;
+    const mCostA = parseNum(DATA.META_COSTO), mCostP = parseNum(DATA.META_COSTO_PREV);
+    const mRoasA = mCostA > 0 ? mRevA / mCostA : 0, mRoasP = mCostP > 0 ? mRevP / mCostP : 0;
 
     const metaCpcMetrics = [
-      { label: "Sesiones",           sub: "Sesiones Paid Social",               val: DATA.TI_META_SESIONES        || "", prev: DATA.TI_META_SESIONES_PREV        || "", delta: DATA.TI_META_SESIONES_DELTA        || "", up: DATA.TI_META_SESIONES_UP        === true },
-      { label: "Ingresos",           sub: "Revenue GA4 (Purchase)",             val: DATA.TI_META_INGRESOS        || "", prev: DATA.TI_META_INGRESOS_PREV        || "", delta: DATA.TI_META_INGRESOS_DELTA        || "", up: DATA.TI_META_INGRESOS_UP        === true },
-      { label: "Transacciones",      sub: "Transacciones ecommerce",            val: DATA.TI_META_TRANSACCIONES   || "", prev: DATA.TI_META_TRANSACCIONES_PREV   || "", delta: DATA.TI_META_TRANSACCIONES_DELTA   || "", up: DATA.TI_META_TRANSACCIONES_UP   === true },
-      { label: "Tasa de conversión", sub: "Transacciones / sesiones",           val: DATA.TI_META_TC              || "", prev: DATA.TI_META_TC_PREV              || "", delta: DATA.TI_META_TC_DELTA              || "", up: DATA.TI_META_TC_UP              === true },
-      { label: "Ticket promedio",    sub: "Ingreso promedio por transacción",   val: DATA.TI_META_TICKET          || "", prev: DATA.TI_META_TICKET_PREV          || "", delta: DATA.TI_META_TICKET_DELTA          || "", up: DATA.TI_META_TICKET_UP          === true },
-      { label: "Tiempo en sitio",    sub: "Duración promedio de sesión",        val: DATA.TI_META_TIEMPO          || "", prev: DATA.TI_META_TIEMPO_PREV          || "", delta: DATA.TI_META_TIEMPO_DELTA          || "", up: DATA.TI_META_TIEMPO_UP          === true },
+      { label: "Sesiones",           sub: "Sesiones Paid Social",             val: tiFmt(mSesA),                                    prev: tiFmt(mSesP),                                    delta: tiPct(mSesA, mSesP).v,  up: tiPct(mSesA, mSesP).up  === true },
+      { label: "Ingresos",           sub: "Revenue GA4 (Purchase)",           val: "$" + tiFmt(mRevA, 2),                           prev: "$" + tiFmt(mRevP, 2),                           delta: tiPct(mRevA, mRevP).v,  up: tiPct(mRevA, mRevP).up  === true },
+      { label: "Transacciones",      sub: "Transacciones ecommerce",          val: tiFmt(mTxnA),                                    prev: tiFmt(mTxnP),                                    delta: tiPct(mTxnA, mTxnP).v,  up: tiPct(mTxnA, mTxnP).up  === true },
+      { label: "Tasa de conversión", sub: "Transacciones / sesiones",         val: (mTcA*100).toFixed(2).replace(".",",")+"%",       prev: (mTcP*100).toFixed(2).replace(".",",")+"%",       delta: tiPct(mTcA, mTcP).v,    up: tiPct(mTcA, mTcP).up    === true },
+      { label: "Ticket promedio",    sub: "Ingreso promedio por transacción", val: "$" + tiFmt(mTkA, 2),                            prev: "$" + tiFmt(mTkP, 2),                            delta: tiPct(mTkA, mTkP).v,    up: tiPct(mTkA, mTkP).up    === true },
+      { label: "ROAS",               sub: "Ingresos GA4 / inversión Meta",    val: tiFmt(mRoasA, 2) + "x",                         prev: tiFmt(mRoasP, 2) + "x",                         delta: tiPct(mRoasA, mRoasP).v, up: tiPct(mRoasA, mRoasP).up === true },
     ];
     metaCpcMetrics.forEach((m, i) => {
       const col = i % 3, row = Math.floor(i / 3);
