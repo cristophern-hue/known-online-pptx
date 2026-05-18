@@ -411,10 +411,10 @@ async function generatePptx(DATA) {
     sMeta.background = { color: WHITE };
     sMeta.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
     sMeta.addText("Meta · Datos del Sitio", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
-    sMeta.addText(`GA4 · utm_source=Meta  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+    sMeta.addText(`GA4 · Paid Social  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
 
     const metaCpcMetrics = [
-      { label: "Sesiones",           sub: "Sesiones utm_source=Meta",           val: DATA.TI_META_SESIONES        || "", prev: DATA.TI_META_SESIONES_PREV        || "", delta: DATA.TI_META_SESIONES_DELTA        || "", up: DATA.TI_META_SESIONES_UP        === true },
+      { label: "Sesiones",           sub: "Sesiones Paid Social",               val: DATA.TI_META_SESIONES        || "", prev: DATA.TI_META_SESIONES_PREV        || "", delta: DATA.TI_META_SESIONES_DELTA        || "", up: DATA.TI_META_SESIONES_UP        === true },
       { label: "Ingresos",           sub: "Revenue GA4 (Purchase)",             val: DATA.TI_META_INGRESOS        || "", prev: DATA.TI_META_INGRESOS_PREV        || "", delta: DATA.TI_META_INGRESOS_DELTA        || "", up: DATA.TI_META_INGRESOS_UP        === true },
       { label: "Transacciones",      sub: "Transacciones ecommerce",            val: DATA.TI_META_TRANSACCIONES   || "", prev: DATA.TI_META_TRANSACCIONES_PREV   || "", delta: DATA.TI_META_TRANSACCIONES_DELTA   || "", up: DATA.TI_META_TRANSACCIONES_UP   === true },
       { label: "Tasa de conversión", sub: "Transacciones / sesiones",           val: DATA.TI_META_TC              || "", prev: DATA.TI_META_TC_PREV              || "", delta: DATA.TI_META_TC_DELTA              || "", up: DATA.TI_META_TC_UP              === true },
