@@ -371,6 +371,74 @@ async function generatePptx(DATA) {
   }
   } // end !isTiendaInglesa
 
+  // ── SLIDE GA4 CPC – TIENDA INGLESA ───────────────────────────────────────
+  if (isTiendaInglesa && DATA.TI_CPC_SESIONES) {
+    let sCpc = pres.addSlide();
+    sCpc.background = { color: WHITE };
+    sCpc.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: BLUE }, line: { color: BLUE } });
+    sCpc.addText("Google CPC · Datos del Sitio", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
+    sCpc.addText(`GA4 · google / cpc  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    const cpcMetrics = [
+      { label: "Sesiones",           sub: "Sesiones google / cpc",              val: DATA.TI_CPC_SESIONES        || "", prev: DATA.TI_CPC_SESIONES_PREV        || "", delta: DATA.TI_CPC_SESIONES_DELTA        || "", up: DATA.TI_CPC_SESIONES_UP        === true },
+      { label: "Ingresos",           sub: "Revenue GA4 (Purchase)",             val: DATA.TI_CPC_INGRESOS        || "", prev: DATA.TI_CPC_INGRESOS_PREV        || "", delta: DATA.TI_CPC_INGRESOS_DELTA        || "", up: DATA.TI_CPC_INGRESOS_UP        === true },
+      { label: "Transacciones",      sub: "Transacciones ecommerce",            val: DATA.TI_CPC_TRANSACCIONES   || "", prev: DATA.TI_CPC_TRANSACCIONES_PREV   || "", delta: DATA.TI_CPC_TRANSACCIONES_DELTA   || "", up: DATA.TI_CPC_TRANSACCIONES_UP   === true },
+      { label: "Tasa de conversión", sub: "Transacciones / sesiones",           val: DATA.TI_CPC_TC              || "", prev: DATA.TI_CPC_TC_PREV              || "", delta: DATA.TI_CPC_TC_DELTA              || "", up: DATA.TI_CPC_TC_UP              === true },
+      { label: "Ticket promedio",    sub: "Ingreso promedio por transacción",   val: DATA.TI_CPC_TICKET          || "", prev: DATA.TI_CPC_TICKET_PREV          || "", delta: DATA.TI_CPC_TICKET_DELTA          || "", up: DATA.TI_CPC_TICKET_UP          === true },
+      { label: "Tiempo en sitio",    sub: "Duración promedio de sesión",        val: DATA.TI_CPC_TIEMPO          || "", prev: DATA.TI_CPC_TIEMPO_PREV          || "", delta: DATA.TI_CPC_TIEMPO_DELTA          || "", up: DATA.TI_CPC_TIEMPO_UP          === true },
+    ];
+    cpcMetrics.forEach((m, i) => {
+      const col = i % 3, row = Math.floor(i / 3);
+      const x = 0.4 + col * 3.13, y = 1.2 + row * 1.85;
+      sCpc.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 1.7, fill: { color: LIGHT_BLUE }, line: { color: "D0E4F5", width: 0.5 } });
+      sCpc.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 0.06, fill: { color: BLUE }, line: { color: BLUE } });
+      sCpc.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.18, w: 0.36, h: 0.36, fill: { color: BLUE }, line: { color: BLUE } });
+      sCpc.addText(m.label, { x: x + 0.58, y: y + 0.18, w: 2.2, h: 0.22, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
+      sCpc.addText(m.sub,   { x: x + 0.58, y: y + 0.38, w: 2.2, h: 0.2,  fontSize: 8,  color: GRAY_TEXT, fontFace: "DM Sans" });
+      sCpc.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.65, w: 2.62, h: 0.02, fill: { color: "D0E4F5" }, line: { color: "D0E4F5" } });
+      sCpc.addText(labelCortoActual, { x: x + 0.14, y: y + 0.75, w: 1.3, h: 0.18, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      const fsCpc = String(m.val).length > 12 ? 15 : String(m.val).length > 9 ? 18 : 22;
+      sCpc.addText(m.val,   { x: x + 0.14, y: y + 0.92, w: 1.5, h: 0.38, fontSize: fsCpc, bold: true, color: DARK, fontFace: "DM Sans" });
+      sCpc.addShape(pres.shapes.RECTANGLE, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fill: { color: m.up ? GREEN_BG : RED_BG }, line: { color: m.up ? GREEN_BG : RED_BG } });
+      sCpc.addText(m.delta, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fontSize: 11, bold: true, color: m.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
+      sCpc.addText(`${labelCortoAnterior}: ${m.prev}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    });
+  }
+
+  // ── SLIDE META CPC – TIENDA INGLESA ─────────────────────────────────────
+  if (isTiendaInglesa && DATA.TI_META_SESIONES) {
+    let sMeta = pres.addSlide();
+    sMeta.background = { color: WHITE };
+    sMeta.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: ORANGE }, line: { color: ORANGE } });
+    sMeta.addText("Meta · Datos del Sitio", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
+    sMeta.addText(`GA4 · utm_source=Meta  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    const metaCpcMetrics = [
+      { label: "Sesiones",           sub: "Sesiones utm_source=Meta",           val: DATA.TI_META_SESIONES        || "", prev: DATA.TI_META_SESIONES_PREV        || "", delta: DATA.TI_META_SESIONES_DELTA        || "", up: DATA.TI_META_SESIONES_UP        === true },
+      { label: "Ingresos",           sub: "Revenue GA4 (Purchase)",             val: DATA.TI_META_INGRESOS        || "", prev: DATA.TI_META_INGRESOS_PREV        || "", delta: DATA.TI_META_INGRESOS_DELTA        || "", up: DATA.TI_META_INGRESOS_UP        === true },
+      { label: "Transacciones",      sub: "Transacciones ecommerce",            val: DATA.TI_META_TRANSACCIONES   || "", prev: DATA.TI_META_TRANSACCIONES_PREV   || "", delta: DATA.TI_META_TRANSACCIONES_DELTA   || "", up: DATA.TI_META_TRANSACCIONES_UP   === true },
+      { label: "Tasa de conversión", sub: "Transacciones / sesiones",           val: DATA.TI_META_TC              || "", prev: DATA.TI_META_TC_PREV              || "", delta: DATA.TI_META_TC_DELTA              || "", up: DATA.TI_META_TC_UP              === true },
+      { label: "Ticket promedio",    sub: "Ingreso promedio por transacción",   val: DATA.TI_META_TICKET          || "", prev: DATA.TI_META_TICKET_PREV          || "", delta: DATA.TI_META_TICKET_DELTA          || "", up: DATA.TI_META_TICKET_UP          === true },
+      { label: "Tiempo en sitio",    sub: "Duración promedio de sesión",        val: DATA.TI_META_TIEMPO          || "", prev: DATA.TI_META_TIEMPO_PREV          || "", delta: DATA.TI_META_TIEMPO_DELTA          || "", up: DATA.TI_META_TIEMPO_UP          === true },
+    ];
+    metaCpcMetrics.forEach((m, i) => {
+      const col = i % 3, row = Math.floor(i / 3);
+      const x = 0.4 + col * 3.13, y = 1.2 + row * 1.85;
+      sMeta.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 1.7, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+      sMeta.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 0.06, fill: { color: ORANGE }, line: { color: ORANGE } });
+      sMeta.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.18, w: 0.36, h: 0.36, fill: { color: ORANGE }, line: { color: ORANGE } });
+      sMeta.addText(m.label, { x: x + 0.58, y: y + 0.18, w: 2.2, h: 0.22, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
+      sMeta.addText(m.sub,   { x: x + 0.58, y: y + 0.38, w: 2.2, h: 0.2,  fontSize: 8,  color: GRAY_TEXT, fontFace: "DM Sans" });
+      sMeta.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.65, w: 2.62, h: 0.02, fill: { color: "F0E8E0" }, line: { color: "F0E8E0" } });
+      sMeta.addText(labelCortoActual, { x: x + 0.14, y: y + 0.75, w: 1.3, h: 0.18, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      const fsMeta = String(m.val).length > 12 ? 15 : String(m.val).length > 9 ? 18 : 22;
+      sMeta.addText(m.val,   { x: x + 0.14, y: y + 0.92, w: 1.5, h: 0.38, fontSize: fsMeta, bold: true, color: DARK, fontFace: "DM Sans" });
+      sMeta.addShape(pres.shapes.RECTANGLE, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fill: { color: m.up ? GREEN_BG : RED_BG }, line: { color: m.up ? GREEN_BG : RED_BG } });
+      sMeta.addText(m.delta, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fontSize: 11, bold: true, color: m.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
+      sMeta.addText(`${labelCortoAnterior}: ${m.prev}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    });
+  }
+
   // ── SLIDE 3B – ECOMMERCE PLATFORM (OPCIONAL) ─────────────────────────────
   if (DATA.ECOMMERCE_INGRESOS) {
     let sEc = pres.addSlide();
