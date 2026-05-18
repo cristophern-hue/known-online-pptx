@@ -688,23 +688,24 @@ async function generatePptx(DATA) {
 
   // ── SLIDES 5A & 5B – TOP CAMPAÑAS POR ROAS (Google / Meta separados) ────
   const campaigns = DATA.CAMPANAS || [];
-  const campGoogle = campaigns.filter(c => (c.plataforma || "").toLowerCase() === "google");
-  const campMeta   = campaigns.filter(c => (c.plataforma || "").toLowerCase() === "meta");
+  const filterKO   = rows => isTiendaInglesa ? rows.filter(c => (c.nombre || "").toUpperCase().includes("KO")) : rows;
+  const campGoogle = filterKO(campaigns.filter(c => (c.plataforma || "").toLowerCase() === "google"));
+  const campMeta   = filterKO(campaigns.filter(c => (c.plataforma || "").toLowerCase() === "meta"));
 
-  const buildCampSlide = (pres, rows, plat) => {
+  const buildCampSlide = (pres, rows, plat, showAll = false) => {
     const isGoogle = plat === "Google";
     const accentColor = isGoogle ? BLUE : ORANGE;
-    const accentBg    = isGoogle ? LIGHT_BLUE : "FFF0EB";
+    const maxRows  = showAll ? 14 : 8;
+    const rowH     = showAll ? 0.36 : 0.44;
+    const fontSize = showAll ? 9 : 10;
 
     const s = pres.addSlide();
     s.background = { color: WHITE };
-    s.addText(`Top Campañas ${plat} Ads por ROAS`, { x: 0.5, y: 0.2, w: 9, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
+    s.addText(showAll ? `Campañas ${plat} Ads` : `Top Campañas ${plat} Ads por ROAS`, { x: 0.5, y: 0.2, w: 9, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
     s.addText(`${DATA.PERIODO_ACTUAL_LABEL || ""}  ·  ${plat} Ads`, { x: 0.5, y: 0.76, w: 7, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
-
-    // Accent bar top-right
     s.addShape(pres.shapes.RECTANGLE, { x: 8.8, y: 0, w: 0.8, h: 0.08, fill: { color: accentColor }, line: { color: accentColor } });
 
-    const colW   = [4.45, 1.4, 1.4, 1.55];
+    const colW    = [4.45, 1.4, 1.4, 1.55];
     const headers = ["Campaña", "Inversión", "Clicks", "ROAS"];
     s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: 1.2, w: 9.2, h: 0.38, fill: { color: DARK }, line: { color: DARK } });
     let cx = 0.55;
@@ -714,28 +715,27 @@ async function generatePptx(DATA) {
       cx += colW[i];
     });
 
-    rows.slice(0, 8).forEach((row, i) => {
-      const y  = 1.6 + i * 0.44;
+    rows.slice(0, maxRows).forEach((row, i) => {
+      const y  = 1.6 + i * rowH;
       const bg = i % 2 === 0 ? WHITE : LIGHT_BG;
-      s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y, w: 9.2, h: 0.43, fill: { color: bg }, line: { color: "E8E0D8", width: 0.5 } });
+      s.addShape(pres.shapes.RECTANGLE, { x: 0.4, y, w: 9.2, h: rowH - 0.01, fill: { color: bg }, line: { color: "E8E0D8", width: 0.5 } });
       let rx = 0.55;
-      s.addText(row.nombre || "", { x: rx, y: y + 0.07, w: colW[0], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans" });
+      s.addText(row.nombre || "", { x: rx, y: y + 0.06, w: colW[0], h: rowH - 0.1, fontSize, color: DARK, fontFace: "DM Sans" });
       rx += colW[0];
-      s.addText(row.costo  || "", { x: rx, y: y + 0.07, w: colW[1], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans", align: "right" });
+      s.addText(row.costo  || "", { x: rx, y: y + 0.06, w: colW[1], h: rowH - 0.1, fontSize, color: DARK, fontFace: "DM Sans", align: "right" });
       rx += colW[1];
-      s.addText(row.clicks || "", { x: rx, y: y + 0.07, w: colW[2], h: 0.3, fontSize: 10, color: DARK, fontFace: "DM Sans", align: "right" });
+      s.addText(row.clicks || "", { x: rx, y: y + 0.06, w: colW[2], h: rowH - 0.1, fontSize, color: DARK, fontFace: "DM Sans", align: "right" });
       rx += colW[2];
       const nivel     = row.nivel || "mid";
       const roasColor = nivel === "high" ? GREEN : nivel === "mid" ? AMBER : RED;
       const roasBg    = nivel === "high" ? GREEN_BG : nivel === "mid" ? AMBER_BG : RED_BG;
-      s.addShape(pres.shapes.RECTANGLE, { x: rx, y: y + 0.1, w: 1.2, h: 0.24, fill: { color: roasBg }, line: { color: roasBg } });
-      s.addText(row.roas || "", { x: rx, y: y + 0.1, w: 1.2, h: 0.24, fontSize: 10, bold: true, color: roasColor, fontFace: "DM Sans", align: "center" });
+      s.addShape(pres.shapes.RECTANGLE, { x: rx, y: y + 0.08, w: 1.2, h: rowH - 0.18, fill: { color: roasBg }, line: { color: roasBg } });
+      s.addText(row.roas || "", { x: rx, y: y + 0.08, w: 1.2, h: rowH - 0.18, fontSize, bold: true, color: roasColor, fontFace: "DM Sans", align: "center" });
     });
-
   };
 
-  if (campGoogle.length > 0) buildCampSlide(pres, campGoogle, "Google");
-  if (campMeta.length   > 0) buildCampSlide(pres, campMeta,   "Meta");
+  if (campGoogle.length > 0) buildCampSlide(pres, campGoogle, "Google", isTiendaInglesa);
+  if (campMeta.length   > 0) buildCampSlide(pres, campMeta, "Meta", isTiendaInglesa);
 
   // ── SLIDE 5C – TOP ANUNCIOS META POR COMPRAS ─────────────────────────────
   if (DATA.TOP_ANUNCIOS_META_TIENE_DATOS && Array.isArray(DATA.TOP_ANUNCIOS_META) && DATA.TOP_ANUNCIOS_META.length > 0) {
