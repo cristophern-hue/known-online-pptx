@@ -371,6 +371,142 @@ async function generatePptx(DATA) {
   }
   } // end !isTiendaInglesa
 
+  // ── SLIDE GA4 CPC – TIENDA INGLESA ───────────────────────────────────────
+  const tiCpcRows  = Array.isArray(DATA.TI_CPC_ROWS)      ? DATA.TI_CPC_ROWS      : [];
+  const tiCpcRowsP = Array.isArray(DATA.TI_CPC_ROWS_PREV) ? DATA.TI_CPC_ROWS_PREV : [];
+  if (isTiendaInglesa && tiCpcRows.length > 0) {
+    const tiSum = (rows, f) => rows.reduce((a, r) => a + (parseFloat(r[f]) || 0), 0);
+    const tiPct = (a, p) => {
+      if (!p) return { v: "N/D", up: null };
+      const d = ((a - p) / Math.abs(p)) * 100;
+      return { v: (d >= 0 ? "+" : "") + d.toFixed(1).replace(".", ",") + "%", up: d >= 0 };
+    };
+    const tiFmt  = (n, d = 0) => n == null || isNaN(n) ? "N/D" : new Intl.NumberFormat("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
+
+    const cSesA = tiSum(tiCpcRows,  "GA4__Sesiones"), cSesP = tiSum(tiCpcRowsP, "GA4__Sesiones");
+    const cRevA = tiSum(tiCpcRows,  "GA4__Ingresos_por_compras"), cRevP = tiSum(tiCpcRowsP, "GA4__Ingresos_por_compras");
+    const cTxnA = tiSum(tiCpcRows,  "GA4__Transacciones_de_comercio_electrónico"), cTxnP = tiSum(tiCpcRowsP, "GA4__Transacciones_de_comercio_electrónico");
+    const cTcA  = cSesA > 0 ? cTxnA / cSesA : 0, cTcP = cSesP > 0 ? cTxnP / cSesP : 0;
+    const cTkA  = cTxnA > 0 ? cRevA / cTxnA : 0, cTkP = cTxnP > 0 ? cRevP / cTxnP : 0;
+    const cCostA = parseNum(DATA.GOOGLE_COSTO), cCostP = parseNum(DATA.GOOGLE_COSTO_PREV);
+    const cRoasA = cCostA > 0 ? cRevA / cCostA : 0, cRoasP = cCostP > 0 ? cRevP / cCostP : 0;
+
+    const cpcMetrics = [
+      { label: "Sesiones",           sub: "Sesiones google / cpc",            val: tiFmt(cSesA),                                    prev: tiFmt(cSesP),                                    delta: tiPct(cSesA, cSesP).v,  up: tiPct(cSesA, cSesP).up  === true },
+      { label: "Ingresos",           sub: "Revenue GA4 (Purchase)",           val: "$" + tiFmt(cRevA, 2),                           prev: "$" + tiFmt(cRevP, 2),                           delta: tiPct(cRevA, cRevP).v,  up: tiPct(cRevA, cRevP).up  === true },
+      { label: "Transacciones",      sub: "Transacciones ecommerce",          val: tiFmt(cTxnA),                                    prev: tiFmt(cTxnP),                                    delta: tiPct(cTxnA, cTxnP).v,  up: tiPct(cTxnA, cTxnP).up  === true },
+      { label: "Tasa de conversión", sub: "Transacciones / sesiones",         val: (cTcA*100).toFixed(2).replace(".",",")+"%",       prev: (cTcP*100).toFixed(2).replace(".",",")+"%",       delta: tiPct(cTcA, cTcP).v,    up: tiPct(cTcA, cTcP).up    === true },
+      { label: "Ticket promedio",    sub: "Ingreso promedio por transacción", val: "$" + tiFmt(cTkA, 2),                            prev: "$" + tiFmt(cTkP, 2),                            delta: tiPct(cTkA, cTkP).v,    up: tiPct(cTkA, cTkP).up    === true },
+      { label: "ROAS",               sub: "Ingresos GA4 / inversión Google",  val: tiFmt(cRoasA, 2) + "x",                         prev: tiFmt(cRoasP, 2) + "x",                         delta: tiPct(cRoasA, cRoasP).v, up: tiPct(cRoasA, cRoasP).up === true },
+    ];
+
+    let sCpc = pres.addSlide();
+    sCpc.background = { color: WHITE };
+    sCpc.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: BLUE }, line: { color: BLUE } });
+    sCpc.addText("Google CPC · Datos del Sitio", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
+    sCpc.addText(`GA4 · google / cpc  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""} vs ${DATA.PERIODO_ANTERIOR_LABEL || ""}`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+    cpcMetrics.forEach((m, i) => {
+      const col = i % 3, row = Math.floor(i / 3);
+      const x = 0.4 + col * 3.13, y = 1.2 + row * 1.85;
+      sCpc.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 1.7, fill: { color: LIGHT_BLUE }, line: { color: "D0E4F5", width: 0.5 } });
+      sCpc.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 0.06, fill: { color: BLUE }, line: { color: BLUE } });
+      sCpc.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.18, w: 0.36, h: 0.36, fill: { color: BLUE }, line: { color: BLUE } });
+      sCpc.addText(m.label, { x: x + 0.58, y: y + 0.18, w: 2.2, h: 0.22, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
+      sCpc.addText(m.sub,   { x: x + 0.58, y: y + 0.38, w: 2.2, h: 0.2,  fontSize: 8,  color: GRAY_TEXT, fontFace: "DM Sans" });
+      sCpc.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.65, w: 2.62, h: 0.02, fill: { color: "D0E4F5" }, line: { color: "D0E4F5" } });
+      sCpc.addText(labelCortoActual, { x: x + 0.14, y: y + 0.75, w: 1.3, h: 0.18, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      const fsCpc = String(m.val).length > 12 ? 15 : String(m.val).length > 9 ? 18 : 22;
+      sCpc.addText(m.val,   { x: x + 0.14, y: y + 0.92, w: 1.5, h: 0.38, fontSize: fsCpc, bold: true, color: DARK, fontFace: "DM Sans" });
+      sCpc.addShape(pres.shapes.RECTANGLE, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fill: { color: m.up ? GREEN_BG : RED_BG }, line: { color: m.up ? GREEN_BG : RED_BG } });
+      sCpc.addText(m.delta, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fontSize: 11, bold: true, color: m.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
+      sCpc.addText(`${labelCortoAnterior}: ${m.prev}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    });
+  }
+
+  // ── SLIDE META CPC – TIENDA INGLESA ─────────────────────────────────────
+  const tiMetaRow  = DATA.TI_META_ROW      || null;
+  const tiMetaRowP = DATA.TI_META_ROW_PREV || null;
+  if (isTiendaInglesa && tiMetaRow) {
+    const tiPct = (a, p) => {
+      if (!p) return { v: "N/D", up: null };
+      const d = ((a - p) / Math.abs(p)) * 100;
+      return { v: (d >= 0 ? "+" : "") + d.toFixed(1).replace(".", ",") + "%", up: d >= 0 };
+    };
+    const tiFmt = (n, d = 0) => n == null || isNaN(n) ? "N/D" : new Intl.NumberFormat("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
+
+    const mSesA = parseFloat(tiMetaRow["GA4__Sesiones"]) || 0,  mSesP = parseFloat((tiMetaRowP || {})["GA4__Sesiones"]) || 0;
+    const mRevA = parseFloat(tiMetaRow["GA4__Ingresos_por_compras"]) || 0, mRevP = parseFloat((tiMetaRowP || {})["GA4__Ingresos_por_compras"]) || 0;
+    const mTxnA = parseFloat(tiMetaRow["GA4__Transacciones_de_comercio_electrónico"]) || 0, mTxnP = parseFloat((tiMetaRowP || {})["GA4__Transacciones_de_comercio_electrónico"]) || 0;
+    const mTcA  = mSesA > 0 ? mTxnA / mSesA : 0, mTcP = mSesP > 0 ? mTxnP / mSesP : 0;
+    const mTkA  = mTxnA > 0 ? mRevA / mTxnA : 0, mTkP = mTxnP > 0 ? mRevP / mTxnP : 0;
+    const mCostA = parseNum(DATA.META_COSTO), mCostP = parseNum(DATA.META_COSTO_PREV);
+    const mRoasA = mCostA > 0 ? mRevA / mCostA : 0, mRoasP = mCostP > 0 ? mRevP / mCostP : 0;
+
+    const metaCpcMetrics = [
+      { label: "Sesiones",           sub: "Sesiones Paid Social",             val: tiFmt(mSesA),                                    prev: tiFmt(mSesP),                                    delta: tiPct(mSesA, mSesP).v,  up: tiPct(mSesA, mSesP).up  === true },
+      { label: "Ingresos",           sub: "Revenue GA4 (Purchase)",           val: "$" + tiFmt(mRevA, 2),                           prev: "$" + tiFmt(mRevP, 2),                           delta: tiPct(mRevA, mRevP).v,  up: tiPct(mRevA, mRevP).up  === true },
+      { label: "Transacciones",      sub: "Transacciones ecommerce",          val: tiFmt(mTxnA),                                    prev: tiFmt(mTxnP),                                    delta: tiPct(mTxnA, mTxnP).v,  up: tiPct(mTxnA, mTxnP).up  === true },
+      { label: "Tasa de conversión", sub: "Transacciones / sesiones",         val: (mTcA*100).toFixed(2).replace(".",",")+"%",       prev: (mTcP*100).toFixed(2).replace(".",",")+"%",       delta: tiPct(mTcA, mTcP).v,    up: tiPct(mTcA, mTcP).up    === true },
+      { label: "Ticket promedio",    sub: "Ingreso promedio por transacción", val: "$" + tiFmt(mTkA, 2),                            prev: "$" + tiFmt(mTkP, 2),                            delta: tiPct(mTkA, mTkP).v,    up: tiPct(mTkA, mTkP).up    === true },
+      { label: "ROAS",               sub: "Ingresos GA4 / inversión Meta",    val: tiFmt(mRoasA, 2) + "x",                         prev: tiFmt(mRoasP, 2) + "x",                         delta: tiPct(mRoasA, mRoasP).v, up: tiPct(mRoasA, mRoasP).up === true },
+    ];
+    metaCpcMetrics.forEach((m, i) => {
+      const col = i % 3, row = Math.floor(i / 3);
+      const x = 0.4 + col * 3.13, y = 1.2 + row * 1.85;
+      sMeta.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 1.7, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+      sMeta.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.9, h: 0.06, fill: { color: ORANGE }, line: { color: ORANGE } });
+      sMeta.addShape(pres.shapes.OVAL, { x: x + 0.14, y: y + 0.18, w: 0.36, h: 0.36, fill: { color: ORANGE }, line: { color: ORANGE } });
+      sMeta.addText(m.label, { x: x + 0.58, y: y + 0.18, w: 2.2, h: 0.22, fontSize: 11, bold: true, color: DARK, fontFace: "DM Sans" });
+      sMeta.addText(m.sub,   { x: x + 0.58, y: y + 0.38, w: 2.2, h: 0.2,  fontSize: 8,  color: GRAY_TEXT, fontFace: "DM Sans" });
+      sMeta.addShape(pres.shapes.RECTANGLE, { x: x + 0.14, y: y + 0.65, w: 2.62, h: 0.02, fill: { color: "F0E8E0" }, line: { color: "F0E8E0" } });
+      sMeta.addText(labelCortoActual, { x: x + 0.14, y: y + 0.75, w: 1.3, h: 0.18, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+      const fsMeta = String(m.val).length > 12 ? 15 : String(m.val).length > 9 ? 18 : 22;
+      sMeta.addText(m.val,   { x: x + 0.14, y: y + 0.92, w: 1.5, h: 0.38, fontSize: fsMeta, bold: true, color: DARK, fontFace: "DM Sans" });
+      sMeta.addShape(pres.shapes.RECTANGLE, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fill: { color: m.up ? GREEN_BG : RED_BG }, line: { color: m.up ? GREEN_BG : RED_BG } });
+      sMeta.addText(m.delta, { x: x + 1.75, y: y + 0.95, w: 0.95, h: 0.28, fontSize: 11, bold: true, color: m.up ? GREEN : RED, fontFace: "DM Sans", align: "center" });
+      sMeta.addText(`${labelCortoAnterior}: ${m.prev}`, { x: x + 0.14, y: y + 1.35, w: 2.5, h: 0.2, fontSize: 9, color: GRAY_TEXT, fontFace: "DM Sans" });
+    });
+  }
+
+  // ── SLIDE KO CAMPAÑAS – TIENDA INGLESA ──────────────────────────────────
+  if (isTiendaInglesa && DATA.TI_KO_CAMPANAS && DATA.TI_KO_CAMPANAS.length > 0) {
+    let sKo = pres.addSlide();
+    sKo.background = { color: WHITE };
+    sKo.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: BLUE }, line: { color: BLUE } });
+    sKo.addText("Google CPC · Campañas KO", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
+    sKo.addText(`GA4 · google / cpc  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""}`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    const koColW = [3.5, 1.2, 1.5, 1.0, 0.9, 1.1];
+    const koHeaders = ["Campaña", "Sesiones", "Ingresos", "Txns", "TC%", "Ticket"];
+    const koY0 = 1.18;
+
+    sKo.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: koY0, w: 9.2, h: 0.36, fill: { color: DARK }, line: { color: DARK } });
+    let koCx = 0.55;
+    koHeaders.forEach((h, i) => {
+      const align = i === 0 ? "left" : "center";
+      sKo.addText(h, { x: koCx, y: koY0 + 0.02, w: koColW[i], h: 0.32, fontSize: 9, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle", align });
+      koCx += koColW[i];
+    });
+
+    DATA.TI_KO_CAMPANAS.slice(0, 12).forEach((row, i) => {
+      const ry = koY0 + 0.36 + i * 0.37;
+      const bg = i % 2 === 0 ? WHITE : LIGHT_BG;
+      sKo.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry, w: 9.2, h: 0.36, fill: { color: bg }, line: { color: "E8E0D8", width: 0.5 } });
+      let rx = 0.55;
+      sKo.addText(row.nombre || "", { x: rx, y: ry + 0.07, w: koColW[0], h: 0.26, fontSize: 8.5, color: DARK, fontFace: "DM Sans" });
+      rx += koColW[0];
+      sKo.addText(String(row.sesiones ?? ""), { x: rx, y: ry + 0.07, w: koColW[1], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
+      rx += koColW[1];
+      sKo.addText(String(row.ingresos ?? ""), { x: rx, y: ry + 0.07, w: koColW[2], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "right" });
+      rx += koColW[2];
+      sKo.addText(String(row.transacciones ?? ""), { x: rx, y: ry + 0.07, w: koColW[3], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
+      rx += koColW[3];
+      sKo.addText(row.tc || "", { x: rx, y: ry + 0.07, w: koColW[4], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
+      rx += koColW[4];
+      sKo.addText(String(row.ticket ?? ""), { x: rx, y: ry + 0.07, w: koColW[5], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "right" });
+    });
+  }
+
   // ── SLIDE 3B – ECOMMERCE PLATFORM (OPCIONAL) ─────────────────────────────
   if (DATA.ECOMMERCE_INGRESOS) {
     let sEc = pres.addSlide();
