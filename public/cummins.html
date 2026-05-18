@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cummins · Reporte Ecommerce</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: "DM Sans", system-ui, sans-serif; background: #1A1A2E; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+    .card { background: #fff; color: #1A1A2E; border-radius: 16px; padding: 2.5rem; max-width: 520px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+    .logo { font-size: 13px; font-weight: 700; color: #FA5A1E; letter-spacing: 0.05em; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.4rem; }
+    p.sub { font-size: 0.9rem; color: #64748B; margin-bottom: 1.8rem; }
+    .drop { border: 2px dashed #FA5A1E; border-radius: 12px; padding: 2.5rem 1.5rem; text-align: center; cursor: pointer; transition: background 0.2s; }
+    .drop:hover, .drop.over { background: #FFF8F5; }
+    .drop input { display: none; }
+    .drop-icon { font-size: 2.5rem; margin-bottom: 0.6rem; }
+    .drop-label { font-size: 0.95rem; color: #64748B; }
+    .drop-label strong { color: #FA5A1E; }
+    .file-name { margin-top: 1rem; font-size: 0.85rem; color: #1A1A2E; font-weight: 600; background: #FFF0EB; padding: 0.4rem 0.8rem; border-radius: 6px; display: none; }
+    .btn { margin-top: 1.5rem; width: 100%; padding: 0.85rem; background: #FA5A1E; color: #fff; font-size: 1rem; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; transition: background 0.2s; }
+    .btn:hover:not(:disabled) { background: #e04d15; }
+    .btn:disabled { background: #ccc; cursor: not-allowed; }
+    .status { margin-top: 1.2rem; font-size: 0.88rem; color: #64748B; text-align: center; min-height: 1.2em; }
+    .status.error { color: #A32D2D; }
+    .status.success { color: #3B6D11; font-weight: 600; }
+    .progress { margin-top: 1rem; height: 4px; background: #F1F0EC; border-radius: 2px; overflow: hidden; display: none; }
+    .progress-bar { height: 100%; background: #FA5A1E; width: 0%; transition: width 0.3s; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">KNOWN ONLINE</div>
+    <h1>Reporte Ecommerce Cummins</h1>
+    <p class="sub">Subí el sheet de Cummins y generamos el PPTX con gráficos de barra comparativos.</p>
+
+    <div class="drop" id="drop">
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" />
+      <div class="drop-icon">📊</div>
+      <div class="drop-label">Arrastrá el sheet acá o <strong>hacé click para buscar</strong></div>
+    </div>
+    <div class="file-name" id="fileName"></div>
+
+    <div class="progress" id="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <button class="btn" id="btn" disabled>Generar PPTX</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    const drop = document.getElementById("drop");
+    const fileInput = document.getElementById("fileInput");
+    const fileNameEl = document.getElementById("fileName");
+    const btn = document.getElementById("btn");
+    const statusEl = document.getElementById("status");
+    const progressEl = document.getElementById("progress");
+    const progressBar = document.getElementById("progressBar");
+
+    let selectedFile = null;
+
+    drop.addEventListener("click", () => fileInput.click());
+    drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+    drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+    drop.addEventListener("drop", e => {
+      e.preventDefault();
+      drop.classList.remove("over");
+      const f = e.dataTransfer.files[0];
+      if (f) setFile(f);
+    });
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files[0]) setFile(fileInput.files[0]);
+    });
+
+    function setFile(f) {
+      selectedFile = f;
+      fileNameEl.textContent = "📎 " + f.name;
+      fileNameEl.style.display = "inline-block";
+      btn.disabled = false;
+      statusEl.textContent = "";
+      statusEl.className = "status";
+    }
+
+    function animateProgress(target, duration) {
+      const start = Date.now();
+      const from = parseFloat(progressBar.style.width) || 0;
+      function step() {
+        const elapsed = Date.now() - start;
+        const pct = Math.min(from + (target - from) * (elapsed / duration), target);
+        progressBar.style.width = pct + "%";
+        if (pct < target) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    btn.addEventListener("click", async () => {
+      if (!selectedFile) return;
+      btn.disabled = true;
+      statusEl.className = "status";
+      progressEl.style.display = "block";
+      progressBar.style.width = "0%";
+
+      try {
+        statusEl.textContent = "Leyendo el sheet...";
+        animateProgress(20, 800);
+
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        statusEl.textContent = "Claude está interpretando los datos...";
+        animateProgress(60, 8000);
+
+        const res = await fetch("/api/generate-cummins-charts", {
+          method: "POST",
+          body: formData
+        });
+
+        animateProgress(90, 1000);
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: "Error desconocido" }));
+          throw new Error(err.error || `Error ${res.status}`);
+        }
+
+        const json = await res.json();
+        animateProgress(100, 300);
+
+        const bytes = Uint8Array.from(atob(json.pptx), c => c.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.presentationml.presentation" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = json.filename;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        statusEl.className = "status success";
+        statusEl.textContent = "✅ " + json.filename + " descargado";
+      } catch (err) {
+        progressEl.style.display = "none";
+        statusEl.className = "status error";
+        statusEl.textContent = "❌ " + err.message;
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
