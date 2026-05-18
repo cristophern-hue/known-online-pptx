@@ -215,15 +215,20 @@ async function generatePptx(DATA) {
   s2.addText("Comparativa por plataforma", { x: 0.5, y: pY - 0.4, w: 9, h: 0.35, fontSize: 13, bold: true, color: DARK, fontFace: "DM Sans" });
 
   // Meta block
-  s2.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: pY, w: 4.4, h: 1.85, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
-  s2.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: pY, w: 4.4, h: 0.38, fill: { color: ORANGE }, line: { color: ORANGE } });
-  s2.addText("Meta Ads", { x: 0.55, y: pY + 0.03, w: 3, h: 0.32, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
   const metaStats = [
     ["Costo",  DATA.META_COSTO  || "", DATA.META_COSTO_DELTA  || "", DATA.META_COSTO_DELTA_UP  === true],
     ["Clicks", DATA.META_CLICKS || "", DATA.META_CLICKS_DELTA || "", DATA.META_CLICKS_DELTA_UP !== true],
     ["ROAS",   DATA.META_ROAS   || "", DATA.META_ROAS_DELTA   || "", DATA.META_ROAS_DELTA_UP   !== true],
     ["CPC",    DATA.META_CPC    || "", DATA.META_CPC_DELTA    || "", DATA.META_CPC_DELTA_UP    !== true],
   ];
+  if (isTiendaInglesa && DATA.META_CPA && DATA.META_CPA !== 'N/D') {
+    metaStats.push(["CPA", DATA.META_CPA || "", DATA.META_CPA_DELTA || "", DATA.META_CPA_DELTA_UP === true]);
+  }
+  const metaRows = Math.ceil(metaStats.length / 2);
+  const metaBlockH = 0.38 + 0.12 + metaRows * 0.6;
+  s2.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: pY, w: 4.4, h: metaBlockH, fill: { color: LIGHT_BG }, line: { color: "F0E8E0", width: 0.5 } });
+  s2.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: pY, w: 4.4, h: 0.38, fill: { color: ORANGE }, line: { color: ORANGE } });
+  s2.addText("Meta Ads", { x: 0.55, y: pY + 0.03, w: 3, h: 0.32, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
   metaStats.forEach(([lbl, val, delta, isDown], i) => {
     const col = i % 2, row = Math.floor(i / 2);
     const bx = 0.55 + col * 2.1, by = pY + 0.5 + row * 0.6;
@@ -235,15 +240,27 @@ async function generatePptx(DATA) {
   });
 
   // Google block
-  s2.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: pY, w: 4.4, h: 1.85, fill: { color: LIGHT_BLUE }, line: { color: "D0E4F5", width: 0.5 } });
-  s2.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: pY, w: 4.4, h: 0.38, fill: { color: BLUE }, line: { color: BLUE } });
-  s2.addText("Google Ads", { x: 5.35, y: pY + 0.03, w: 3, h: 0.32, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
   const googleStats = [
     ["Costo",  DATA.GOOGLE_COSTO  || "", DATA.GOOGLE_COSTO_DELTA  || "", DATA.GOOGLE_COSTO_DELTA_UP  === true],
     ["Clicks", DATA.GOOGLE_CLICKS || "", DATA.GOOGLE_CLICKS_DELTA || "", DATA.GOOGLE_CLICKS_DELTA_UP !== true],
     ["ROAS",   DATA.GOOGLE_ROAS   || "", DATA.GOOGLE_ROAS_DELTA   || "", DATA.GOOGLE_ROAS_DELTA_UP   !== true],
     ["CPC",    DATA.GOOGLE_CPC    || "", DATA.GOOGLE_CPC_DELTA    || "", DATA.GOOGLE_CPC_DELTA_UP    !== true],
   ];
+  if (isTiendaInglesa && tiCpcRows.length > 0) {
+    const _tiSum = (rows, f) => rows.reduce((a, r) => a + (parseFloat(r[f]) || 0), 0);
+    const cTxnA = _tiSum(tiCpcRows, "GA4__Transacciones_de_comercio_electrónico");
+    const cTxnP = _tiSum(tiCpcRowsP, "GA4__Transacciones_de_comercio_electrónico");
+    const cCostA = parseNum(DATA.GOOGLE_COSTO), cCostP = parseNum(DATA.GOOGLE_COSTO_PREV);
+    const gcpaA = cTxnA > 0 ? cCostA / cTxnA : 0, gcpaP = cTxnP > 0 ? cCostP / cTxnP : 0;
+    const _fmt = (n, d = 0) => isNaN(n) ? "N/D" : new Intl.NumberFormat("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d }).format(n);
+    const _pct = (a, p) => { if (!p) return "N/D"; const d = ((a-p)/Math.abs(p))*100; return (d>=0?"+":"")+d.toFixed(1).replace(".",",")+"%"; };
+    if (gcpaA > 0) googleStats.push(["CPA", "$"+_fmt(gcpaA,2), _pct(gcpaA,gcpaP), gcpaA <= gcpaP]);
+  }
+  const googleRows = Math.ceil(googleStats.length / 2);
+  const googleBlockH = 0.38 + 0.12 + googleRows * 0.6;
+  s2.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: pY, w: 4.4, h: googleBlockH, fill: { color: LIGHT_BLUE }, line: { color: "D0E4F5", width: 0.5 } });
+  s2.addShape(pres.shapes.RECTANGLE, { x: 5.2, y: pY, w: 4.4, h: 0.38, fill: { color: BLUE }, line: { color: BLUE } });
+  s2.addText("Google Ads", { x: 5.35, y: pY + 0.03, w: 3, h: 0.32, fontSize: 13, bold: true, color: WHITE, fontFace: "DM Sans" });
   googleStats.forEach(([lbl, val, delta, isDown], i) => {
     const col = i % 2, row = Math.floor(i / 2);
     const bx = 5.35 + col * 2.1, by = pY + 0.5 + row * 0.6;
@@ -585,9 +602,13 @@ async function generatePptx(DATA) {
   if (isTiendaInglesa && DATA.META_CPA && DATA.META_CPA !== 'N/D') {
     metaKPIs.push({ label: "CPA", val: DATA.META_CPA || "", prev: DATA.META_CPA_PREV || "", delta: DATA.META_CPA_DELTA || "", up: DATA.META_CPA_DELTA_UP === true, warn: false });
   }
+  const metaKpiRowH = metaKPIs.length > 6 ? 1.48 : 1.6;
+  const metaKpiStartY = metaKPIs.length > 6 ? 1.2 : 1.3;
   metaKPIs.forEach((k, i) => {
-    const col = i % 3, row = Math.floor(i / 3);
-    const x = 0.4 + col * 3.1, y = 1.3 + row * 1.6;
+    const isLast = i === metaKPIs.length - 1 && metaKPIs.length % 3 !== 0;
+    const col = isLast ? 1 : i % 3;
+    const row = Math.floor(i / 3);
+    const x = 0.4 + col * 3.1, y = metaKpiStartY + row * metaKpiRowH;
     s3.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.8, h: 1.45, fill: { color: k.warn ? "FFF5F5" : LIGHT_BG }, line: { color: k.warn ? "F7C1C1" : "F0E8E0", width: 0.5 } });
     s3.addText(k.label, { x: x + 0.15, y: y + 0.12, w: 2.5, h: 0.28, fontSize: 11, color: GRAY_TEXT, fontFace: "DM Sans" });
     s3.addText(k.val,   { x: x + 0.15, y: y + 0.38, w: 2.5, h: 0.5,  fontSize: 24, bold: true, color: DARK, fontFace: "DM Sans" });
@@ -633,9 +654,13 @@ async function generatePptx(DATA) {
     const cpaP   = cTxnP > 0 ? cCostP / cTxnP : 0;
     googleKPIs.push({ label: "CPA", val: "$" + _fmt(cpaA, 2), prev: "$" + _fmt(cpaP, 2), delta: _pct(cpaA, cpaP).v, good: _pct(cpaA, cpaP).up !== true });
   }
+  const gKpiRowH   = googleKPIs.length > 6 ? 1.48 : 1.6;
+  const gKpiStartY = googleKPIs.length > 6 ? 1.2  : 1.3;
   googleKPIs.forEach((k, i) => {
-    const col = i % 3, row = Math.floor(i / 3);
-    const x = 0.4 + col * 3.1, y = 1.3 + row * 1.6;
+    const isLast = i === googleKPIs.length - 1 && googleKPIs.length % 3 !== 0;
+    const col = isLast ? 1 : i % 3;
+    const row = Math.floor(i / 3);
+    const x = 0.4 + col * 3.1, y = gKpiStartY + row * gKpiRowH;
     s4.addShape(pres.shapes.RECTANGLE, { x, y, w: 2.8, h: 1.45, fill: { color: k.good ? LIGHT_BLUE : LIGHT_BG }, line: { color: k.good ? "B5D4F4" : "F0E8E0", width: 0.5 } });
     s4.addText(k.label, { x: x + 0.15, y: y + 0.12, w: 2.5, h: 0.28, fontSize: 11, color: GRAY_TEXT, fontFace: "DM Sans" });
     s4.addText(k.val,   { x: x + 0.15, y: y + 0.38, w: 2.5, h: 0.5,  fontSize: 24, bold: true, color: DARK, fontFace: "DM Sans" });
