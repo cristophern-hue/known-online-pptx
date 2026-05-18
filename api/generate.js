@@ -582,6 +582,9 @@ async function generatePptx(DATA) {
     { label: "CPC",         val: DATA.META_CPC          || "", prev: DATA.META_CPC_PREV          || "", delta: DATA.META_CPC_DELTA          || "", up: DATA.META_CPC_DELTA_UP          === true, warn: false },
     { label: "ROAS",        val: DATA.META_ROAS         || "", prev: DATA.META_ROAS_PREV         || "", delta: DATA.META_ROAS_DELTA         || "", up: DATA.META_ROAS_DELTA_UP         === true, warn: false },
   ];
+  if (isTiendaInglesa && DATA.META_CPA && DATA.META_CPA !== 'N/D') {
+    metaKPIs.push({ label: "CPA", val: DATA.META_CPA || "", prev: DATA.META_CPA_PREV || "", delta: DATA.META_CPA_DELTA || "", up: DATA.META_CPA_DELTA_UP === true, warn: false });
+  }
   metaKPIs.forEach((k, i) => {
     const col = i % 3, row = Math.floor(i / 3);
     const x = 0.4 + col * 3.1, y = 1.3 + row * 1.6;
