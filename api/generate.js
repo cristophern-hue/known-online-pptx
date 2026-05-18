@@ -439,6 +439,45 @@ async function generatePptx(DATA) {
     });
   }
 
+  // ── SLIDE KO CAMPAÑAS – TIENDA INGLESA ──────────────────────────────────
+  if (isTiendaInglesa && DATA.TI_KO_CAMPANAS && DATA.TI_KO_CAMPANAS.length > 0) {
+    let sKo = pres.addSlide();
+    sKo.background = { color: WHITE };
+    sKo.addShape(pres.shapes.RECTANGLE, { x: 0, y: 0, w: 10, h: 0.08, fill: { color: BLUE }, line: { color: BLUE } });
+    sKo.addText("Google CPC · Campañas KO", { x: 0.5, y: 0.2, w: 7, h: 0.55, fontSize: 28, bold: true, color: DARK, fontFace: "DM Sans" });
+    sKo.addText(`GA4 · google / cpc  ·  ${DATA.PERIODO_ACTUAL_LABEL || ""}`, { x: 0.5, y: 0.76, w: 9, h: 0.3, fontSize: 13, color: GRAY_TEXT, fontFace: "DM Sans" });
+
+    const koColW = [3.5, 1.2, 1.5, 1.0, 0.9, 1.1];
+    const koHeaders = ["Campaña", "Sesiones", "Ingresos", "Txns", "TC%", "Ticket"];
+    const koY0 = 1.18;
+
+    sKo.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: koY0, w: 9.2, h: 0.36, fill: { color: DARK }, line: { color: DARK } });
+    let koCx = 0.55;
+    koHeaders.forEach((h, i) => {
+      const align = i === 0 ? "left" : "center";
+      sKo.addText(h, { x: koCx, y: koY0 + 0.02, w: koColW[i], h: 0.32, fontSize: 9, bold: true, color: WHITE, fontFace: "DM Sans", valign: "middle", align });
+      koCx += koColW[i];
+    });
+
+    DATA.TI_KO_CAMPANAS.slice(0, 12).forEach((row, i) => {
+      const ry = koY0 + 0.36 + i * 0.37;
+      const bg = i % 2 === 0 ? WHITE : LIGHT_BG;
+      sKo.addShape(pres.shapes.RECTANGLE, { x: 0.4, y: ry, w: 9.2, h: 0.36, fill: { color: bg }, line: { color: "E8E0D8", width: 0.5 } });
+      let rx = 0.55;
+      sKo.addText(row.nombre || "", { x: rx, y: ry + 0.07, w: koColW[0], h: 0.26, fontSize: 8.5, color: DARK, fontFace: "DM Sans" });
+      rx += koColW[0];
+      sKo.addText(String(row.sesiones ?? ""), { x: rx, y: ry + 0.07, w: koColW[1], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
+      rx += koColW[1];
+      sKo.addText(String(row.ingresos ?? ""), { x: rx, y: ry + 0.07, w: koColW[2], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "right" });
+      rx += koColW[2];
+      sKo.addText(String(row.transacciones ?? ""), { x: rx, y: ry + 0.07, w: koColW[3], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
+      rx += koColW[3];
+      sKo.addText(row.tc || "", { x: rx, y: ry + 0.07, w: koColW[4], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "center" });
+      rx += koColW[4];
+      sKo.addText(String(row.ticket ?? ""), { x: rx, y: ry + 0.07, w: koColW[5], h: 0.26, fontSize: 9.5, color: DARK, fontFace: "DM Sans", align: "right" });
+    });
+  }
+
   // ── SLIDE 3B – ECOMMERCE PLATFORM (OPCIONAL) ─────────────────────────────
   if (DATA.ECOMMERCE_INGRESOS) {
     let sEc = pres.addSlide();
